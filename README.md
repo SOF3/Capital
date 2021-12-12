@@ -50,3 +50,10 @@ prefer using labels to select accounts for transactions.
 For example, the pay command is implemented as
 two label selectors for the source and destination accounts,
 parameterized with InfoAPI to change labels by players.
+
+## Building
+On Linux, the phar can be built simply by running `make dev/Capital.phar`.
+
+## Testing
+Capital uses integration testing.
+Run `make suites/*` to run all integration tests.
