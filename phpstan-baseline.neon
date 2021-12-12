@@ -1,1 +1,32 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^While loop condition is always true\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Cache/CacheInstance.php
+
+		-
+			message: "#^Yield can be used only with these return types\\: Generator, Iterator, Traversable, iterable\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
+
+		-
+			message: "#^Parameter \\#3 \\$catches of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects array\\<string, callable\\(Throwable\\)\\: void\\>\\|\\(callable\\(Throwable\\)\\: void\\), array\\{\\}\\|array\\{SOFe\\\\Capital\\\\CapitalException\\: Closure\\(SOFe\\\\Capital\\\\CapitalException\\)\\: void\\} given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Capital.php
+
+		-
+			message: "#^Parameter \\#3 \\$src of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 3
+			path: src/SOFe/Capital/Config/UiConfig.php
+
+		-
+			message: "#^Parameter \\#4 \\$dest of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 3
+			path: src/SOFe/Capital/Config/UiConfig.php
+
+		-
+			message: "#^Parameter \\#8 \\$transactionLabels of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSet\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSet\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 3
+			path: src/SOFe/Capital/Config/UiConfig.php
 

@@ -8,6 +8,7 @@ use function array_keys;
 use function array_map;
 use function count;
 use function implode;
+use function yaml_parse_file;
 use Generator;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericStatementImpl;
@@ -45,7 +46,7 @@ final class Database {
     public function __construct() {
         $plugin = MainClass::getInstance();
 
-        $config = $plugin->getConfig()->get("database");
+        $config = yaml_parse_file($plugin->getDataFolder() . "db.yml");
 
         $this->conn = libasynql::create($plugin, $config, [
             "sqlite" => array_map(fn($file) => "sqlite/$file", self::SQL_FILES),

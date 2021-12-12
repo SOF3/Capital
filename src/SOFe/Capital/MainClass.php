@@ -20,6 +20,8 @@ final class MainClass extends PluginBase {
         self::$instance = $this;
         $this->std = AwaitStd::init($this);
 
+        $this->saveResource("db.yml");
+
         Database\Mod::init();
         Player\Mod::init();
     }
