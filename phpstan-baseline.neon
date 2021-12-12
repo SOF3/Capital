@@ -1,0 +1,17 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^While loop condition is always true\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Cache/CacheInstance.php
+
+		-
+			message: "#^Yield can be used only with these return types\\: Generator, Iterator, Traversable, iterable\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
+
+		-
+			message: "#^Parameter \\#3 \\$catches of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects array\\<string, callable\\(Throwable\\)\\: void\\>\\|\\(callable\\(Throwable\\)\\: void\\), array\\{\\}\\|array\\{SOFe\\\\Capital\\\\CapitalException\\: Closure\\(SOFe\\\\Capital\\\\CapitalException\\)\\: void\\} given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Capital.php
+

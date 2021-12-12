@@ -1,0 +1,7 @@
+name: Capital
+version: 0.1.0
+api: 4.0.0
+main: SOFe\Capital\Capital
+author: SOFe
+depend:
+  - InfoAPI

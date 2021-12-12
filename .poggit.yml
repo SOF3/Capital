@@ -1,0 +1,10 @@
+projects:
+  Capital:
+    path: ""
+    libs:
+      - src: poggit/libasynql/libasynql
+        version: ^3.3.0
+      - src: sof3/await-generator/await-generator
+        version: ^3.1.0
+      - src: sof3/await-std/await-std
+        version: ^0.2.0

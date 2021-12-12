@@ -1,0 +1,10 @@
+parameters:
+	level: 8
+	paths:
+		- src
+		- tests
+	typeAliases:
+		VoidPromise: "Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, void>"
+
+includes:
+	- ./phpstan-baseline.neon

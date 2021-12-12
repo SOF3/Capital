@@ -1,0 +1,9 @@
+# This is the simple version of the config.
+# If you need more control, you may want to look at config-advanced.yml.
+config-type: simple
+
+# Player-related settings
+player:
+  # The amount of money to give to each player when they join the first time.
+  default-money: 100
+  max-money: 1000000
