@@ -1,4 +1,6 @@
-.PHONY: all phpstan suites/mysql
+SUITE_TESTS = suites/mysql 
+
+.PHONY: all phpstan debug/suite-mysql $(SUITE_TESTS)
 
 PHP_BINARY = $(shell which php)
 
@@ -11,7 +13,7 @@ phpstan-baseline.neon/clear:
 phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
 	$(PHP_BINARY) vendor/bin/phpstan analyze --generate-baseline
 
-dev/Capital.phar: dev/ConsoleScript.php dev/libasynql.phar dev/await-generator.phar dev/await-std.phar
+dev/Capital.phar: $(shell find src resources -type f) dev/ConsoleScript.php dev/libasynql.phar dev/await-generator.phar dev/await-std.phar
 	$(PHP_BINARY) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
 	$(PHP_BINARY) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
@@ -40,7 +42,7 @@ dev/InfoAPI.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/get/InfoAPI
 	touch $@
 
-suites/mysql: dev/Capital.phar dev/InfoAPI.phar
+$(SUITE_TESTS): dev/Capital.phar dev/InfoAPI.phar
 	docker network create capital-suite-network || true
 	docker kill capital-suite-mysql capital-suite-pocketmine || true
 	docker run --rm -d \
@@ -59,5 +61,8 @@ suites/mysql: dev/Capital.phar dev/InfoAPI.phar
 	docker cp $@/data/plugin_data capital-suite-pocketmine:/data/plugin_data
 	echo Waiting for MySQL to start...
 	docker exec capital-suite-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 0.1; done'
-	sleep 3
+	sleep 5
 	docker start -ia capital-suite-pocketmine
+
+debug/suite-mysql:
+	docker exec -it capital-suite-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'

@@ -7,7 +7,7 @@ namespace SOFe\Capital\Config;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\OracleNames;
 
-final class UiConfig {
+final class TransferConfig {
     /**
      * @param list<TransferMethod> $transferMethods Methods to initiate money transfer between accounts.
      */

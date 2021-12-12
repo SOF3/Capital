@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Player;
 
 use pocketmine\Server;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
@@ -14,7 +15,7 @@ final class Mod {
     public static function init() : void {
         Server::getInstance()->getPluginManager()->registerEvents(new EventListener, MainClass::getInstance());
 
-        foreach(MainClass::getInstance()->getConfig()->getNested("player.infos") as $name) {
+        foreach(Config::getInstance()->player->infoNames as $name) {
             InfoAPI::provideInfo(
                 PlayerInfo::class, NumberInfo::class,
                 "capital.player.$name",
