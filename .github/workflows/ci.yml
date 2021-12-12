@@ -1,0 +1,21 @@
+name: CI
+on:
+  - push
+  - pull_request
+jobs:
+  phpstan:
+    name: phpstan analyze
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - "8.0"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{matrix.php-version}}
+          tools: composer
+      - run: composer install --optimize-autoloader --ignore-platform-reqs
+      - name: phpstan analyze
+        run: vendor/bin/phpstan

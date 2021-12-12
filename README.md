@@ -1,24 +1,17 @@
 # Capital
-A simple but very extensible economy engine for PocketMine-MP.
+A simple but very extensible economy plugin for PocketMine-MP.
 
-## For Developers
-Similar to configs,
-the developer API exposes three variants:
-the basic API, advanced API and expert API.
+## How is Capital different from other economy plugins?
+Capital introduces a label-oriented paradigm,
+allowing Capital to be extensible for many purposes:
 
-### Basic API
-Similar to the basic config,
-the basic API only provides access to one account per player.
-This API might not work if the user is using advanced config
-and removed the default currency.
-
-#### Add/Reduce money
-
-### Advanced API
-Similar to the advanced config,
-
-### Expert API
-The expert API provides full access to the 
+- Currencies are no longer imposed by the core.
+  You don't need to deal with currencies if you don't want to,
+  and you can create as many currencies as you like without breaking things.
+- The planned Wallet extension allows connecting inventory items to player accounts,
+  and this is automatically compatible with other plugins that are not even aware of wallets.
+- Analytics can be easily achieved using label-based queries.
+  Track how capital flows in your server without writing code!
 
 ## Labels
 Capital uses *labels* to identify accounts.
@@ -34,25 +27,26 @@ For example, the default player account (in basic config) has the following labe
 
 | Name | Value |
 | :---: | :---: |
-| `capital/player/uuid` | The player UUID |
-| `config/currency` | `default` |
-| `capital/player/name` | The player name |
-| `capital/player/infoName` | `money` |
-| `capital/core/valueMin` | `0` |
-| `capital/core/valueMax` | `1000000` |
+| `capital/playerUuid` | The player UUID |
+| `currency` | `default` |
+| `capital/playerName` | The player name |
+| `capital/playerInfoName` | `money` |
+| `capital/valueMin` | `0` |
+| `capital/valueMax` | `1000000` |
 
 This is how we find the accounts for a player:
 we find accounts with the label `capital/player/uuid`
 equal to the player's UUID,
-then we use other labels like `config/currency`
+then we use other labels like `currency`
 to identify which account it is.
 
-The fun part here is, we don't actually care which account it is.
-Capital itself does not know what `config/currency` is;
-it's just the default label we use for currencies
-when we transform the advanced config into expert config.
-If you don't need compatibility with the Advanced API,
-it's perfectly fine to delete the `config/currency` label.
+In fact, Capital itself does not know what `currency` is;
+it's just the default label we use for currencies,
+but you can change it to anything.
+It is perfectly fine to delete the `currency` label.
 
-The first two labels are "identifying" labels.
-
+Plugins that perform Capital transactions should
+prefer using labels to select accounts for transactions.
+For example, the pay command is implemented as
+two label selectors for the source and destination accounts,
+parameterized with InfoAPI to change labels by players.
