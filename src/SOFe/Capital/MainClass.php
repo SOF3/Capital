@@ -6,7 +6,6 @@ namespace SOFe\Capital;
 
 use pocketmine\plugin\PluginBase;
 use SOFe\AwaitStd\AwaitStd;
-use SOFe\Capital\Database\Database;
 
 final class MainClass extends PluginBase {
     private static self $instance;
@@ -21,8 +20,7 @@ final class MainClass extends PluginBase {
         self::$instance = $this;
         $this->std = AwaitStd::init($this);
 
-        $this->saveDefaultConfig();
-
-        Database::getInstance()->init();
+        Database\Mod::init();
+        Player\Mod::init();
     }
 }
