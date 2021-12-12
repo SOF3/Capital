@@ -17,8 +17,11 @@ final class AccountLabels {
     /** Constrains the maximum value in the account. The value is expressed as signed decimal form. */
     public const VALUE_MAX = "capital/coreValueMax";
 
-    /** Marks an account as a system account that must not be disabled. */
+    /** Marks an account as a system account that must not be automatically deleted. */
     public const NO_DELETION = "capital/noDeletion";
+
+    /** Identifies the account as a functional oracle specialized for an operation indicated in the value. */
+    public const ORACLE = "capital/oracle";
 
     /** Expose the account as an InfoAPI subinfo for a player. The value is the info name prefixed by `capital.player.`. */
     public const PLAYER_INFO_NAME = "capital/playerInfoName";

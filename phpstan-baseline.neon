@@ -15,3 +15,18 @@ parameters:
 			count: 1
 			path: src/SOFe/Capital/Capital.php
 
+		-
+			message: "#^Parameter \\#3 \\$src of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Config/UiConfig.php
+
+		-
+			message: "#^Parameter \\#4 \\$dest of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Config/UiConfig.php
+
+		-
+			message: "#^Parameter \\#8 \\$transactionLabels of class SOFe\\\\Capital\\\\Config\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSet\\<SOFe\\\\Capital\\\\Config\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\Config\\\\ParameterizedLabelSet\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Config/UiConfig.php
+
