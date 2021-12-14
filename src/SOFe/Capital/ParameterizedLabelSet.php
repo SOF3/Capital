@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital;
 
 use SOFe\InfoAPI\Info;
 use SOFe\InfoAPI\InfoAPI;

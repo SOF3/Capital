@@ -27,10 +27,19 @@ final class SessionManager {
     }
 
     public function removeSession(Player $player) : void {
-        if(isset($this->sessions[$player->getId()])) {
-            $session = $this->sessions[$player->getId()];
-            $session->close();
-            unset($this->sessions[$player->getId()]);
+        if(!isset($this->sessions[$player->getId()])) {
+            return;
         }
+
+        $session = $this->sessions[$player->getId()];
+        unset($this->sessions[$player->getId()]);
+        $session->close();
+    }
+
+    public function shutdown() : void {
+        foreach($this->sessions as $session) {
+            $session->close();
+        }
+        $this->sessions = [];
     }
 }

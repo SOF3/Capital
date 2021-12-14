@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital\Transfer;
+
+use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\ParameterizedLabelSet;
 
 /**
  * Transfer money by running a command.

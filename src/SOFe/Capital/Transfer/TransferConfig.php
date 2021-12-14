@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital\Transfer;
 
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\ConfigConstants;
 use SOFe\Capital\OracleNames;
+use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\ParameterizedLabelSet;
 
 final class TransferConfig {
     /**

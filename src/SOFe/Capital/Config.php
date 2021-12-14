@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital;
+
+use SOFe\Capital\Player\PlayerConfig;
+use SOFe\Capital\Transfer\TransferConfig;
 
 final class Config {
     private static ?self $instance = null;

@@ -68,6 +68,10 @@ final class Database {
         yield from $this->raw->init();
     }
 
+    public function shutdown() : void {
+        $this->conn->close();
+    }
+
 
     // Accounts
 
@@ -83,7 +87,9 @@ final class Database {
         foreach($labels as $name => $value) {
             $promises[] = $this->addAccountLabel($uuid, $name, $value);
         }
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
         return $uuid;
     }
 
@@ -105,6 +111,10 @@ final class Database {
      * @throws CapitalException if any of the accounts does not exist
      */
     public function getAccountListValues(array $ids) : Generator {
+        if(count($ids) === 0) {
+            return [];
+        }
+
         $flip = [];
         foreach($ids as $k => $id) {
             $flip[$id->toString()] = $k;
@@ -194,6 +204,10 @@ final class Database {
      * @return Generator<mixed, mixed, mixed, array<string, string>[]>
      */
     public function getAccountListAllLabels(array $ids) : Generator {
+        if(count($ids) === 0) {
+            return [];
+        }
+
         $flip = [];
         foreach($ids as $k => $id) {
             $flip[$id->toString()] = $k;
@@ -254,7 +268,7 @@ final class Database {
         }
         $query .= implode(" AND ", $conditions);
 
-        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-account-n", $query, "", $vars, __FILE__, __LINE__);
+        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-account-n", [$query], "", $vars, __FILE__, __LINE__);
 
         $rawQuery = $stmt->format($args, match($this->dialect) {
             SqlDialect::SQLITE => null,
@@ -262,7 +276,7 @@ final class Database {
         }, $rawArgs);
 
         $this->conn->executeSelectRaw($rawQuery, $rawArgs, yield Await::RESOLVE, yield Await::REJECT);
-        $rows = yield Await::ONCE;
+        [$rows] = yield Await::ONCE;
 
         $ids = [];
         foreach($rows as $row) {

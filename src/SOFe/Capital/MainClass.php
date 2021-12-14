@@ -7,6 +7,8 @@ namespace SOFe\Capital;
 use pocketmine\plugin\PluginBase;
 use SOFe\AwaitStd\AwaitStd;
 
+use function array_reverse;
+
 final class MainClass extends PluginBase {
     private static self $instance;
 
@@ -16,13 +18,23 @@ final class MainClass extends PluginBase {
 
     public AwaitStd $std;
 
+    /** @var list<class-string<IMod>> */
+    public const MODULES = [Database\Mod::class, Player\Mod::class];
+
     protected function onEnable(): void {
         self::$instance = $this;
         $this->std = AwaitStd::init($this);
 
         $this->saveResource("db.yml");
 
-        Database\Mod::init();
-        Player\Mod::init();
+        foreach(self::MODULES as $module) {
+            $module::init();
+        }
+    }
+
+    protected function onDisable(): void {
+        foreach(array_reverse(self::MODULES) as $module) {
+            $module::shutdown();
+        }
     }
 }

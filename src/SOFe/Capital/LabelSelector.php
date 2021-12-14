@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital;
 
 use function assert;
+use function implode;
 use function strlen;
 use function strpos;
 
@@ -56,5 +57,13 @@ final class LabelSelector {
         }
 
         return new self($output);
+    }
+
+    public function debugDisplay() : string {
+        $output = [];
+        foreach($this->entries as $key => $value) {
+            $output[] = $key . "=" . $value;
+        }
+        return implode(", ", $output);
     }
 }

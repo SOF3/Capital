@@ -15,7 +15,7 @@ use SOFe\Capital\MainClass;
  * @template V
  */
 final class CacheInstance {
-    /** @var CacheEntry<V>[] */
+    /** @var array<string, CacheEntry<V>> */
     private array $entries = [];
 
     /**
@@ -62,11 +62,13 @@ final class CacheInstance {
      * @param K $key
      */
     public function free($key) : void {
-        if(!isset($this->entries[$key]) || $this->entries[$key]->getRefCount() === 0) {
-            throw new RuntimeException("Attempt to free unreferenced $key");
+        $string = $this->type->keyToString($key);
+
+        if(!isset($this->entries[$string]) || $this->entries[$string]->getRefCount() === 0) {
+            throw new RuntimeException("Attempt to free unreferenced cache entry $key");
         }
 
-        $this->entries[$key]->decRefCount();
+        $this->entries[$string]->decRefCount();
     }
 
     /**
@@ -85,7 +87,9 @@ final class CacheInstance {
             }
         }
 
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
     }
 
     /**
@@ -112,7 +116,9 @@ final class CacheInstance {
             // for entries added during refresh, they should be new enough.
         }
 
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
     }
 
     /**

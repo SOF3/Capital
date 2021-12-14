@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Cache;
 
 use function array_diff;
+use function count;
 use Generator;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
@@ -36,7 +37,9 @@ final class LabelSelectorCacheType implements CacheType {
             $promises[] = $this->accountCache->fetch($account);
             $promises[] = $this->accountLabelCache->fetch($account);
         }
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
 
         return $accounts;
     }
@@ -53,7 +56,9 @@ final class LabelSelectorCacheType implements CacheType {
             })();
         }
 
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
         return $output;
     }
 
@@ -72,7 +77,9 @@ final class LabelSelectorCacheType implements CacheType {
             $promises[] = $this->accountLabelCache->fetch($account);
         }
 
-        yield from Await::all($promises);
+        if(count($promises) > 0) {
+            yield from Await::all($promises);
+        }
     }
 
     public function onEntryFree(string $key, $accounts): ?Generator {

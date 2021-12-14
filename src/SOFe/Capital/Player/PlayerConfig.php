@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital\Player;
 
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\ConfigConstants;
 
 /**
  * Settings related to players as account owners.

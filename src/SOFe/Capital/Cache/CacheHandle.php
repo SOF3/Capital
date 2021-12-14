@@ -43,7 +43,7 @@ final class CacheHandle {
 
     public function __destruct() {
         if(!$this->released) {
-            MainClass::getInstance()->getLogger()->warning("CacheHandle leak detected");
+            MainClass::getInstance()->getLogger()->warning("CacheHandle ({$this->labelSelector->debugDisplay()}) leak detected");
         }
     }
 }

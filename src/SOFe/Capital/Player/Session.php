@@ -24,6 +24,7 @@ final class Session {
                 AccountLabels::PLAYER_UUID => $this->player->getUniqueId()->toString(),
                 AccountLabels::PLAYER_INFO_NAME => LabelSelector::ANY_VALUE,
             ]));
+
             if($this->closed) {
                 $this->cacheHandle->release();
             }

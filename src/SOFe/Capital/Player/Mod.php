@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace SOFe\Capital\Player;
 
 use pocketmine\Server;
-use SOFe\Capital\Config\Config;
+use SOFe\Capital\Config;
+use SOFe\Capital\IMod;
 use SOFe\Capital\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
 
-final class Mod {
+final class Mod implements IMod {
     public static function init() : void {
         Server::getInstance()->getPluginManager()->registerEvents(new EventListener, MainClass::getInstance());
 
@@ -30,5 +31,9 @@ final class Mod {
                 }
             );
         }
+    }
+
+    public static function shutdown(): void {
+        SessionManager::getInstance()->shutdown();
     }
 }

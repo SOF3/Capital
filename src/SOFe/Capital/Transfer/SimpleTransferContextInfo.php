@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Config;
+namespace SOFe\Capital\Transfer;
 
 use SOFe\InfoAPI\ContextInfo;
 use SOFe\InfoAPI\PlayerInfo;

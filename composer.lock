@@ -535,16 +535,16 @@
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.0.22",
+            "version": "2.1.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "181eb9d42653296e65d55a1bbba10e0dd76bbd61"
+                "reference": "0c810aaa24baffcccd57ca5bca16ca8f346c483c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/181eb9d42653296e65d55a1bbba10e0dd76bbd61",
-                "reference": "181eb9d42653296e65d55a1bbba10e0dd76bbd61",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/0c810aaa24baffcccd57ca5bca16ca8f346c483c",
+                "reference": "0c810aaa24baffcccd57ca5bca16ca8f346c483c",
                 "shasum": ""
             },
             "type": "library",
@@ -552,9 +552,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.0.22"
+                "source": "https://github.com/pmmp/Language/tree/2.1.25"
             },
-            "time": "2021-12-04T22:37:10+00:00"
+            "time": "2021-12-14T00:29:11+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -1256,12 +1256,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/poggit/libasynql.git",
-                "reference": "5397863ca51c76ac458b7adb1afe4c2ebbd68da4"
+                "reference": "a2a1255f678371ed14f8f519b482e16c1a0022ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/poggit/libasynql/zipball/5397863ca51c76ac458b7adb1afe4c2ebbd68da4",
-                "reference": "5397863ca51c76ac458b7adb1afe4c2ebbd68da4",
+                "url": "https://api.github.com/repos/poggit/libasynql/zipball/a2a1255f678371ed14f8f519b482e16c1a0022ad",
+                "reference": "a2a1255f678371ed14f8f519b482e16c1a0022ad",
                 "shasum": ""
             },
             "require": {
@@ -1288,7 +1288,7 @@
                 "issues": "https://github.com/poggit/libasynql/issues",
                 "source": "https://github.com/poggit/libasynql/tree/master"
             },
-            "time": "2021-12-04T07:35:41+00:00"
+            "time": "2021-12-13T14:26:21+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
