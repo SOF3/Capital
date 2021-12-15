@@ -8,6 +8,8 @@ use Closure;
 use Generator;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
+use function array_map;
+use function count;
 
 final class Capital {
     /**
@@ -16,10 +18,7 @@ final class Capital {
      * @param Closure(CapitalException):void $onError
      */
     public static function doTransaction(
-        AccountRef $src,
-        AccountRef $dest,
-        int $amount,
-        array $labels,
+        AccountRef $src, AccountRef $dest, int $amount, array $labels,
         ?Closure $onComplete = null,
         ?Closure $onError = null,
     ) : void {
@@ -41,5 +40,33 @@ final class Capital {
 
         $id = yield from Database::getInstance()->doTransaction($src->getId(), $dest->getId(), $amount);
         return new TransactionRef($id);
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, array<AccountRef>>
+     */
+    public static function findAccounts(LabelSelector $selector) : Generator {
+        $accounts = yield from Database::getInstance()->findAccountN($selector);
+
+        return array_map(fn($account) => new AccountRef($account), $accounts);
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, AccountRef>
+     */
+    public static function getOracle(string $name) : Generator {
+        $labels = [
+            AccountLabels::ORACLE => $name,
+        ];
+
+        $accounts = yield from self::findAccounts(new LabelSelector($labels));
+        if(count($accounts) > 0) {
+            return $accounts[0];
+        }
+
+        // Do not apply valueMin and valueMax on this account,
+        // otherwise we will get failing transactions and it's no longer an oracle.
+        $account = yield from Database::getInstance()->createAccount(0, $labels);
+        return new AccountRef($account);
     }
 }

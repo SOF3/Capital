@@ -56,4 +56,11 @@ On Linux, the phar can be built simply by running `make dev/Capital.phar`.
 
 ## Testing
 Capital uses integration testing.
-Run `make suites/*` to run all integration tests.
+Run `make suites` to run all integration tests.
+
+To rerun a test without resetting MySQL,
+set `REUSE_MYSQL=true` for the make recipe.
+
+To interact iwth the MySQL database
+(it is persisted until the next time a suite is run without `REUSE_MYSQL=true`),
+run `make debug/suite-mysql`.

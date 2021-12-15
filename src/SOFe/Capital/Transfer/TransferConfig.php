@@ -24,6 +24,7 @@ final class TransferConfig {
                 new CommandTransferMethod(
                     "pay",
                     "capital.transfer.pay",
+                    false,
                     new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{sender uuid}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
@@ -42,6 +43,7 @@ final class TransferConfig {
                 new CommandTransferMethod(
                     "takemoney",
                     "capital.transfer.takemoney",
+                    true,
                     new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{recipient uuid}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
@@ -59,6 +61,7 @@ final class TransferConfig {
                 new CommandTransferMethod(
                     "addmoney",
                     "capital.transfer.addmoney",
+                    true,
                     new ParameterizedLabelSelector([
                         AccountLabels::ORACLE => OracleNames::TRANSFER,
                     ]),

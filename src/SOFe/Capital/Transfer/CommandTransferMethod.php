@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+use pocketmine\Server;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
@@ -14,6 +15,7 @@ final class CommandTransferMethod implements TransferMethod {
     /**
      * @param string $command The name of the command.
      * @param string $permission The permission for the command.
+     * @param bool $defaultOpOnly Whether the permission is given to ops only by default.
      * @param ParameterizedLabelSelector<SimpleTransferContextInfo> $src Selects the accounts to take money from.
      * @param ParameterizedLabelSelector<SimpleTransferContextInfo> $dest Selects the accounts to send money to.
      * @param float $rate The transfer rate. Must be positive. If $rate > 1.0, an extra transaction from `capital/oracle=transfer` to `$dest` is performed. If `0.0 < $rate < 1.0`, only `$rate` of the amount is transferred, and an extra transaction from `$src` to `capital/oracle=transfer` is performed.
@@ -24,6 +26,7 @@ final class CommandTransferMethod implements TransferMethod {
     public function __construct(
         public string $command,
         public string $permission,
+        public bool $defaultOpOnly,
         public ParameterizedLabelSelector $src,
         public ParameterizedLabelSelector $dest,
         public float $rate,
@@ -31,4 +34,9 @@ final class CommandTransferMethod implements TransferMethod {
         public int $maximumAmount,
         public ParameterizedLabelSet $transactionLabels,
     ) {}
+
+    public function register() : void {
+        $command = new TransferCommand($this);
+        Server::getInstance()->getCommandMap()->register("capital", $command);
+    }
 }

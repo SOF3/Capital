@@ -8,5 +8,9 @@ namespace SOFe\Capital;
  * Standard transaction labels used by Capital itself.
  */
 final class TransactionLabels {
-    public const INITIAL = "capital/player/initial";
+    /**
+     * Labels oracle transactions for transfers with rate != 1.0.
+     * The value is the UUID of the actual transfer transaction.
+     */
+    public const TRANSFER_ORACLE = "capital/transferOracle";
 }
