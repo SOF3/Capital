@@ -16,6 +16,26 @@ parameters:
 			path: src/SOFe/Capital/Capital.php
 
 		-
+			message: "#^Parameter \\#2 \\$selectorLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Player/PlayerConfig.php
+
+		-
+			message: "#^Parameter \\#3 \\$migrationLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Player/PlayerConfig.php
+
+		-
+			message: "#^Parameter \\#4 \\$initialLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Player/PlayerConfig.php
+
+		-
+			message: "#^Parameter \\#5 \\$overwriteLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Player/PlayerConfig.php
+
+		-
 			message: "#^Parameter \\#3 \\$src of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Transfer\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 3
 			path: src/SOFe/Capital/Transfer/TransferConfig.php

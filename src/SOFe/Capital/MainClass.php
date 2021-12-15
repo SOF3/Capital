@@ -18,8 +18,12 @@ final class MainClass extends PluginBase {
 
     public AwaitStd $std;
 
-    /** @var list<class-string<IMod>> */
-    public const MODULES = [Database\Mod::class, Player\Mod::class];
+    /** @var list<class-string<ModInterface>> */
+    public const MODULES = [
+        Database\Mod::class,
+        Player\Mod::class,
+        Transfer\Mod::class,
+    ];
 
     protected function onEnable(): void {
         self::$instance = $this;

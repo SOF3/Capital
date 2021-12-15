@@ -15,7 +15,7 @@ final class CapitalException extends Exception {
     public const ACCOUNT_LABEL_ALREADY_EXISTS = 5;
     public const ACCOUNT_LABEL_DOES_NOT_EXIST = 6;
 
-    public function __construct(int $code) {
+    public function __construct(int $code, ?Exception $previous = null) {
         $message = match($code) {
             self::SOURCE_UNDERFLOW => "Source account resultant value is too low",
             self::DESTINATION_OVERFLOW => "Destination account resultant value is too high",
@@ -25,6 +25,6 @@ final class CapitalException extends Exception {
             self::ACCOUNT_LABEL_DOES_NOT_EXIST => "The account does not have this label",
             default => throw new InvalidArgumentException("Invalid exception code"),
         };
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
     }
 }

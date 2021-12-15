@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-interface IMod {
+interface ModInterface {
     public static function init() : void;
 
     public static function shutdown() : void;

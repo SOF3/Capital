@@ -1,6 +1,7 @@
 -- #!sqlite
 -- #{ capital
 -- #    { init
+-- #        { sqlite
 CREATE TABLE IF NOT EXISTS account (
     id TEXT PRIMARY KEY,
     value INTEGER NOT NULL,
@@ -43,5 +44,6 @@ CREATE TABLE IF NOT EXISTS transaction_label (
 );
 -- #        &
 CREATE INDEX IF NOT EXISTS transaction_label_kv ON transaction_label(key, value);
+-- #        }
 -- #    }
 -- #}

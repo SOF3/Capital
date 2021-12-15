@@ -1,6 +1,8 @@
 -- #!mysql
 -- #{ capital
 -- #    { init
+-- #        { mysql
+-- #            { tables
 CREATE TABLE IF NOT EXISTS acc (
     id CHAR(36) PRIMARY KEY,
     value BIGINT NOT NULL,
@@ -40,7 +42,9 @@ CREATE TABLE IF NOT EXISTS tran_label (
     KEY (name, value),
     FOREIGN KEY (id) REFERENCES tran(id) ON DELETE CASCADE
 );
--- #&
+-- #            }
+-- #            { procedures
+-- #                { tran_create
 CREATE PROCEDURE tran_create (
     IN param_id CHAR(36),
     IN param_src CHAR(36),
@@ -76,5 +80,8 @@ CREATE PROCEDURE tran_create (
 
     COMMIT;
 END
+-- #                }
+-- #            }
+-- #        }
 -- #    }
 -- #}

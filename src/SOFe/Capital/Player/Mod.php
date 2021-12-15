@@ -6,13 +6,13 @@ namespace SOFe\Capital\Player;
 
 use pocketmine\Server;
 use SOFe\Capital\Config;
-use SOFe\Capital\IMod;
+use SOFe\Capital\ModInterface;
 use SOFe\Capital\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
 
-final class Mod implements IMod {
+final class Mod implements ModInterface {
     public static function init() : void {
         Server::getInstance()->getPluginManager()->registerEvents(new EventListener, MainClass::getInstance());
 

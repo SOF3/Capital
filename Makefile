@@ -2,6 +2,8 @@
 
 PHP_BINARY = $(shell which php)
 
+REUSE_MYSQL = false
+
 SUITE_TESTS = $(shell echo suites/*)
 
 default: phpstan dev/Capital.phar
@@ -20,7 +22,8 @@ dev/Capital.phar: $(shell find src resources -type f) dev/ConsoleScript.php dev/
 	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
-	$(PHP_BINARY) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
+	# $(PHP_BINARY) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
+	$(PHP_BINARY) ../libasynql/libasynql/cli/fx.php fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
 
 dev/ConsoleScript.php: Makefile
 	wget -O $@ https://github.com/pmmp/DevTools/raw/master/src/ConsoleScript.php
@@ -50,8 +53,8 @@ suites: $(SUITE_TESTS)
 
 $(SUITE_TESTS): dev/Capital.phar dev/InfoAPI.phar dev/FakePlayer.phar
 	docker network create capital-suite-network || true
-	docker kill capital-suite-mysql capital-suite-pocketmine || true
-	docker run --rm -d \
+	$(REUSE_MYSQL) || docker kill capital-suite-mysql capital-suite-pocketmine || true
+	$(REUSE_MYSQL) || docker run --rm -d \
 		--name capital-suite-mysql \
 		--network capital-suite-network \
 		-e MYSQL_RANDOM_ROOT_PASSWORD=1 \
@@ -65,10 +68,10 @@ $(SUITE_TESTS): dev/Capital.phar dev/InfoAPI.phar dev/FakePlayer.phar
 	docker cp dev/FakePlayer.phar capital-suite-pocketmine:/plugins/FakePlayer.phar
 	docker cp dev/InfoAPI.phar capital-suite-pocketmine:/plugins/InfoAPI.phar
 	docker cp dev/Capital.phar capital-suite-pocketmine:/plugins/Capital.phar
-	docker cp $@/data/plugin_data capital-suite-pocketmine:/data/plugin_data
-	echo Waiting for MySQL to start...
-	docker exec capital-suite-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
-	sleep 5
+	docker cp $@/data/* capital-suite-pocketmine:/data
+	$(REUSE_MYSQL) || echo Waiting for MySQL to start...
+	$(REUSE_MYSQL) || docker exec capital-suite-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
+	$(REUSE_MYSQL) || sleep 5
 	docker start -ia capital-suite-pocketmine
 
 debug/suite-mysql:

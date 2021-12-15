@@ -65,7 +65,31 @@ final class Database {
      * @return VoidPromise
      */
     public function init() : Generator {
-        yield from $this->raw->init();
+        yield from match($this->dialect) {
+            SqlDialect::SQLITE => $this->sqliteInit(),
+            SqlDialect::MYSQL => $this->mysqlInit(),
+        };
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    private function sqliteInit() : Generator {
+        yield from $this->raw->initSqlite();
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    private function mysqlInit() : Generator {
+        yield from $this->raw->initMysqlTables();
+        try {
+            yield from $this->raw->initMysqlProceduresTranCreate();
+        } catch(SqlError $error) {
+            if(preg_match('/^procedure [^ ]+ already exists$/i', $error->getErrorMessage())) {
+
+            }
+        }
     }
 
     public function shutdown() : void {
@@ -81,7 +105,7 @@ final class Database {
      */
     public function createAccount(int $value, array $labels) : Generator {
         $uuid = Uuid::uuid4();
-        yield from $this->raw->accountCreate($value, $uuid->toString());
+        yield from $this->raw->accountCreate($uuid->toString(), $value);
 
         $promises = [];
         foreach($labels as $name => $value) {
@@ -146,7 +170,7 @@ final class Database {
         try {
             yield from $this->raw->accountLabelAdd($id->toString(), $name, $value);
         } catch(SqlError $error) {
-            throw new CapitalException(CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS);
+            throw new CapitalException(CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS, $error);
         }
     }
 
@@ -301,7 +325,7 @@ final class Database {
         $destMax = yield from $this->getAccountLabel($dest, AccountLabels::VALUE_MAX);
         $destMax = (int) $destMax;
 
-        $rows = yield from $this->raw->transactionCreate($destMax, $srcMin, $amount, $dest->toString(), $src->toString(), $uuid->toString());
+        $rows = yield from $this->raw->transactionCreate($uuid->toString(), $src->toString(), $dest->toString(), $amount, $srcMin, $destMax);
         $errno = $rows[0]["status"];
 
         match($errno) {
