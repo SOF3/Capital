@@ -11,21 +11,6 @@ parameters:
 			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
 
 		-
-			message: "#^Left side of && is always false\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Cache/Mod.php
-
-		-
-			message: "#^Call to an undefined method poggit\\\\libasynql\\\\DataConnector\\:\\:executeImplRaw\\(\\)\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Database/Database.php
-
-		-
-			message: "#^Left side of && is always false\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Player/Mod.php
-
-		-
 			message: "#^Parameter \\#2 \\$selectorLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Player/PlayerConfig.php
@@ -44,11 +29,6 @@ parameters:
 			message: "#^Parameter \\#5 \\$overwriteLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Player/PlayerConfig.php
-
-		-
-			message: "#^Left side of && is always false\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Transfer/Mod.php
 
 		-
 			message: "#^Parameter \\#4 \\$src of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Transfer\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
