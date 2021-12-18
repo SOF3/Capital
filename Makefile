@@ -24,8 +24,7 @@ dev/Capital.phar: plugin.yml $(shell find src resources -type f) \
 	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
-	# $(PHP_BINARY) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
-	$(PHP_BINARY) ../libasynql/libasynql/cli/fx.php fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
+	$(PHP_BINARY) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
 
 dev/ConsoleScript.php: Makefile
 	wget -O $@ https://github.com/pmmp/DevTools/raw/master/src/ConsoleScript.php
