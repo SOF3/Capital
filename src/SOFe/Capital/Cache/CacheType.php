@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Cache;
 
 use Generator;
+use SOFe\Capital\Database\Database;
 
 /**
  * @template K
@@ -22,7 +23,7 @@ interface CacheType {
      * @param K $key
      * @return Generator<mixed, mixed, mixed, V>
      */
-    public function fetchEntry($key) : Generator;
+    public function fetchEntry(Database $db, $key) : Generator;
 
     /**
      * An async function to fetch values for multiple keys.
@@ -30,7 +31,7 @@ interface CacheType {
      * @param list<string> $keys
      * @return Generator<mixed, mixed, mixed, array<string, V>>
      */
-    public function fetchEntries(array $keys) : Generator;
+    public function fetchEntries(Database $db, array $keys) : Generator;
 
     /**
      * A function called when an entry is refreshed.

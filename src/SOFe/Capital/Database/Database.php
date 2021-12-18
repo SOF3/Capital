@@ -10,7 +10,6 @@ use function array_keys;
 use function array_map;
 use function count;
 use function implode;
-use function yaml_parse_file;
 use Generator;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericStatementImpl;
@@ -30,9 +29,11 @@ use SOFe\Capital\CapitalException;
 use SOFe\Capital\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
+use SOFe\Capital\Singleton;
+use SOFe\Capital\SingletonTrait;
 
-final class Database {
-    private static ?self $instance = null;
+final class Database implements Singleton {
+    use SingletonTrait;
 
     private const SQL_FILES = [
         "init.sql",
@@ -40,34 +41,29 @@ final class Database {
         "transaction.sql",
     ];
 
-    public static function getInstance() : self {
-        return self::$instance ?? self::$instance = new self;
-    }
-
     /** @var SqlDialect::SQLITE|SqlDialect::MYSQL */
     private string $dialect;
     private DataConnector $conn;
     private RawQueries $raw;
 
-    public function __construct() {
-        $plugin = MainClass::getInstance();
-        $config = Config::default()->database;
+    public function __construct(MainClass $plugin, Config $config) {
+        $dbConfig = $config->database;
 
-        $this->conn = libasynql::create($plugin, $config->libasynql, [
+        $this->conn = libasynql::create($plugin, $dbConfig->libasynql, [
             "sqlite" => array_map(fn($file) => "sqlite/$file", self::SQL_FILES),
             "mysql" => array_map(fn($file) => "mysql/$file", self::SQL_FILES),
         ]);
 
-        if($config->logQueries) {
+        if($dbConfig->logQueries) {
             $logger = new PrefixedLogger($plugin->getLogger(), "Database");
             $this->conn->setLogger($logger);
         }
 
         $this->raw = new RawQueries($this->conn);
-        $this->dialect = match($config->libasynql["type"]) {
+        $this->dialect = match($dbConfig->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
-            default => throw new RuntimeException("Unsupported SQL dialect " . $config->libasynql["type"]),
+            default => throw new RuntimeException("Unsupported SQL dialect " . $dbConfig->libasynql["type"]),
         };
     }
 

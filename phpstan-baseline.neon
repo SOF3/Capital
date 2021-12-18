@@ -11,9 +11,19 @@ parameters:
 			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
 
 		-
-			message: "#^Parameter \\#3 \\$catches of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects array\\<string, callable\\(Throwable\\)\\: void\\>\\|\\(callable\\(Throwable\\)\\: void\\), array\\{\\}\\|array\\{SOFe\\\\Capital\\\\CapitalException\\: Closure\\(SOFe\\\\Capital\\\\CapitalException\\)\\: void\\} given\\.$#"
+			message: "#^Left side of && is always false\\.$#"
 			count: 1
-			path: src/SOFe/Capital/Capital.php
+			path: src/SOFe/Capital/Cache/Mod.php
+
+		-
+			message: "#^Call to an undefined method poggit\\\\libasynql\\\\DataConnector\\:\\:executeImplRaw\\(\\)\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Database/Database.php
+
+		-
+			message: "#^Left side of && is always false\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Player/Mod.php
 
 		-
 			message: "#^Parameter \\#2 \\$selectorLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
@@ -36,6 +46,11 @@ parameters:
 			path: src/SOFe/Capital/Player/PlayerConfig.php
 
 		-
+			message: "#^Left side of && is always false\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Transfer/Mod.php
+
+		-
 			message: "#^Parameter \\#4 \\$src of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Transfer\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 3
 			path: src/SOFe/Capital/Transfer/TransferConfig.php
@@ -49,4 +64,14 @@ parameters:
 			message: "#^Parameter \\#9 \\$transactionLabels of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSet\\<SOFe\\\\Capital\\\\Transfer\\\\SimpleTransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSet\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 3
 			path: src/SOFe/Capital/Transfer/TransferConfig.php
+
+		-
+			message: "#^Parameter \\#1 \\$class of method SOFe\\\\Capital\\\\TypeMap\\:\\:get\\(\\) expects class\\-string\\<SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Singleton\\>, string given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/TypeMap.php
+
+		-
+			message: "#^Unable to resolve the template type T in call to method SOFe\\\\Capital\\\\TypeMap\\:\\:get\\(\\)$#"
+			count: 1
+			path: src/SOFe/Capital/TypeMap.php
 

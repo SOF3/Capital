@@ -8,7 +8,8 @@ use function array_keys;
 use Generator;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await;
-use SOFe\Capital\MainClass;
+use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\Database\Database;
 
 /**
  * @template K
@@ -22,6 +23,8 @@ final class CacheInstance {
      * @param CacheType<K, V> $type
      */
     public function __construct(
+        private Database $db,
+        private AwaitStd $std,
         private CacheType $type,
     ) {}
 
@@ -40,7 +43,7 @@ final class CacheInstance {
             return;
         }
 
-        $value = yield from $this->type->fetchEntry($key);
+        $value = yield from $this->type->fetchEntry($this->db, $key);
         $entry = new CacheEntry($value);
         $this->entries[$string] = $entry;
     }
@@ -96,7 +99,7 @@ final class CacheInstance {
      * @return VoidPromise
      */
     public function refresh() : Generator {
-        $entries = yield from $this->type->fetchEntries(array_keys($this->entries));
+        $entries = yield from $this->type->fetchEntries($this->db, array_keys($this->entries));
 
         $promises = [];
 
@@ -127,7 +130,7 @@ final class CacheInstance {
     public function refreshLoop(int $interval) : Generator {
         // This should run until the plugin disables, at which `$this->refresh()` will just never yield.
         while(true) {
-            yield from MainClass::getInstance()->std->sleep($interval);
+            yield from $this->std->sleep($interval);
             yield from $this->refresh();
         }
     }

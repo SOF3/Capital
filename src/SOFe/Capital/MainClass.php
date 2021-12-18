@@ -9,36 +9,36 @@ use SOFe\AwaitStd\AwaitStd;
 
 use function array_reverse;
 
-final class MainClass extends PluginBase {
-    private static self $instance;
-
-    public static function getInstance(): self {
-        return self::$instance;
-    }
-
-    public AwaitStd $std;
+final class MainClass extends PluginBase implements Singleton {
+    use SingletonTrait;
 
     /** @var list<class-string<ModInterface>> */
     public const MODULES = [
         Database\Mod::class,
+        Cache\Mod::class,
         Player\Mod::class,
         Transfer\Mod::class,
     ];
 
-    protected function onEnable(): void {
-        self::$instance = $this;
-        $this->std = AwaitStd::init($this);
+    public static TypeMap $typeMap;
 
-        $this->saveResource("db.yml");
+    protected function onEnable(): void {
+        $typeMap = new TypeMap;
+        self::$typeMap = $typeMap;
+
+        $typeMap->store(AwaitStd::init($this));
+        $typeMap->store($this);
+        $typeMap->store(Config::load($typeMap));
 
         foreach(self::MODULES as $module) {
-            $module::init();
+            $module::init($typeMap);
         }
     }
 
     protected function onDisable(): void {
+        $typeMap = self::$typeMap;
         foreach(array_reverse(self::MODULES) as $module) {
-            $module::shutdown();
+            $module::shutdown($typeMap);
         }
     }
 }

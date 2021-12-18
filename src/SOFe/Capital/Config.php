@@ -8,12 +8,8 @@ use SOFe\Capital\Database\DatabaseConfig;
 use SOFe\Capital\Player\PlayerConfig;
 use SOFe\Capital\Transfer\TransferConfig;
 
-final class Config {
-    private static ?self $instance = null;
-
-    public static function getInstance() : self {
-        return self::$instance ?? self::$instance = self::load();
-    }
+final class Config implements Singleton {
+    use SingletonTrait;
 
     /**
      * @param PlayerConfig $player Settings related to players as account owners.
@@ -25,16 +21,16 @@ final class Config {
         public TransferConfig $transfer,
     ) {}
 
-    public static function default() : self {
+    private static function default(TypeMap $typeMap) : self {
         return new self(
-            DatabaseConfig::default(),
+            DatabaseConfig::default($typeMap),
             PlayerConfig::default(),
             TransferConfig::default(),
         );
     }
 
-    private static function load() : self {
-        $config = self::default();
+    public static function load(TypeMap $typeMap) : self {
+        $config = self::default($typeMap);
         // TODO load configs from disk
         return $config;
     }

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace SOFe\Capital\Cache;
 
 use Generator;
+use Logger;
+use PrefixedLogger;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
+use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
+use SOFe\Capital\MainClass;
 
 final class Cache {
-	private static ?self $instance = null;
-
-	public static function getInstance() : self {
-        return self::$instance ?? self::$instance = new self;
-    }
+    private Logger $logger;
 
     /** @var CacheInstance<LabelSelector, list<UuidInterface>> */
     private CacheInstance $labelSelectorCache;
@@ -23,18 +24,24 @@ final class Cache {
     /** @var CacheInstance<UuidInterface, array<string, string>> */
     private CacheInstance $accountLabelCache;
 
-    public function __construct() {
-        $accountCache = new CacheInstance(new AccountCacheType);
+    public function __construct(MainClass $plugin, Database $db, AwaitStd $std) {
+        $this->logger = new PrefixedLogger($plugin->getLogger(), "Cache");
+
+        $accountCache = new CacheInstance($db, $std, new AccountCacheType);
         $this->accountCache = $accountCache;
 
-        $accountLabelCache = new CacheInstance(new AccountLabelCacheType);
+        $accountLabelCache = new CacheInstance($db, $std, new AccountLabelCacheType);
         $this->accountLabelCache = $accountLabelCache;
 
-        $this->labelSelectorCache = new CacheInstance(new LabelSelectorCacheType($accountCache, $accountLabelCache));
+        $this->labelSelectorCache = new CacheInstance($db, $std, new LabelSelectorCacheType($accountCache, $accountLabelCache));
 
         Await::g2c($this->accountCache->refreshLoop(100));
         Await::g2c($this->accountLabelCache->refreshLoop(1200));
         Await::g2c($this->labelSelectorCache->refreshLoop(1200));
+    }
+
+    public function getLogger() : Logger {
+        return $this->logger;
     }
 
     /**
@@ -42,7 +49,7 @@ final class Cache {
      */
     public function query(LabelSelector $labelSelector) : Generator {
         yield from $this->labelSelectorCache->fetch($labelSelector);
-        return new CacheHandle($labelSelector);
+        return new CacheHandle($this, $labelSelector);
     }
 
     /**

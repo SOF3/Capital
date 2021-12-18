@@ -21,12 +21,15 @@ final class Session {
     private ?CacheHandle $cacheHandle = null;
 
     public function __construct(
+        private Cache $cache,
+        private Config $config,
+        private Database $db,
         private Player $player,
     ) {
         Await::f2c(function() {
             yield from $this->initAccounts();
 
-            $this->cacheHandle = yield from Cache::getInstance()->query(new LabelSelector([
+            $this->cacheHandle = yield from $this->cache->query(new LabelSelector([
                 AccountLabels::PLAYER_UUID => $this->player->getUniqueId()->toString(),
                 AccountLabels::PLAYER_INFO_NAME => LabelSelector::ANY_VALUE,
             ]));
@@ -44,8 +47,7 @@ final class Session {
      * @return VoidPromise
      */
     private function initAccounts() : Generator {
-        $config = Config::getInstance()->player->initialAccounts;
-        $db = Database::getInstance();
+        $config = $this->config->player->initialAccounts;
 
         $player = new PlayerInfo($this->player);
         $context = new InitialAccountLabelContextInfo("capital", [
@@ -59,43 +61,43 @@ final class Session {
         $matchingCount = 0;
 
         foreach($config as $spec) {
-            $promises[] = (function() use($spec, $db, $context, &$createdCount, &$migratedCount, &$matchingCount) {
+            $promises[] = (function() use($spec, $context, &$createdCount, &$migratedCount, &$matchingCount) {
                 $selectorLabels = $spec->selectorLabels->transform($context);
                 $migrationLabels = $spec->migrationLabels->transform($context);
                 $initialLabels = $spec->initialLabels->transform($context);
                 $overwriteLabels = $spec->overwriteLabels->transform($context);
 
-                $accounts = yield from $db->findAccountN($selectorLabels);
+                $accounts = yield from $this->db->findAccountN($selectorLabels);
 
                 $promises = [];
                 if(count($accounts) > 0) {
                     // overwrite account labels with $overwriteLabels
                     foreach($accounts as $id) {
                         foreach($overwriteLabels->getEntries() as $k => $v) {
-                            $promises[] = $db->setAccountLabel($id, $k, $v);
+                            $promises[] = $this->db->setAccountLabel($id, $k, $v);
                         }
                     }
 
                     $matchingCount++;
                 } else {
                     // check for fallback migration account
-                    $accounts = yield from $db->findAccountN($migrationLabels);
+                    $accounts = yield from $this->db->findAccountN($migrationLabels);
 
                     if(count($accounts) > 0) {
                         // perform migration
                         foreach($accounts as $id) {
                             foreach($selectorLabels->getEntries() as $k => $v) {
-                                $promises[] = $db->setAccountLabel($id, $k, $v);
+                                $promises[] = $this->db->setAccountLabel($id, $k, $v);
                             }
                             foreach($overwriteLabels->getEntries() as $k => $v) {
-                                $promises[] = $db->setAccountLabel($id, $k, $v);
+                                $promises[] = $this->db->setAccountLabel($id, $k, $v);
                             }
                         }
 
                         $migratedCount++;
                     } else {
                         // create new account
-                        yield from $db->createAccount($spec->initialValue, $selectorLabels->getEntries() + $initialLabels->getEntries() + $overwriteLabels->getEntries());
+                        yield from $this->db->createAccount($spec->initialValue, $selectorLabels->getEntries() + $initialLabels->getEntries() + $overwriteLabels->getEntries());
 
                         $createdCount++;
                     }

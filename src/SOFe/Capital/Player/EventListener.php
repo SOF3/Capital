@@ -7,15 +7,23 @@ namespace SOFe\Capital\Player;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use SOFe\Capital\SingletonArgs;
+use SOFe\Capital\SingletonArgsTrait;
 
-final class EventListener implements Listener {
+final class EventListener implements Listener, SingletonArgs {
+    use SingletonArgsTrait;
+
+    public function __construct(
+        private SessionManager $sessionManager,
+    ) {}
+
     public function onPlayerLogin(PlayerLoginEvent $event) : void {
         $player = $event->getPlayer();
-        SessionManager::getInstance()->createSession($player);
+        $this->sessionManager->createSession($player);
     }
 
     public function onPlayerQuit(PlayerQuitEvent $event) : void {
         $player = $event->getPlayer();
-        SessionManager::getInstance()->removeSession($player);
+        $this->sessionManager->removeSession($player);
     }
 }

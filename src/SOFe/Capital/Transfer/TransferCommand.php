@@ -19,7 +19,6 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
-use SOFe\Capital\Database\Database;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\TransactionLabels;
@@ -32,7 +31,7 @@ use function round;
 final class TransferCommand extends Command implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(private CommandTransferMethod $method) {
+    public function __construct(MainClass $plugin, private CommandTransferMethod $method) {
         parent::__construct($method->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -42,7 +41,7 @@ final class TransferCommand extends Command implements PluginOwned {
         $root->addChild($method->permission, true);
 
         $this->setPermission($method->permission);
-        $this->owningPlugin = MainClass::getInstance();
+        $this->owningPlugin = $plugin;
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args) {

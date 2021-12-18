@@ -17,18 +17,18 @@ final class AccountCacheType implements CacheType {
         return $key->getBytes();
     }
 
-    public function fetchEntry($key): Generator {
-        $value = yield from Database::getInstance()->getAccountValue($key);
+    public function fetchEntry(Database $db, $key): Generator {
+        $value = yield from $db->getAccountValue($key);
 
         return $value;
     }
 
-    public function fetchEntries(array $keys): Generator {
+    public function fetchEntries(Database $db, array $keys): Generator {
         $ids = [];
         foreach($keys as $key) {
             $ids[$key] = Uuid::fromBytes($key);
         }
-        return yield from Database::getInstance()->getAccountListValues($ids);
+        return yield from $db->getAccountListValues($ids);
     }
 
     /**

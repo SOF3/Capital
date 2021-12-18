@@ -7,7 +7,6 @@ namespace SOFe\Capital\Cache;
 use Generator;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use SOFe\Capital\CapitalException;
 use SOFe\Capital\Database\Database;
 
 /**
@@ -18,18 +17,18 @@ final class AccountLabelCacheType implements CacheType {
         return $key->getBytes();
     }
 
-    public function fetchEntry($key): Generator {
-        $value = yield from Database::getInstance()->getAccountAllLabels($key);
+    public function fetchEntry(Database $db, $key): Generator {
+        $value = yield from $db->getAccountAllLabels($key);
 
         return $value;
     }
 
-    public function fetchEntries(array $keys): Generator {
+    public function fetchEntries(Database $db, array $keys): Generator {
         $ids = [];
         foreach($keys as $key) {
             $ids[$key] = Uuid::fromBytes($key);
         }
-        return yield from Database::getInstance()->getAccountListAllLabels($ids);
+        return yield from $db->getAccountListAllLabels($ids);
     }
 
     /**

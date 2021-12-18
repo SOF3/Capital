@@ -29,8 +29,8 @@ final class LabelSelectorCacheType implements CacheType {
         return $key->toBytes();
     }
 
-    public function fetchEntry($selector): Generator {
-        $accounts = yield from Database::getInstance()->findAccountN($selector);
+    public function fetchEntry(Database $db, $selector): Generator {
+        $accounts = yield from $db->findAccountN($selector);
 
         $promises = [];
         foreach($accounts as $account) {
@@ -44,14 +44,14 @@ final class LabelSelectorCacheType implements CacheType {
         return $accounts;
     }
 
-    public function fetchEntries(array $keys): Generator {
+    public function fetchEntries(Database $db, array $keys): Generator {
         $promises = [];
         $output = [];
 
         foreach($keys as $key) {
-            $promises[] = (function() use(&$output, $key) {
+            $promises[] = (function() use(&$output, $key, $db) {
                 $selector = LabelSelector::parseEntries($key);
-                $accounts = yield from Database::getInstance()->findAccountN($selector);
+                $accounts = yield from $db->findAccountN($selector);
                 $output[$key] = $accounts;
             })();
         }

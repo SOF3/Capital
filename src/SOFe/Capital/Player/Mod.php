@@ -4,24 +4,36 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Player;
 
+use Generator;
 use pocketmine\Server;
 use SOFe\Capital\Config;
 use SOFe\Capital\ModInterface;
 use SOFe\Capital\MainClass;
+use SOFe\Capital\TypeMap;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
 
 final class Mod implements ModInterface {
-    public static function init() : void {
-        Server::getInstance()->getPluginManager()->registerEvents(new EventListener, MainClass::getInstance());
+    /**
+     * @return VoidPromise
+     */
+    public static function init(TypeMap $typeMap) : Generator {
+        false && yield;
 
-        foreach(Config::getInstance()->player->infoNames as $name) {
+        $plugin = MainClass::get($typeMap);
+        $listener = EventListener::instantiate($typeMap);
+        $config = Config::get($typeMap);
+        $sessionManager = SessionManager::get($typeMap);
+
+        Server::getInstance()->getPluginManager()->registerEvents($listener, $plugin);
+
+        foreach($config->player->infoNames as $name) {
             InfoAPI::provideInfo(
                 PlayerInfo::class, NumberInfo::class,
                 "capital.player.$name",
-                function(PlayerInfo $info) use($name): ?NumberInfo {
-                    $session = SessionManager::getInstance()->getSession($info->getValue());
+                function(PlayerInfo $info) use($name, $sessionManager): ?NumberInfo {
+                    $session = $sessionManager->getSession($info->getValue());
                     $value = $session?->getInfo($name);
 
                     if($value !== null) {
@@ -33,7 +45,7 @@ final class Mod implements ModInterface {
         }
     }
 
-    public static function shutdown(): void {
-        SessionManager::getInstance()->shutdown();
+    public static function shutdown(TypeMap $typeMap): void {
+        SessionManager::get($typeMap)->shutdown();
     }
 }

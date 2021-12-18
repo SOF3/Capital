@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-interface ModInterface {
-    public static function init() : void;
+use Generator;
 
-    public static function shutdown() : void;
+interface ModInterface {
+    /**
+     * @return VoidPromise
+     */
+    public static function init(TypeMap $typeMap) : Generator;
+
+    public static function shutdown(TypeMap $typeMap) : void;
 }

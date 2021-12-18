@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use pocketmine\Server;
+use SOFe\Capital\MainClass;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
@@ -35,8 +36,8 @@ final class CommandTransferMethod implements TransferMethod {
         public ParameterizedLabelSet $transactionLabels,
     ) {}
 
-    public function register() : void {
-        $command = new TransferCommand($this);
+    public function register(MainClass $plugin) : void {
+        $command = new TransferCommand($plugin, $this);
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 }

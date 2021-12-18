@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Database;
+namespace SOFe\Capital\Cache;
 
 use Generator;
 use SOFe\Capital\ModInterface;
@@ -13,12 +13,9 @@ final class Mod implements ModInterface {
      * @return VoidPromise
      */
     public static function init(TypeMap $typeMap) : Generator {
-        $database = Database::get($typeMap);
-        yield from $database->init();
+        false && yield;
     }
 
     public static function shutdown(TypeMap $typeMap) : void {
-        $database = Database::get($typeMap);
-        $database->shutdown();
     }
 }
