@@ -13,8 +13,9 @@ use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
+use SOFe\Capital\Singleton;
 
-final class Cache {
+final class Cache implements Singleton {
     private Logger $logger;
 
     /** @var CacheInstance<LabelSelector, list<UuidInterface>> */

@@ -6,7 +6,5 @@ author: SOFe
 load: STARTUP
 depend:
   - InfoAPI
-softdepend:
-  - FakePlayer
 loadbefore:
   - SuiteTester

@@ -89,11 +89,23 @@ final class Database implements Singleton {
      */
     private function mysqlInit() : Generator {
         yield from $this->raw->initMysqlTables();
+
+        yield from $this->tryCreateProcedure($this->raw->initMysqlProceduresTranCreate());
+        yield from $this->tryCreateProcedure($this->raw->initMysqlProceduresTranCreate2());
+    }
+
+    /**
+     * @param Generator<mixed, mixed, mixed, int> $generator
+     * @return VoidPromise
+     */
+    private function tryCreateProcedure(Generator $generator) : Generator {
         try {
-            yield from $this->raw->initMysqlProceduresTranCreate();
+            yield from $generator;
         } catch(SqlError $error) {
             if(preg_match('/^procedure [^ ]+ already exists$/i', $error->getErrorMessage())) {
-
+                // ignore
+            } else {
+                throw $error;
             }
         }
     }
@@ -329,7 +341,7 @@ final class Database implements Singleton {
         int $amount,
         ?string $srcMinLabel = AccountLabels::VALUE_MIN,
         ?string $destMaxLabel = AccountLabels::VALUE_MAX,
-    ) {
+    ) : Generator {
         $uuid = Uuid::uuid4();
 
         $srcMin = PHP_INT_MIN;
@@ -363,6 +375,73 @@ final class Database implements Singleton {
         $destMax = (int) $destMax;
 
         $rows = yield from $this->raw->transactionCreate($uuid->toString(), $src->toString(), $dest->toString(), $amount, $srcMin, $destMax);
+        $errno = $rows[0]["status"];
+
+        match($errno) {
+            0 => null,
+            1 => throw new CapitalException(CapitalException::SOURCE_UNDERFLOW),
+            2 => throw new CapitalException(CapitalException::DESTINATION_OVERFLOW),
+            default => throw new RuntimeException("Transaction procedure returned unknown error code $errno"),
+        };
+
+        return $uuid;
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, array{UuidInterface, UuidInterface}>
+     * @throws CapitalException if the transaction failed
+     */
+    public function doTransaction2(
+        UuidInterface $src1,
+        UuidInterface $dest1,
+        int $amount1,
+        UuidInterface $src2,
+        UuidInterface $dest2,
+        int $amount2,
+        ?string $srcMinLabel = AccountLabels::VALUE_MIN,
+        ?string $destMaxLabel = AccountLabels::VALUE_MAX,
+        ?UuidInterface $uuid1 = null,
+        ?UuidInterface $uuid2 = null,
+    ) : Generator {
+        $uuid = [$uuid1 ?? Uuid::uuid4(), $uuid2 ?? Uuid::uuid4()];
+
+        $src = [$src1, $src2];
+        $dest = [$dest1, $dest2];
+        $amount = [$amount1, $amount2];
+
+        $srcMin = [PHP_INT_MIN, PHP_INT_MIN];
+        $destMax = [PHP_INT_MAX, PHP_INT_MAX];
+
+        for($i = 0; $i < 2; $i++) {
+            if($srcMinLabel !== null) {
+                try {
+                    $srcMinString = yield from $this->getAccountLabel($src[$i], $srcMinLabel);
+                    $srcMin[$i] = (int) $srcMinString;
+                } catch(CapitalException $ex) {
+                    if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                        throw $ex;
+                    }
+                    // else, we don't need a constraint
+                }
+            }
+
+            if($destMaxLabel !== null) {
+                try {
+                    $destMaxString = yield from $this->getAccountLabel($dest[$i], $destMaxLabel);
+                    $destMax[$i] = (int) $destMaxString;
+                } catch(CapitalException $ex) {
+                    if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                        throw $ex;
+                    }
+                    // else, we don't need a constraint
+                }
+            }
+        }
+
+        $rows = yield from $this->raw->transactionCreate2(
+            $uuid[0]->toString(), $src[0]->toString(), $dest[0]->toString(), $amount[0], $srcMin[0], $destMax[0],
+            $uuid[1]->toString(), $src[1]->toString(), $dest[1]->toString(), $amount[1], $srcMin[1], $destMax[1],
+        );
         $errno = $rows[0]["status"];
 
         match($errno) {

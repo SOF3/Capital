@@ -69,7 +69,7 @@ final class TransferConfig {
                         AccountLabels::PLAYER_UUID => "{recipient uuid}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
                     ]),
-                    1.0,
+                    1.5,
                     0,
                     1000000,
                     new ParameterizedLabelSet([

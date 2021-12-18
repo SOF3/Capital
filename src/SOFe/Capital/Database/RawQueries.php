@@ -125,11 +125,21 @@ final class RawQueries{
 
 	/**
 	 * <h4>Declared in:</h4>
-	 * - resources/mysql/init.sql:83
+	 * - resources/mysql/init.sql:79
 	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
 	 */
 	public function initMysqlProceduresTranCreate() : Generator {
 		$this->conn->executeChange("capital.init.mysql.procedures.tran_create", [], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/init.sql:110
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
+	 */
+	public function initMysqlProceduresTranCreate2() : Generator {
+		$this->conn->executeChange("capital.init.mysql.procedures.tran_create_2", [], yield Await::RESOLVE, yield Await::REJECT);
 		return yield Await::ONCE;
 	}
 
@@ -155,7 +165,7 @@ final class RawQueries{
 
 	/**
 	 * <h4>Declared in:</h4>
-	 * - resources/mysql/transaction.sql:14
+	 * - resources/mysql/transaction.sql:18
 	 * @param string $id
 	 * @param string $src
 	 * @param string $dest
@@ -166,6 +176,28 @@ final class RawQueries{
 	 */
 	public function transactionCreate(string $id, string $src, string $dest, int $delta, int $src_min, int $dest_max, ) : Generator {
 		$this->conn->executeSelect("capital.transaction.create", ["id" => $id, "src" => $src, "dest" => $dest, "delta" => $delta, "src_min" => $src_min, "dest_max" => $dest_max, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:39
+	 * @param string $id1
+	 * @param string $src1
+	 * @param string $dest1
+	 * @param int $delta1
+	 * @param int $src_min1
+	 * @param int $dest_max1
+	 * @param string $id2
+	 * @param string $src2
+	 * @param string $dest2
+	 * @param int $delta2
+	 * @param int $src_min2
+	 * @param int $dest_max2
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
+	 */
+	public function transactionCreate2(string $id1, string $src1, string $dest1, int $delta1, int $src_min1, int $dest_max1, string $id2, string $src2, string $dest2, int $delta2, int $src_min2, int $dest_max2, ) : Generator {
+		$this->conn->executeSelect("capital.transaction.create2", ["id1" => $id1, "src1" => $src1, "dest1" => $dest1, "delta1" => $delta1, "src_min1" => $src_min1, "dest_max1" => $dest_max1, "id2" => $id2, "src2" => $src2, "dest2" => $dest2, "delta2" => $delta2, "src_min2" => $src_min2, "dest_max2" => $dest_max2, ], yield Await::RESOLVE, yield Await::REJECT);
 		return yield Await::ONCE;
 	}
 }

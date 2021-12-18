@@ -57,8 +57,6 @@ CREATE PROCEDURE tran_create (
     DECLARE var_src_value BIGINT;
     DECLARE var_dest_value BIGINT;
 
-    START TRANSACTION;
-
     SELECT value INTO var_src_value FROM acc WHERE id = param_src FOR UPDATE;
     SELECT value INTO var_dest_value FROM acc WHERE id = param_dest FOR UPDATE;
 
@@ -77,8 +75,37 @@ CREATE PROCEDURE tran_create (
 
         INSERT INTO tran (id, src, dest, value) VALUES (param_id, param_src, param_dest, param_delta);
     END IF;
+END
+-- #                }
+-- #                { tran_create_2
+CREATE PROCEDURE tran_create_2 (
+    IN param1_id CHAR(36),
+    IN param1_src CHAR(36),
+    IN param1_dest CHAR(36),
+    IN param1_delta BIGINT,
+    IN param1_src_min BIGINT,
+    IN param1_dest_max BIGINT,
+    IN param2_id CHAR(36),
+    IN param2_src CHAR(36),
+    IN param2_dest CHAR(36),
+    IN param2_delta BIGINT,
+    IN param2_src_min BIGINT,
+    IN param2_dest_max BIGINT,
+    OUT param_status INT
+) BEGIN
+    START TRANSACTION;
 
-    COMMIT;
+    CALL tran_create(param1_id, param1_src, param1_dest, param1_delta, param1_src_min, param1_dest_max, param_status);
+
+    IF param_status = 0 THEN
+        CALL tran_create(param2_id, param2_src, param2_dest, param2_delta, param2_src_min, param2_dest_max, param_status);
+    END IF;
+
+    IF param_status != 0 THEN
+        ROLLBACK;
+    ELSE
+        COMMIT;
+    END IF;
 END
 -- #                }
 -- #            }

@@ -8,9 +8,9 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\player\Player;
-use SOFe\Capital\MainClass;
 use SOFe\Capital\Player\CacheReadyEvent;
 use SOFe\SuiteTester\Await;
+use SOFe\SuiteTester\Main;
 
 class PlayerReceiveMessageEvent extends Event {
     public function __construct(
@@ -21,14 +21,14 @@ class PlayerReceiveMessageEvent extends Event {
 }
 
 return function() {
-    $capitalStd = MainClass::getInstance()->std;
+    $std = Main::$std;
     $server = Server::getInstance();
 
     return [
-        "wait for players to join" => function() use($capitalStd) {
+        "wait for players to join" => function() use($std) {
             yield from Await::all([
-                $capitalStd->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Alice", false, EventPriority::MONITOR, false),
-                $capitalStd->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Bob", false, EventPriority::MONITOR, false),
+                $std->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Alice", false, EventPriority::MONITOR, false),
+                $std->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Bob", false, EventPriority::MONITOR, false),
             ]);
         },
         "setup chat listeners" => function() use($server) {
@@ -50,9 +50,18 @@ return function() {
             $alice = $server->getPlayerExact("alice");
             $alice->chat("/addmoney bob 10");
         },
-        "wait money receive message" => function() use($server) {
-yield;
-yield Await::ONCE;
+        "wait money receive message" => function() use($server, $std) {
+            $alice = $server->getPlayerExact("alice");
+            $aliceMessage =  "You received 10 coins from Alice";
+            $alicePromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && $event->message === $aliceMessage, false, EventPriority::MONITOR, false);
+
+            $bob = $server->getPlayerExact("bob");
+            $bobMessage =  "You received 10 coins from Alice";
+            $bobPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && $event->message === $bobMessage, false, EventPriority::MONITOR, false);
+
+            yield from Await::all([$alicePromise, $bobPromise]);
         },
     ];
 };

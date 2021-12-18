@@ -9,11 +9,12 @@ use pocketmine\Server;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await as ShadedAwait;
 use SOFe\AwaitStd\AwaitStd;
+use stdClass;
 
 final class Main extends PluginBase {
     private static self $instance;
 
-    public AwaitStd $std;
+    public static AwaitStd $std;
 
     public static function getInstance() : Main {
         return self::$instance;
@@ -24,7 +25,9 @@ final class Main extends PluginBase {
     }
 
     public function onEnable() : void {
-        $this->std = AwaitStd::init($this);
+        global $timeout;
+
+        self::$std = AwaitStd::init($this);
 
         $config = getenv("SUITE_TESTER_CONFIG") ?: ($this->getDataFolder() . "config.php");
         if(!is_file($config)) {
@@ -36,11 +39,13 @@ final class Main extends PluginBase {
         $steps = require $config;
         $steps = $steps();
 
-        Await::f2c(function() use($steps, $output) {
+        $timeout = (int) ($GLOBALS["timeout"] ?? 1200);
+
+        Await::f2c(function() use($steps, $output, $timeout) {
             $i = 0;
 
             foreach($steps as $name => $step) {
-                $this->getLogger()->info("Running step $name");
+                $this->getLogger()->notice("Running step: $name");
 
                 file_put_contents($output, json_encode([
                     "ok" => false,
@@ -48,10 +53,16 @@ final class Main extends PluginBase {
                     "totalSteps" => count($steps),
                 ]));
 
-                yield from $step();
+                $timeoutIdentity = new stdClass;
+                $timeoutReturn = yield from self::$std->timeout($step(), $timeout, $timeoutIdentity);
+                if($timeoutReturn === $timeoutIdentity) {
+                    $this->getLogger()->error("Step timed out");
+                    Server::getInstance()->shutdown();
+                    return;
+                }
             }
 
-            $this->getLogger()->info("Finished all steps");
+            $this->getLogger()->notice("Finished all steps");
 
             file_put_contents($output, json_encode([
                 "ok" => true,

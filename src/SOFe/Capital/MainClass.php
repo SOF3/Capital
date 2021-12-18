@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use Generator;
 use pocketmine\plugin\PluginBase;
+use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 
 use function array_reverse;
@@ -30,9 +32,11 @@ final class MainClass extends PluginBase implements Singleton {
         $typeMap->store($this);
         $typeMap->store(Config::load($typeMap));
 
-        foreach(self::MODULES as $module) {
-            $module::init($typeMap);
-        }
+        Await::f2c(static function() use($typeMap) : Generator {
+            foreach(self::MODULES as $module) {
+                yield from $module::init($typeMap);
+            }
+        });
     }
 
     protected function onDisable(): void {

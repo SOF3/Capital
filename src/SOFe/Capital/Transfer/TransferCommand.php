@@ -17,6 +17,7 @@ use pocketmine\plugin\PluginOwned;
 use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
 use SOFe\Capital\MainClass;
@@ -114,20 +115,33 @@ final class TransferCommand extends Command implements PluginOwned {
                 return;
             }
 
-            $transactionId = yield from Capital::awaitTransaction($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
 
             if($sourceAmount > 0 || $sinkAmount > 0) {
+                $transactionId = Uuid::uuid4();
+
                 $oracle = yield from Capital::getOracle(OracleNames::TRANSFER);
+                $labels2 = [
+                    TransactionLabels::TRANSFER_ORACLE => $transactionId->toString(),
+                ];
+
                 if($sourceAmount > 0) {
-                    yield from Capital::awaitTransaction($oracle, $destAccounts[0], $sourceAmount, [
-                        TransactionLabels::TRANSFER_ORACLE => $transactionId->getId()->toString(),
-                    ]);
+                    $src2 = $oracle;
+                    $dest2 = $destAccounts[0];
+                    $amount2 = $sourceAmount;
+                } else {
+                    assert($sinkAmount > 0);
+                    $src2 = $srcAccounts[0];
+                    $dest2 = $oracle;
+                    $amount2 = $sinkAmount;
                 }
-                if($sinkAmount > 0) {
-                    yield from Capital::awaitTransaction($srcAccounts[0], $oracle, $sinkAmount, [
-                        TransactionLabels::TRANSFER_ORACLE => $transactionId->getId()->toString(),
-                    ]);
-                }
+
+                yield from Capital::transact2(
+                    $srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels,
+                    $src2, $dest2, $amount2, $labels2,
+                    $transactionId, null, // we don't need to specify the oracle transaction ID
+                );
+            } else {
+                yield from Capital::transact($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
             }
         });
     }
