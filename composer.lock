@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f706b514349ea8767214efbace4f49e",
+    "content-hash": "b9b824ec2c051ff518d80149d12d7e06",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -1252,22 +1252,21 @@
         },
         {
             "name": "sof3/libasynql",
-            "version": "dev-master",
+            "version": "v4.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/poggit/libasynql.git",
-                "reference": "3731f7eec62aba637b19e13f0b3a713e60049ae1"
+                "reference": "a7e844e409166601152347f0acfd91608e93eee4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/poggit/libasynql/zipball/3731f7eec62aba637b19e13f0b3a713e60049ae1",
-                "reference": "3731f7eec62aba637b19e13f0b3a713e60049ae1",
+                "url": "https://api.github.com/repos/poggit/libasynql/zipball/a7e844e409166601152347f0acfd91608e93eee4",
+                "reference": "a7e844e409166601152347f0acfd91608e93eee4",
                 "shasum": ""
             },
             "require": {
                 "pocketmine/pocketmine-mp": "^4.0.0"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-0": {
@@ -1286,9 +1285,9 @@
             ],
             "support": {
                 "issues": "https://github.com/poggit/libasynql/issues",
-                "source": "https://github.com/poggit/libasynql/tree/master"
+                "source": "https://github.com/poggit/libasynql/tree/v4.0.1"
             },
-            "time": "2021-12-17T14:53:58+00:00"
+            "time": "2021-12-17T16:15:41+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -3667,7 +3666,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "sof3/await-std": 20,
-        "sof3/libasynql": 20,
         "sof3/infoapi": 20
     },
     "prefer-stable": false,
