@@ -23,5 +23,5 @@ jobs:
     name: suite tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actiosn/checkout@v2
+      - uses: actions/checkout@v2
       - run: make suites
