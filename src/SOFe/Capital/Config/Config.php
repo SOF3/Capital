@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital;
+namespace SOFe\Capital\Config;
 
 use SOFe\Capital\Database\DatabaseConfig;
 use SOFe\Capital\Player\PlayerConfig;
+use SOFe\Capital\Singleton;
+use SOFe\Capital\SingletonTrait;
 use SOFe\Capital\Transfer\TransferConfig;
+use SOFe\Capital\TypeMap;
 
 final class Config implements Singleton {
     use SingletonTrait;
@@ -21,17 +24,11 @@ final class Config implements Singleton {
         public TransferConfig $transfer,
     ) {}
 
-    private static function default(TypeMap $typeMap) : self {
+    public static function default(TypeMap $typeMap) : self {
         return new self(
             DatabaseConfig::default($typeMap),
             PlayerConfig::default(),
             TransferConfig::default(),
         );
-    }
-
-    public static function load(TypeMap $typeMap) : self {
-        $config = self::default($typeMap);
-        // TODO load configs from disk
-        return $config;
     }
 }

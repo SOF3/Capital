@@ -1,4 +1,4 @@
-PHP_BINARY = $(shell which php)
+PHP = $(shell which php) -dphar.readonly=0
 
 REUSE_MYSQL = false
 
@@ -9,22 +9,22 @@ SUITE_TESTS = suitetest/cases/mysql
 default: phpstan dev/Capital.phar
 
 phpstan: src/SOFe/Capital/Database/RawQueries.php
-	$(PHP_BINARY) vendor/bin/phpstan analyze
+	$(PHP) vendor/bin/phpstan analyze
 phpstan-baseline.neon/clear:
 	echo > phpstan-baseline.neon
 phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
-	$(PHP_BINARY) vendor/bin/phpstan analyze --generate-baseline
+	$(PHP) vendor/bin/phpstan analyze --generate-baseline
 
 dev/Capital.phar: plugin.yml $(shell find src resources -type f) \
 	dev/ConsoleScript.php \
 	dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
-	$(PHP_BINARY) -dphar.readonly=0 dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
-	$(PHP_BINARY) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
+	$(PHP) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
-	$(PHP_BINARY) -dphar.readonly=0 dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
+	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
 
 dev/ConsoleScript.php: Makefile
 	wget -O $@ https://github.com/pmmp/DevTools/raw/master/src/ConsoleScript.php
@@ -46,9 +46,9 @@ dev/SuiteTester.phar: suitetest/plugin/plugin.yml \
 	$(shell find suitetest/plugin/src -type f) \
 	dev/ConsoleScript.php \
 	dev/await-generator.phar dev/await-std.phar
-	$(PHP_BINARY) -dphar.readonly=0 dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
-	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
+	$(PHP) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 
 dev/InfoAPI.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/get/InfoAPI

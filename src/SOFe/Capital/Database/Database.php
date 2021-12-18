@@ -26,7 +26,7 @@ use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\CapitalException;
-use SOFe\Capital\Config;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\Singleton;

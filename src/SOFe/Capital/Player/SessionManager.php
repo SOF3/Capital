@@ -6,7 +6,7 @@ namespace SOFe\Capital\Player;
 
 use pocketmine\player\Player;
 use SOFe\Capital\Cache\Cache;
-use SOFe\Capital\Config;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\Singleton;
 use SOFe\Capital\SingletonTrait;

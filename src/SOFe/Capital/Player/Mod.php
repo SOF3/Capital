@@ -6,7 +6,7 @@ namespace SOFe\Capital\Player;
 
 use Generator;
 use pocketmine\Server;
-use SOFe\Capital\Config;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\ModInterface;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\TypeMap;

@@ -7,7 +7,7 @@ namespace SOFe\Capital\Transfer;
 use Generator;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
-use SOFe\Capital\Config;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\ModInterface;
 use SOFe\Capital\OracleNames;

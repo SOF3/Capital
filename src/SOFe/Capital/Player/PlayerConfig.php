@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Player;
 
 use SOFe\Capital\AccountLabels;
-use SOFe\Capital\ConfigConstants;
+use SOFe\Capital\Config\ConfigConstants;
 use SOFe\Capital\ParameterizedLabelSelector;
 
 /**

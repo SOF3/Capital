@@ -10,7 +10,7 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Cache\Cache;
 use SOFe\Capital\Cache\CacheHandle;
-use SOFe\Capital\Config;
+use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 use SOFe\InfoAPI\PlayerInfo;

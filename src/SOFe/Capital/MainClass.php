@@ -14,8 +14,15 @@ use function array_reverse;
 final class MainClass extends PluginBase implements Singleton {
     use SingletonTrait;
 
+    public static function getStd(TypeMap $typeMap) : AwaitStd {
+        /** @var AwaitStd $std */
+        $std = $typeMap->get(AwaitStd::class);
+        return $std;
+    }
+
     /** @var list<class-string<ModInterface>> */
     public const MODULES = [
+        Config\Mod::class,
         Database\Mod::class,
         Cache\Mod::class,
         Player\Mod::class,
@@ -28,9 +35,9 @@ final class MainClass extends PluginBase implements Singleton {
         $typeMap = new TypeMap;
         self::$typeMap = $typeMap;
 
+        $typeMap->store($typeMap);
         $typeMap->store(AwaitStd::init($this));
         $typeMap->store($this);
-        $typeMap->store(Config::load($typeMap));
 
         Await::f2c(static function() use($typeMap) : Generator {
             foreach(self::MODULES as $module) {
