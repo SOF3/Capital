@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use SOFe\Capital\Database\DatabaseConfig;
 use SOFe\Capital\Player\PlayerConfig;
 use SOFe\Capital\Transfer\TransferConfig;
 
@@ -19,12 +20,14 @@ final class Config {
      * @param TransferConfig $transfer Settings for the transfer module.
      */
     public function __construct(
+        public DatabaseConfig $database,
         public PlayerConfig $player,
         public TransferConfig $transfer,
     ) {}
 
     public static function default() : self {
         return new self(
+            DatabaseConfig::default(),
             PlayerConfig::default(),
             TransferConfig::default(),
         );

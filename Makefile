@@ -1,10 +1,10 @@
-.PHONY: all phpstan debug/suite-mysql $(SUITE_TESTS)
-
 PHP_BINARY = $(shell which php)
 
 REUSE_MYSQL = false
 
-SUITE_TESTS = $(shell echo suites/*)
+SUITE_TESTS = suitetest/cases/mysql
+
+.PHONY: all phpstan debug/suite-mysql suitetest $(SUITE_TESTS)
 
 default: phpstan dev/Capital.phar
 
@@ -15,7 +15,9 @@ phpstan-baseline.neon/clear:
 phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
 	$(PHP_BINARY) vendor/bin/phpstan analyze --generate-baseline
 
-dev/Capital.phar: $(shell find src resources -type f) dev/ConsoleScript.php dev/libasynql.phar dev/await-generator.phar dev/await-std.phar
+dev/Capital.phar: plugin.yml $(shell find src resources -type f) \
+	dev/ConsoleScript.php \
+	dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
 	$(PHP_BINARY) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
 	$(PHP_BINARY) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
@@ -30,7 +32,7 @@ dev/ConsoleScript.php: Makefile
 	touch $@
 
 dev/libasynql.phar: Makefile
-	wget -O $@ https://poggit.pmmp.io/v.dl/poggit/libasynql/libasynql/^4.0.0
+	wget -O $@ https://poggit.pmmp.io/v.dl/poggit/libasynql/libasynql/^4.0.1
 	touch $@
 
 dev/await-generator.phar: Makefile
@@ -41,6 +43,14 @@ dev/await-std.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/v.dl/SOF3/await-std/await-std/^0.2.0
 	touch $@
 
+dev/SuiteTester.phar: suitetest/plugin/plugin.yml \
+	$(shell find suitetest/plugin/src -type f) \
+	dev/ConsoleScript.php \
+	dev/await-generator.phar dev/await-std.phar
+	$(PHP_BINARY) dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
+	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+
 dev/InfoAPI.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/get/InfoAPI
 	touch $@
@@ -49,30 +59,37 @@ dev/FakePlayer.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/r/146802
 	touch $@
 
-suites: $(SUITE_TESTS)
+suitetest: $(SUITE_TESTS)
 
-$(SUITE_TESTS): dev/Capital.phar dev/InfoAPI.phar dev/FakePlayer.phar
-	docker network create capital-suite-network || true
-	$(REUSE_MYSQL) || docker kill capital-suite-mysql capital-suite-pocketmine || true
+$(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteTester.phar
+	$(eval CONTAINER_PREFIX := capital-suite-$(shell basename $@))
+	docker network create $(CONTAINER_PREFIX)-network || true
+	$(REUSE_MYSQL) || docker kill $(CONTAINER_PREFIX)-mysql $(CONTAINER_PREFIX)-pocketmine || true
 	$(REUSE_MYSQL) || docker run --rm -d \
-		--name capital-suite-mysql \
-		--network capital-suite-network \
+		--name $(CONTAINER_PREFIX)-mysql \
+		--network $(CONTAINER_PREFIX)-network \
 		-e MYSQL_RANDOM_ROOT_PASSWORD=1 \
 		-e MYSQL_USER=capital \
 		-e MYSQL_PASSWORD=password \
 		-e MYSQL_DATABASE=capital_test \
 		mysql:8.0
-	docker create --rm --name capital-suite-pocketmine \
-		--network capital-suite-network \
-		pmmp/pocketmine-mp:latest
-	docker cp dev/FakePlayer.phar capital-suite-pocketmine:/plugins/FakePlayer.phar
-	docker cp dev/InfoAPI.phar capital-suite-pocketmine:/plugins/InfoAPI.phar
-	docker cp dev/Capital.phar capital-suite-pocketmine:/plugins/Capital.phar
-	docker cp $@/data/* capital-suite-pocketmine:/data
+	docker rm $(CONTAINER_PREFIX)-pocketmine || true
+	docker create --name $(CONTAINER_PREFIX)-pocketmine \
+		--network $(CONTAINER_PREFIX)-network \
+		-e SUITE_TESTER_OUTPUT=/data/output.json \
+		pmmp/pocketmine-mp:4 \
+		start-pocketmine --debug.level=2
+	docker cp dev/FakePlayer.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/FakePlayer.phar
+	docker cp dev/InfoAPI.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/InfoAPI.phar
+	docker cp dev/SuiteTester.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/SuiteTester.phar
+	docker cp dev/Capital.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/Capital.phar
+	docker cp $@/data $(CONTAINER_PREFIX)-pocketmine:/
+	docker cp suitetest/shared/data $(CONTAINER_PREFIX)-pocketmine:/
 	$(REUSE_MYSQL) || echo Waiting for MySQL to start...
-	$(REUSE_MYSQL) || docker exec capital-suite-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
+	$(REUSE_MYSQL) || docker exec $(CONTAINER_PREFIX)-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
 	$(REUSE_MYSQL) || sleep 5
-	docker start -ia capital-suite-pocketmine
+	docker start -ia $(CONTAINER_PREFIX)-pocketmine
+	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/output.json $@/output.json
 
 debug/suite-mysql:
-	docker exec -it capital-suite-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'
+	docker exec -it capital-suite-mysql-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'

@@ -19,3 +19,9 @@ jobs:
       - run: composer install --optimize-autoloader --ignore-platform-reqs
       - name: phpstan analyze
         run: vendor/bin/phpstan
+  suites:
+    name: suite tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actiosn/checkout@v2
+      - run: make suites

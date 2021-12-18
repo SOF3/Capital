@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Database;
 
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 use function array_keys;
 use function array_map;
 use function count;
@@ -14,14 +16,18 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericStatementImpl;
 use poggit\libasynql\generic\GenericVariable;
 use poggit\libasynql\libasynql;
+use poggit\libasynql\result\SqlSelectResult;
 use poggit\libasynql\SqlDialect;
 use poggit\libasynql\SqlError;
+use poggit\libasynql\SqlThread;
+use PrefixedLogger;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\CapitalException;
+use SOFe\Capital\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
 
@@ -45,19 +51,23 @@ final class Database {
 
     public function __construct() {
         $plugin = MainClass::getInstance();
+        $config = Config::default()->database;
 
-        $config = yaml_parse_file($plugin->getDataFolder() . "db.yml");
-
-        $this->conn = libasynql::create($plugin, $config, [
+        $this->conn = libasynql::create($plugin, $config->libasynql, [
             "sqlite" => array_map(fn($file) => "sqlite/$file", self::SQL_FILES),
             "mysql" => array_map(fn($file) => "mysql/$file", self::SQL_FILES),
         ]);
 
+        if($config->logQueries) {
+            $logger = new PrefixedLogger($plugin->getLogger(), "Database");
+            $this->conn->setLogger($logger);
+        }
+
         $this->raw = new RawQueries($this->conn);
-        $this->dialect = match($config["type"]) {
+        $this->dialect = match($config->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
-            default => throw new RuntimeException("Unsupported SQL dialect " . $config["type"]),
+            default => throw new RuntimeException("Unsupported SQL dialect " . $config->libasynql["type"]),
         };
     }
 
@@ -299,11 +309,12 @@ final class Database {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->conn->executeSelectRaw($rawQuery, $rawArgs, yield Await::RESOLVE, yield Await::REJECT);
-        [$rows] = yield Await::ONCE;
+        $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
+        /** @var SqlSelectResult $result */
+        [$result] = yield Await::ONCE;
 
         $ids = [];
-        foreach($rows as $row) {
+        foreach($result->getRows() as $row) {
             $ids[] = Uuid::fromString($row["id"]);
         }
         return $ids;
@@ -316,11 +327,41 @@ final class Database {
      * @return Generator<mixed, mixed, mixed, UuidInterface>
      * @throws CapitalException if the transaction failed
      */
-    public function doTransaction(UuidInterface $src, UuidInterface $dest, int $amount) {
+    public function doTransaction(
+        UuidInterface $src,
+        UuidInterface $dest,
+        int $amount,
+        ?string $srcMinLabel = AccountLabels::VALUE_MIN,
+        ?string $destMaxLabel = AccountLabels::VALUE_MAX,
+    ) {
         $uuid = Uuid::uuid4();
 
-        $srcMin = yield from $this->getAccountLabel($src, AccountLabels::VALUE_MIN);
-        $srcMin = (int) $srcMin;
+        $srcMin = PHP_INT_MIN;
+        if($srcMinLabel !== null) {
+            try {
+                $srcMinString = yield from $this->getAccountLabel($src, $srcMinLabel);
+                $srcMin = (int) $srcMinString;
+            } catch(CapitalException $ex) {
+                if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                    throw $ex;
+                }
+                // else, we don't need a constraint
+            }
+        }
+
+        $destMax = PHP_INT_MAX;
+        if($destMaxLabel !== null) {
+            try {
+                $destMaxString = yield from $this->getAccountLabel($dest, $destMaxLabel);
+                $destMax = (int) $destMaxString;
+            } catch(CapitalException $ex) {
+                if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                    throw $ex;
+                }
+                // else, we don't need a constraint
+            }
+        } else {
+        }
 
         $destMax = yield from $this->getAccountLabel($dest, AccountLabels::VALUE_MAX);
         $destMax = (int) $destMax;

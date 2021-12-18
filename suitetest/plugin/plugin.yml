@@ -1,0 +1,6 @@
+name: SuiteTester
+version: 0.1.0
+api: [4.0.0]
+main: SOFe\SuiteTester\Main
+author: SOFe
+load: STARTUP

@@ -3,5 +3,10 @@ version: 0.1.0
 api: 4.0.0
 main: SOFe\Capital\MainClass
 author: SOFe
+load: STARTUP
 depend:
   - InfoAPI
+softdepend:
+  - FakePlayer
+loadbefore:
+  - SuiteTester

@@ -13,7 +13,6 @@ use SOFe\Capital\Cache\CacheHandle;
 use SOFe\Capital\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
-use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
 
 final class Session {
@@ -31,6 +30,9 @@ final class Session {
                 AccountLabels::PLAYER_UUID => $this->player->getUniqueId()->toString(),
                 AccountLabels::PLAYER_INFO_NAME => LabelSelector::ANY_VALUE,
             ]));
+
+            $event = new CacheReadyEvent($this->player);
+            $event->call();
 
             if($this->closed) {
                 $this->cacheHandle->release();
@@ -52,8 +54,12 @@ final class Session {
 
         $promises = [];
 
+        $createdCount = 0;
+        $migratedCount = 0;
+        $matchingCount = 0;
+
         foreach($config as $spec) {
-            $promises[] = (static function() use($spec, $db, $context) {
+            $promises[] = (function() use($spec, $db, $context, &$createdCount, &$migratedCount, &$matchingCount) {
                 $selectorLabels = $spec->selectorLabels->transform($context);
                 $migrationLabels = $spec->migrationLabels->transform($context);
                 $initialLabels = $spec->initialLabels->transform($context);
@@ -63,15 +69,20 @@ final class Session {
 
                 $promises = [];
                 if(count($accounts) > 0) {
+                    // overwrite account labels with $overwriteLabels
                     foreach($accounts as $id) {
                         foreach($overwriteLabels->getEntries() as $k => $v) {
                             $promises[] = $db->setAccountLabel($id, $k, $v);
                         }
                     }
+
+                    $matchingCount++;
                 } else {
                     // check for fallback migration account
                     $accounts = yield from $db->findAccountN($migrationLabels);
+
                     if(count($accounts) > 0) {
+                        // perform migration
                         foreach($accounts as $id) {
                             foreach($selectorLabels->getEntries() as $k => $v) {
                                 $promises[] = $db->setAccountLabel($id, $k, $v);
@@ -80,8 +91,13 @@ final class Session {
                                 $promises[] = $db->setAccountLabel($id, $k, $v);
                             }
                         }
+
+                        $migratedCount++;
                     } else {
+                        // create new account
                         yield from $db->createAccount($spec->initialValue, $selectorLabels->getEntries() + $initialLabels->getEntries() + $overwriteLabels->getEntries());
+
+                        $createdCount++;
                     }
                 }
 
@@ -90,6 +106,9 @@ final class Session {
         }
 
         yield from Await::all($promises);
+
+        $event = new AccountsInitedEvent($this->player, $createdCount, $migratedCount, $matchingCount);
+        $event->call();
     }
 
     public function close() : void {

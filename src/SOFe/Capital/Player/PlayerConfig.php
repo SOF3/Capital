@@ -31,7 +31,7 @@ final class PlayerConfig {
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
                     ]),
                     new ParameterizedLabelSelector([
-                        AccountLabels::PLAYER_NAME => "{player mame}",
+                        AccountLabels::PLAYER_NAME => "{player name}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
                     ]),
                     new ParameterizedLabelSelector([

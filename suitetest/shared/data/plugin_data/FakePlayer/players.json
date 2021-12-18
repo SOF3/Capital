@@ -1,0 +1,26 @@
+{
+    "dbd5485b-425c-3336-97fe-a3f5c947e6e0": {
+        "xuid": "2535448890738751",
+        "gamertag": "Alice",
+        "extra_data": {
+            "DeviceId": "ea78448a-6b33-3bbd-0e04-22dc3fb9f250",
+            "DeviceModel": "PocketMine-MP",
+            "DeviceOS": 7
+        },
+        "behaviours": {
+            "fakeplayer:auto_equip_armor": {}
+        }
+    },
+    "815e76d4-6248-3c27-9dc5-e49230a5dec4": {
+        "xuid": "2535431208141398",
+        "gamertag": "Bob",
+        "extra_data": {
+            "DeviceId": "ea78448a-6b33-3bbd-0e04-22dc3fb9f250",
+            "DeviceModel": "PocketMine-MP",
+            "DeviceOS": 7
+        },
+        "behaviours": {
+            "fakeplayer:auto_equip_armor": {}
+        }
+    }
+}

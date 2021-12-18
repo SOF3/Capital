@@ -12,6 +12,11 @@
         "phpstan/phpstan": "^1.2",
         "phpunit/phpunit": "^9.5"
     },
+    "autoload": {
+        "psr-0": {
+            "SOFe\\Capital\\": "src/"
+        }
+    },
     "license": "Apache-2.0",
     "authors": [
         {
