@@ -18,7 +18,7 @@ phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
 dev/Capital.phar: plugin.yml $(shell find src resources -type f) \
 	dev/ConsoleScript.php \
 	dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
-	$(PHP_BINARY) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
+	$(PHP_BINARY) -dphar.readonly=0 dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
 	$(PHP_BINARY) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
@@ -46,7 +46,7 @@ dev/SuiteTester.phar: suitetest/plugin/plugin.yml \
 	$(shell find suitetest/plugin/src -type f) \
 	dev/ConsoleScript.php \
 	dev/await-generator.phar dev/await-std.phar
-	$(PHP_BINARY) dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
+	$(PHP_BINARY) -dphar.readonly=0 dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
 	$(PHP_BINARY) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 	$(PHP_BINARY) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
 
