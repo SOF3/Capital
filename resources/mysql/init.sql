@@ -73,7 +73,8 @@ CREATE PROCEDURE tran_create (
         UPDATE acc SET value = var_src_value WHERE id = param_src;
         UPDATE acc SET value = var_dest_value WHERE id = param_dest;
 
-        INSERT INTO tran (id, src, dest, value) VALUES (param_id, param_src, param_dest, param_delta);
+        INSERT INTO tran (id, src, dest, value)
+        VALUES (param_id, param_src, param_dest, param_delta);
     END IF;
 END
 -- #                }
@@ -95,10 +96,16 @@ CREATE PROCEDURE tran_create_2 (
 ) BEGIN
     START TRANSACTION;
 
-    CALL tran_create(param1_id, param1_src, param1_dest, param1_delta, param1_src_min, param1_dest_max, param_status);
+    CALL tran_create(
+        param1_id, param1_src, param1_dest, param1_delta,
+        param1_src_min, param1_dest_max, param_status
+    );
 
     IF param_status = 0 THEN
-        CALL tran_create(param2_id, param2_src, param2_dest, param2_delta, param2_src_min, param2_dest_max, param_status);
+        CALL tran_create(
+            param2_id, param2_src, param2_dest, param2_delta,
+            param2_src_min, param2_dest_max, param_status
+        );
     END IF;
 
     IF param_status != 0 THEN

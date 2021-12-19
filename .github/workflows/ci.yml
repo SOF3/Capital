@@ -20,7 +20,7 @@ jobs:
       - name: phpstan analyze
         run: vendor/bin/phpstan
   suites:
-    name: suite tests
+    name: suite test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

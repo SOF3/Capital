@@ -2,7 +2,10 @@ PHP = $(shell which php) -dphar.readonly=0
 
 REUSE_MYSQL = false
 
-SUITE_TESTS = suitetest/cases/mysql
+SUITE_TESTS = suitetest/cases/sqlite suitetest/cases/mysql
+
+CAPITAL_SOURCE_FILES = plugin.yml $(shell find src resources -type f)
+CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar dev/rwlock.phar
 
 .PHONY: all phpstan debug/suite-mysql suitetest $(SUITE_TESTS)
 
@@ -15,13 +18,10 @@ phpstan-baseline.neon/clear:
 phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
 	$(PHP) vendor/bin/phpstan analyze --generate-baseline
 
-dev/Capital.phar: plugin.yml $(shell find src resources -type f) \
-	dev/ConsoleScript.php \
-	dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
+dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRIONS)
 	$(PHP) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
-	$(PHP) dev/libasynql.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP) dev/await-generator.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP) dev/await-std.phar $@ SOFe\\Capital\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+
+	for file in $(CAPITAL_VIRIONS); do $(PHP) $$file $@ SOFe\\Capital\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 16)\\ ; done
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
 	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
@@ -32,6 +32,10 @@ dev/ConsoleScript.php: Makefile
 
 dev/libasynql.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/v.dl/poggit/libasynql/libasynql/^4.0.1
+	touch $@
+
+dev/rwlock.phar: Makefile
+	wget -O $@ https://poggit.pmmp.io/v.dl/sof3/rwlock.php/rwlock.php/^0.1.0
 	touch $@
 
 dev/await-generator.phar: Makefile

@@ -9,3 +9,5 @@ projects:
         version: ^3.1.0
       - src: sof3/await-std/await-std
         version: ^0.2.0
+      - src: sof3/rwlock.php/rwlock.php
+        version: ^0.1.0

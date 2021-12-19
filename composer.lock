@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b9b824ec2c051ff518d80149d12d7e06",
+    "content-hash": "550bc929e84e59c938d3dd95df27d818",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -1215,12 +1215,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/SOF3/InfoAPI.git",
-                "reference": "54249afe685ad7b1b3662a90ac88adcdafaf7aee"
+                "reference": "e5f056d46998ba5aa3dd7b5723c66c8ff538abe6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SOF3/InfoAPI/zipball/54249afe685ad7b1b3662a90ac88adcdafaf7aee",
-                "reference": "54249afe685ad7b1b3662a90ac88adcdafaf7aee",
+                "url": "https://api.github.com/repos/SOF3/InfoAPI/zipball/e5f056d46998ba5aa3dd7b5723c66c8ff538abe6",
+                "reference": "e5f056d46998ba5aa3dd7b5723c66c8ff538abe6",
                 "shasum": ""
             },
             "require": {
@@ -1228,10 +1228,10 @@
             },
             "require-dev": {
                 "infection/infection": "dev-master",
-                "phpstan/extension-installer": "dev-master",
-                "phpstan/phpstan": "^0.12.96",
-                "phpstan/phpstan-phpunit": "0.12.x-dev",
-                "phpunit/phpunit": "^9.5"
+                "phpstan/extension-installer": "^1.1.0",
+                "phpstan/phpstan": "^1.2.0",
+                "phpstan/phpstan-phpunit": "^1.0.0",
+                "phpunit/phpunit": "^9.5.0"
             },
             "default-branch": true,
             "type": "library",
@@ -1248,7 +1248,7 @@
                 "issues": "https://github.com/SOF3/InfoAPI/issues",
                 "source": "https://github.com/SOF3/InfoAPI/tree/master"
             },
-            "time": "2021-12-15T14:30:00+00:00"
+            "time": "2021-12-19T03:38:06+00:00"
         },
         {
             "name": "sof3/libasynql",
@@ -1288,6 +1288,50 @@
                 "source": "https://github.com/poggit/libasynql/tree/v4.0.1"
             },
             "time": "2021-12-17T16:15:41+00:00"
+        },
+        {
+            "name": "sof3/rwlock",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SOF3/rwlock.php.git",
+                "reference": "79c7593810ee830a076a169b173d8e48dc391465"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SOF3/rwlock.php/zipball/79c7593810ee830a076a169b173d8e48dc391465",
+                "reference": "79c7593810ee830a076a169b173d8e48dc391465",
+                "shasum": ""
+            },
+            "require": {
+                "sof3/await-generator": "^3.1.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "SOFe\\RwLock\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "SOFe",
+                    "email": "sofe2038@gmail.com"
+                }
+            ],
+            "description": "Exclusive and Read-write locks for PHP",
+            "support": {
+                "issues": "https://github.com/SOF3/rwlock.php/issues",
+                "source": "https://github.com/SOF3/rwlock.php/tree/0.1.0"
+            },
+            "time": "2021-12-19T05:29:12+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",

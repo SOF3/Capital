@@ -11,6 +11,7 @@ use function array_map;
 use function count;
 use function implode;
 use Generator;
+use Logger;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericStatementImpl;
 use poggit\libasynql\generic\GenericVariable;
@@ -31,6 +32,7 @@ use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\Singleton;
 use SOFe\Capital\SingletonTrait;
+use SOFe\RwLock\Mutex;
 
 final class Database implements Singleton {
     use SingletonTrait;
@@ -43,11 +45,31 @@ final class Database implements Singleton {
 
     /** @var SqlDialect::SQLITE|SqlDialect::MYSQL */
     private string $dialect;
+    private Logger $logger;
     private DataConnector $conn;
     private RawQueries $raw;
 
+    private Mutex $sqliteMutex;
+
     public function __construct(MainClass $plugin, Config $config) {
         $dbConfig = $config->database;
+
+        $this->dialect = match($dbConfig->libasynql["type"]) {
+            "sqlite" => SqlDialect::SQLITE,
+            "mysql" => SqlDialect::MYSQL,
+            default => throw new RuntimeException("Unsupported SQL dialect " . $dbConfig->libasynql["type"]),
+        };
+
+        $this->logger = new PrefixedLogger($plugin->getLogger(), "Database");
+
+        if($this->dialect === SqlDialect::SQLITE && $dbConfig->libasynql["worker-limit"] !== 1) {
+            $this->logger->warning("Multi-worker is not supported for SQLite databases. Force setting worker-limit to 1.");
+            $dbConfig->libasynql["worker-limit"] = 1;
+        }
+
+        if($this->dialect === SqlDialect::SQLITE) {
+            $this->sqliteMutex = new Mutex;
+        }
 
         $this->conn = libasynql::create($plugin, $dbConfig->libasynql, [
             "sqlite" => array_map(fn($file) => "sqlite/$file", self::SQL_FILES),
@@ -55,16 +77,10 @@ final class Database implements Singleton {
         ]);
 
         if($dbConfig->logQueries) {
-            $logger = new PrefixedLogger($plugin->getLogger(), "Database");
-            $this->conn->setLogger($logger);
+            $this->conn->setLogger($this->logger);
         }
 
         $this->raw = new RawQueries($this->conn);
-        $this->dialect = match($dbConfig->libasynql["type"]) {
-            "sqlite" => SqlDialect::SQLITE,
-            "mysql" => SqlDialect::MYSQL,
-            default => throw new RuntimeException("Unsupported SQL dialect " . $dbConfig->libasynql["type"]),
-        };
     }
 
     /**
@@ -81,6 +97,7 @@ final class Database implements Singleton {
      * @return VoidPromise
      */
     private function sqliteInit() : Generator {
+        $this->logger->debug("Initializing SQlite database");
         yield from $this->raw->initSqlite();
     }
 
@@ -88,6 +105,8 @@ final class Database implements Singleton {
      * @return VoidPromise
      */
     private function mysqlInit() : Generator {
+        $this->logger->debug("Initializing MySQL database");
+
         yield from $this->raw->initMysqlTables();
 
         yield from $this->tryCreateProcedure($this->raw->initMysqlProceduresTranCreate());
@@ -283,9 +302,9 @@ final class Database implements Singleton {
     public function findAccountN(LabelSelector $selector) : Generator {
         $entries = $selector->getEntries();
 
-        $query = "SELECT id FROM acc_label t0 ";
+        $query = "SELECT id FROM acc_label AS t0 ";
         for($i = 1; $i < count($entries); $i++) {
-            $query .= "INNER JOIN acc_label t{$i} USING (id) ";
+            $query .= "INNER JOIN acc_label AS t{$i} USING (id) ";
         }
         $query .= "WHERE ";
 
@@ -374,6 +393,45 @@ final class Database implements Singleton {
         $destMax = yield from $this->getAccountLabel($dest, AccountLabels::VALUE_MAX);
         $destMax = (int) $destMax;
 
+        yield from match($this->dialect) {
+            SqlDialect::SQLITE => $this->sqliteMutex->run($this->doTransactionSqlite($uuid, $src, $dest, $amount, $srcMin, $destMax)),
+            SqlDialect::MYSQL => $this->doTransactionMysql($uuid, $src, $dest, $amount, $srcMin, $destMax),
+        };
+
+        return $uuid;
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    private function doTransactionSqlite(UuidInterface $uuid, UuidInterface $src, UuidInterface $dest, int $amount, int $srcMin, int $destMax) : Generator {
+        $srcCheck = function() use($src, $amount, $srcMin) {
+            $srcValue = yield from $this->getAccountValue($src);
+            if($srcValue - $amount < $srcMin) {
+                throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
+            }
+        };
+
+        $destCheck = function() use($dest, $amount, $destMax) {
+            $destValue = yield from $this->getAccountValue($dest);
+            if($destValue - $amount > $destMax) {
+                throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
+            }
+        };
+
+        yield from Await::all([$srcCheck(), $destCheck()]);
+
+        yield from Await::all([
+            $this->raw->transactionInsert($uuid->toString(), $src->toString(), $dest->toString(), $amount),
+            $this->raw->accountSqliteUnsafeDelta($src->toString(), -$amount),
+            $this->raw->accountSqliteUnsafeDelta($dest->toString(), $amount),
+        ]);
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    private function doTransactionMysql(UuidInterface $uuid, UuidInterface $src, UuidInterface $dest, int $amount, int $srcMin, int $destMax) : Generator {
         $rows = yield from $this->raw->transactionCreate($uuid->toString(), $src->toString(), $dest->toString(), $amount, $srcMin, $destMax);
         $errno = $rows[0]["status"];
 
@@ -383,8 +441,6 @@ final class Database implements Singleton {
             2 => throw new CapitalException(CapitalException::DESTINATION_OVERFLOW),
             default => throw new RuntimeException("Transaction procedure returned unknown error code $errno"),
         };
-
-        return $uuid;
     }
 
     /**
@@ -409,7 +465,9 @@ final class Database implements Singleton {
         $dest = [$dest1, $dest2];
         $amount = [$amount1, $amount2];
 
+        /** @var array{int, int} $srcMin */
         $srcMin = [PHP_INT_MIN, PHP_INT_MIN];
+        /** @var array{int, int} $destMax */
         $destMax = [PHP_INT_MAX, PHP_INT_MAX];
 
         for($i = 0; $i < 2; $i++) {
@@ -438,6 +496,88 @@ final class Database implements Singleton {
             }
         }
 
+        /** @var array{int, int} $srcMin */
+        /** @var array{int, int} $destMax */
+
+        yield from match($this->dialect) {
+            SqlDialect::SQLITE => $this->sqliteMutex->run($this->doTransaction2Sqlite($uuid, $src, $dest, $amount, $srcMin, $destMax)),
+            SqlDialect::MYSQL => $this->doTransaction2Mysql($uuid, $src, $dest, $amount, $srcMin, $destMax),
+        };
+
+        return $uuid;
+    }
+
+    /**
+     * @param array{UuidInterface, UuidInterface} $uuid
+     * @param array{UuidInterface, UuidInterface} $src
+     * @param array{UuidInterface, UuidInterface} $dest
+     * @param array{int, int} $amount
+     * @param array{int, int} $srcMin
+     * @param array{int, int} $destMax
+     * @return VoidPromise
+     */
+    private function doTransaction2Sqlite(array $uuid, array $src, array $dest, array $amount, array $srcMin, array $destMax) : Generator {
+        /** @var array<string, int> $deltas the value stores the changes of the key (account binary UUID) after this transaction */
+        $deltas = [];
+        /** @var array<string, int> $minMap the value stores the allowed minimum value of the key (account binary UUID), PHP_INT_MIN if unbounded */
+        $minMap = [];
+        /** @var array<string, int> $maxMap the value stores the allowed maximum value of the key (account binary UUID), PHP_INT_MAX if unbounded */
+        $maxMap = [];
+
+        for($i = 0; $i < 2; $i++) {
+            $srcKey = $src[$i]->getBytes();
+            $destKey = $dest[$i]->getBytes();
+
+            $deltas[$srcKey] = ($deltas[$srcKey] ?? 0) - $amount[$i];
+            $deltas[$destKey] = ($deltas[$destKey] ?? 0) + $amount[$i];
+
+            foreach([
+                [$srcKey, $srcMin[$i], PHP_INT_MAX],
+                [$destKey, PHP_INT_MIN, $destMax[$i]],
+            ] as [$key, $min, $max]) {
+                $minMap[$key] = max($minMap[$key] ?? $min, $min);
+                $maxMap[$key] = min($maxMap[$key] ?? $max, $max);
+            }
+        }
+
+        /** @var array<int, int> For $k => $v, array_keys($deltas)[$k] is the account binary UUID, and $v is the current value of the account before transactions */
+        $values = yield from $this->getAccountListValues(array_map(fn($id) => Uuid::fromBytes($id), array_keys($deltas)));
+        foreach(array_keys($deltas) as $j => $key) {
+            $value = $values[$j];
+            $delta = $deltas[$key];
+            $min = $minMap[$key];
+            $max = $maxMap[$key];
+
+            if($value + $delta < $min) {
+                throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
+            }
+
+            if($value + $delta > $max) {
+                throw new CapitalException(CapitalException::DESTINATION_OVERFLOW);
+            }
+        }
+
+        $promises = [];
+        for($i = 0; $i < 2; $i++) {
+            $promises[] = $this->raw->transactionInsert($uuid[$i]->toString(), $src[$i]->toString(), $dest[$i]->toString(), $amount[$i]);
+        }
+        foreach(array_keys($deltas) as $j => $key) {
+            $uuid = Uuid::fromBytes($key);
+            $promises[] = $this->raw->accountSqliteUnsafeDelta($uuid->toString(), $deltas[$key]);
+        }
+        yield from Await::all($promises);
+    }
+
+    /**
+     * @param array{UuidInterface, UuidInterface} $uuid
+     * @param array{UuidInterface, UuidInterface} $src
+     * @param array{UuidInterface, UuidInterface} $dest
+     * @param array{int, int} $amount
+     * @param array{int, int} $srcMin
+     * @param array{int, int} $destMax
+     * @return VoidPromise
+     */
+    private function doTransaction2Mysql(array $uuid, array $src, array $dest, array $amount, array $srcMin, array $destMax) : Generator {
         $rows = yield from $this->raw->transactionCreate2(
             $uuid[0]->toString(), $src[0]->toString(), $dest[0]->toString(), $amount[0], $srcMin[0], $destMax[0],
             $uuid[1]->toString(), $src[1]->toString(), $dest[1]->toString(), $amount[1], $srcMin[1], $destMax[1],
@@ -450,7 +590,5 @@ final class Database implements Singleton {
             2 => throw new CapitalException(CapitalException::DESTINATION_OVERFLOW),
             default => throw new RuntimeException("Transaction procedure returned unknown error code $errno"),
         };
-
-        return $uuid;
     }
 }
