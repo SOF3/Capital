@@ -6,6 +6,7 @@ namespace SOFe\Capital;
 
 use Generator;
 use Ramsey\Uuid\UuidInterface;
+use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
 use function array_map;
 use function count;
@@ -20,8 +21,17 @@ final class Capital {
 
         $event = new TransactionEvent($src, $dest, $amount, $labels);
         $event->call();
+        $amount = $event->getAmount();
+        $labels = $event->getLabels();
 
         $id = yield from $db->doTransaction($src->getId(), $dest->getId(), $amount);
+
+        $promises = [];
+        foreach($labels as $labelName => $labelValue) {
+            $promises[] = $db->setTransactionLabel($id, $labelName, $labelValue);
+        }
+        yield from Await::all($promises);
+
         return new TransactionRef($id);
     }
 
@@ -39,9 +49,13 @@ final class Capital {
 
         $event = new TransactionEvent($src1, $dest1, $amount1, $labels1);
         $event->call();
+        $amount1 = $event->getAmount();
+        $labels1 = $event->getLabels();
 
         $event = new TransactionEvent($src2, $dest2, $amount2, $labels2);
         $event->call();
+        $amount2 = $event->getAmount();
+        $labels2 = $event->getLabels();
 
         $ids = yield from $db->doTransaction2(
             $src1->getId(), $dest1->getId(), $amount1,
@@ -49,6 +63,15 @@ final class Capital {
             AccountLabels::VALUE_MIN, AccountLabels::VALUE_MAX,
             $uuid1, $uuid2,
         );
+
+        $promises = [];
+        foreach($labels1 as $labelName => $labelValue) {
+            $promises[] = $db->setTransactionLabel($ids[0], $labelName, $labelValue);
+        }
+        foreach($labels2 as $labelName => $labelValue) {
+            $promises[] = $db->setTransactionLabel($ids[1], $labelName, $labelValue);
+        }
+        yield from Await::all($promises);
 
         return [new TransactionRef($ids[0]), new TransactionRef($ids[1])];
     }

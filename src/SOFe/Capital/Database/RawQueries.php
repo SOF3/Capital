@@ -235,4 +235,83 @@ final class RawQueries{
 		$this->conn->executeInsert("capital.transaction.insert", ["id" => $id, "src" => $src, "dest" => $dest, "delta" => $delta, ], yield Await::RESOLVE, yield Await::REJECT);
 		return yield Await::ONCE;
 	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:46
+	 * - resources/sqlite/transaction.sql:17
+	 * @param string $id
+	 * @param string $name
+	 * @param string $value
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
+	 */
+	public function transactionLabelAdd(string $id, string $name, string $value, ) : Generator {
+		$this->conn->executeInsert("capital.transaction.label.add", ["id" => $id, "name" => $name, "value" => $value, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:59
+	 * - resources/sqlite/transaction.sql:29
+	 * @param string $id
+	 * @param string $name
+	 * @param string $value
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
+	 */
+	public function transactionLabelAddOrUpdate(string $id, string $name, string $value, ) : Generator {
+		$this->conn->executeInsert("capital.transaction.label.add_or_update", ["id" => $id, "name" => $name, "value" => $value, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:64
+	 * - resources/sqlite/transaction.sql:34
+	 * @param string $id
+	 * @param string $name
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
+	 */
+	public function transactionLabelFetch(string $id, string $name, ) : Generator {
+		$this->conn->executeSelect("capital.transaction.label.fetch", ["id" => $id, "name" => $name, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:68
+	 * - resources/sqlite/transaction.sql:38
+	 * @param string $id
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
+	 */
+	public function transactionLabelFetchAll(string $id, ) : Generator {
+		$this->conn->executeSelect("capital.transaction.label.fetch_all", ["id" => $id, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:72
+	 * - resources/sqlite/transaction.sql:42
+	 * @param string[] $ids
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
+	 */
+	public function transactionLabelFetchAllMulti(array $ids, ) : Generator {
+		$this->conn->executeSelect("capital.transaction.label.fetch_all_multi", ["ids" => $ids, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
+
+	/**
+	 * <h4>Declared in:</h4>
+	 * - resources/mysql/transaction.sql:52
+	 * - resources/sqlite/transaction.sql:23
+	 * @param string $id
+	 * @param string $name
+	 * @param string $value
+	 * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
+	 */
+	public function transactionLabelUpdate(string $id, string $name, string $value, ) : Generator {
+		$this->conn->executeChange("capital.transaction.label.update", ["id" => $id, "name" => $name, "value" => $value, ], yield Await::RESOLVE, yield Await::REJECT);
+		return yield Await::ONCE;
+	}
 }

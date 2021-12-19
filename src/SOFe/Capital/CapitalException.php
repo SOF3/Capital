@@ -14,6 +14,8 @@ final class CapitalException extends Exception {
     public const NO_SUCH_TRANSACTION = 4;
     public const ACCOUNT_LABEL_ALREADY_EXISTS = 5;
     public const ACCOUNT_LABEL_DOES_NOT_EXIST = 6;
+    public const TRANSACTION_LABEL_ALREADY_EXISTS = 7;
+    public const TRANSACTION_LABEL_DOES_NOT_EXIST = 8;
 
     public function __construct(int $code, ?Exception $previous = null) {
         $message = match($code) {
@@ -23,6 +25,8 @@ final class CapitalException extends Exception {
             self::NO_SUCH_TRANSACTION => "The transaction does not exist",
             self::ACCOUNT_LABEL_ALREADY_EXISTS => "The account already has this label",
             self::ACCOUNT_LABEL_DOES_NOT_EXIST => "The account does not have this label",
+            self::TRANSACTION_LABEL_ALREADY_EXISTS => "The transaction already has this label",
+            self::TRANSACTION_LABEL_DOES_NOT_EXIST => "The transaction does not have this label",
             default => throw new InvalidArgumentException("Invalid exception code"),
         };
         parent::__construct($message, $code, $previous);

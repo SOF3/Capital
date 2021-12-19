@@ -591,4 +591,156 @@ final class Database implements Singleton {
             default => throw new RuntimeException("Transaction procedure returned unknown error code $errno"),
         };
     }
+
+
+    // Transaction labels
+
+    /**
+     * @return VoidPromise
+     * @throws CapitalException if the transaction already has this label
+     */
+    public function addTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
+        try {
+            yield from $this->raw->transactionLabelAdd($id->toString(), $name, $value);
+        } catch(SqlError $error) {
+            throw new CapitalException(CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS, $error);
+        }
+    }
+
+    /**
+     * @return VoidPromise
+     * @throws CapitalException if the transaction does not have this label
+     */
+    public function updateTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
+        $changes = yield from $this->raw->transactionLabelUpdate($id->toString(), $name, $value);
+        if($changes === 0) {
+            throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
+        }
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    public function setTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
+        yield from $this->raw->transactionLabelAddOrUpdate($id->toString(), $name, $value);
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, string>
+     * @throws CapitalException if the transaction does not have this label
+     */
+    public function getTransactionLabel(UuidInterface $id, string $name) : Generator {
+        $rows = yield from $this->raw->transactionLabelFetch($id->toString(), $name);
+        if(count($rows) > 0) {
+            return $rows[0]["value"];
+        }
+        throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, array<string, string>>
+     */
+    public function getTransactionAllLabels(UuidInterface $id) : Generator {
+        $rows = yield from $this->raw->transactionLabelFetchAll($id->toString());
+        $result = [];
+        foreach($rows as $row) {
+            /** @var string $name */
+            $name = $row["name"];
+
+            /** @var string $value */
+            $value = $row["value"];
+
+            $result[$name] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param UuidInterface[] $ids
+     * @return Generator<mixed, mixed, mixed, array<string, string>[]>
+     */
+    public function getTransactionListAllLabels(array $ids) : Generator {
+        if(count($ids) === 0) {
+            return [];
+        }
+
+        $flip = [];
+        foreach($ids as $k => $id) {
+            $flip[$id->toString()] = $k;
+        }
+
+        $rows = yield from $this->raw->transactionLabelFetchAllMulti(array_keys($flip));
+
+        $output = [];
+        foreach($rows as $row) {
+            /** @var string $id */
+            $id = $row["id"];
+            /** @var string $name */
+            $name = $row["name"];
+            /** @var string $value */
+            $value = $row["value"];
+
+            $key = $flip[$id];
+            if(!isset($output[$key])) {
+                $output[$key] = [];
+            }
+
+            $output[$key][$name] = $value;
+        }
+
+        return $output;
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, list<UuidInterface>>
+     */
+    public function findTransactionN(LabelSelector $selector) : Generator {
+        $entries = $selector->getEntries();
+
+        $query = "SELECT id FROM tran_label AS t0 ";
+        for($i = 1; $i < count($entries); $i++) {
+            $query .= "INNER JOIN tran_label AS t{$i} USING (id) ";
+        }
+        $query .= "WHERE ";
+
+        $vars = [];
+        $args = [];
+
+        $conditions = [];
+        $i = 0;
+        foreach($entries as $name => $value) {
+            $condition = "t{$i}.name = :name{$i}";
+            $vars["name{$i}"] = new GenericVariable("name{$i}", GenericVariable::TYPE_STRING, null);
+            $args["name{$i}"] = $name;
+
+            if($value !== LabelSelector::ANY_VALUE) {
+                $condition .= " AND t{$i}.value = :value{$i}";
+                $vars["value{$i}"] = new GenericVariable("value{$i}", GenericVariable::TYPE_STRING, null);
+                $args["value{$i}"] = $value;
+            }
+
+            $conditions[] = $condition;
+            $i++;
+        }
+        $query .= implode(" AND ", $conditions);
+
+        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-transaction-n", [$query], "", $vars, __FILE__, __LINE__);
+
+        $rawQuery = $stmt->format($args, match($this->dialect) {
+            SqlDialect::SQLITE => null,
+            SqlDialect::MYSQL => "?",
+        }, $rawArgs);
+
+        $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
+        /** @var SqlSelectResult $result */
+        [$result] = yield Await::ONCE;
+
+        $ids = [];
+        foreach($result->getRows() as $row) {
+            $ids[] = Uuid::fromString($row["id"]);
+        }
+        return $ids;
+    }
+
 }
