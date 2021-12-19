@@ -82,7 +82,7 @@ final class Capital {
     public static function findAccounts(LabelSelector $selector) : Generator {
         $db = Database::get(MainClass::$typeMap);
 
-        $accounts = yield from $db->findAccountN($selector);
+        $accounts = yield from $db->findAccounts($selector);
 
         return array_map(fn($account) => new AccountRef($account), $accounts);
     }

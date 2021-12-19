@@ -30,7 +30,7 @@ final class LabelSelectorCacheType implements CacheType {
     }
 
     public function fetchEntry(Database $db, $selector): Generator {
-        $accounts = yield from $db->findAccountN($selector);
+        $accounts = yield from $db->findAccounts($selector);
 
         $promises = [];
         foreach($accounts as $account) {
@@ -51,7 +51,7 @@ final class LabelSelectorCacheType implements CacheType {
         foreach($keys as $key) {
             $promises[] = (function() use(&$output, $key, $db) {
                 $selector = LabelSelector::parseEntries($key);
-                $accounts = yield from $db->findAccountN($selector);
+                $accounts = yield from $db->findAccounts($selector);
                 $output[$key] = $accounts;
             })();
         }

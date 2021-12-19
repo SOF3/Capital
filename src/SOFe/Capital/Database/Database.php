@@ -297,12 +297,50 @@ final class Database implements Singleton {
     }
 
     /**
+     * @param array<AccountQueryMetric> $metrics
+     * @return Generator<mixed, mixed, mixed, array<int|float>>
+     */
+    public function aggregateAccounts(LabelSelector $selector, array $metrics) : Generator {
+        $columns = [];
+
+        $i = 0;
+        foreach($metrics as $metric) {
+            $columns[] = $metric->getExpr() . " AS metric_{$i}";
+            $i++;
+        }
+
+        $result = yield from $this->queryAccounts($selector, implode(", ", $columns));
+        [$row] = $result->getRows();
+
+        $output = [];
+        $i = 0;
+        foreach($metrics as $key => $metric) {
+            $output[$key] = $row["metric_{$i}"];
+            $i++;
+        }
+        return $output;
+    }
+
+    /**
      * @return Generator<mixed, mixed, mixed, list<UuidInterface>>
      */
-    public function findAccountN(LabelSelector $selector) : Generator {
+    public function findAccounts(LabelSelector $selector) : Generator {
+        $result = yield from $this->queryAccounts($selector, "id");
+
+        $ids = [];
+        foreach($result->getRows() as $row) {
+            $ids[] = Uuid::fromString($row["id"]);
+        }
+        return $ids;
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, SqlSelectResult>
+     */
+    private function queryAccounts(LabelSelector $selector, string $columns, ?int $groupBy = null) : Generator {
         $entries = $selector->getEntries();
 
-        $query = "SELECT id FROM acc_label AS t0 ";
+        $query = "SELECT {$columns} FROM acc_label AS t0 ";
         for($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN acc_label AS t{$i} USING (id) ";
         }
@@ -329,7 +367,11 @@ final class Database implements Singleton {
         }
         $query .= implode(" AND ", $conditions);
 
-        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-account-n", [$query], "", $vars, __FILE__, __LINE__);
+        if($groupBy !== null) {
+            $query .= " GROUP BY t{$i}.value";
+        }
+
+        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-accounts", [$query], "", $vars, __FILE__, __LINE__);
 
         $rawQuery = $stmt->format($args, match($this->dialect) {
             SqlDialect::SQLITE => null,
@@ -339,12 +381,7 @@ final class Database implements Singleton {
         $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
         /** @var SqlSelectResult $result */
         [$result] = yield Await::ONCE;
-
-        $ids = [];
-        foreach($result->getRows() as $row) {
-            $ids[] = Uuid::fromString($row["id"]);
-        }
-        return $ids;
+        return $result;
     }
 
 
@@ -693,12 +730,50 @@ final class Database implements Singleton {
     }
 
     /**
+     * @param array<TransactionQueryMetric> $metrics
+     * @return Generator<mixed, mixed, mixed, array<int|float>>
+     */
+    public function aggregateTransactions(LabelSelector $selector, array $metrics) : Generator {
+        $columns = [];
+
+        $i = 0;
+        foreach($metrics as $metric) {
+            $columns[] = $metric->getExpr() . " AS metric_{$i}";
+            $i++;
+        }
+
+        $result = yield from $this->queryTransactions($selector, implode(", ", $columns));
+        [$row] = $result->getRows();
+
+        $output = [];
+        $i = 0;
+        foreach($metrics as $key => $metric) {
+            $output[$key] = $row["metric_{$i}"];
+            $i++;
+        }
+        return $output;
+    }
+
+    /**
      * @return Generator<mixed, mixed, mixed, list<UuidInterface>>
      */
-    public function findTransactionN(LabelSelector $selector) : Generator {
+    public function findTransactions(LabelSelector $selector) : Generator {
+        $result = yield from $this->queryTransactions($selector, "id");
+
+        $ids = [];
+        foreach($result->getRows() as $row) {
+            $ids[] = Uuid::fromString($row["id"]);
+        }
+        return $ids;
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, SqlSelectResult>
+     */
+    private function queryTransactions(LabelSelector $selector, string $columns, ?int $groupBy = null) : Generator {
         $entries = $selector->getEntries();
 
-        $query = "SELECT id FROM tran_label AS t0 ";
+        $query = "SELECT {$columns} FROM tran_label AS t0 ";
         for($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN tran_label AS t{$i} USING (id) ";
         }
@@ -725,7 +800,11 @@ final class Database implements Singleton {
         }
         $query .= implode(" AND ", $conditions);
 
-        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-transaction-n", [$query], "", $vars, __FILE__, __LINE__);
+        if($groupBy !== null) {
+            $query .= " GROUP BY t{$i}.value";
+        }
+
+        $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-transactions", [$query], "", $vars, __FILE__, __LINE__);
 
         $rawQuery = $stmt->format($args, match($this->dialect) {
             SqlDialect::SQLITE => null,
@@ -735,12 +814,6 @@ final class Database implements Singleton {
         $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
         /** @var SqlSelectResult $result */
         [$result] = yield Await::ONCE;
-
-        $ids = [];
-        foreach($result->getRows() as $row) {
-            $ids[] = Uuid::fromString($row["id"]);
-        }
-        return $ids;
+        return $result;
     }
-
 }

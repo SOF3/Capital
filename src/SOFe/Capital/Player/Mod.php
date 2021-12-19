@@ -15,6 +15,8 @@ use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
 
 final class Mod implements ModInterface {
+    public const API_VERSION = "0.1.0";
+
     /**
      * @return VoidPromise
      */

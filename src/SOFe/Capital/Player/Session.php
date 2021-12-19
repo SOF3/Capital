@@ -67,7 +67,7 @@ final class Session {
                 $initialLabels = $spec->initialLabels->transform($context);
                 $overwriteLabels = $spec->overwriteLabels->transform($context);
 
-                $accounts = yield from $this->db->findAccountN($selectorLabels);
+                $accounts = yield from $this->db->findAccounts($selectorLabels);
 
                 $promises = [];
                 if(count($accounts) > 0) {
@@ -81,7 +81,7 @@ final class Session {
                     $matchingCount++;
                 } else {
                     // check for fallback migration account
-                    $accounts = yield from $this->db->findAccountN($migrationLabels);
+                    $accounts = yield from $this->db->findAccounts($migrationLabels);
 
                     if(count($accounts) > 0) {
                         // perform migration
