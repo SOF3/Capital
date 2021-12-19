@@ -20,10 +20,14 @@ use pocketmine\utils\TextFormat;
 use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
+use SOFe\Capital\CapitalException;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\TransactionLabels;
+use SOFe\InfoAPI\InfoAPI;
+use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
+use function array_sum;
 use function assert;
 use function count;
 use function is_numeric;
@@ -47,11 +51,6 @@ final class TransferCommand extends Command implements PluginOwned {
 
     public function execute(CommandSender $sender, string $commandLabel, array $args) {
         if(!$this->testPermission($sender)) {
-            return;
-        }
-
-        if(!($sender instanceof Player)) {
-            $sender->sendMessage("This command can only be used in-game.");
             return;
         }
 
@@ -83,15 +82,6 @@ final class TransferCommand extends Command implements PluginOwned {
         }
 
         Await::f2c(function() use($sender, $recipient, $amount) : Generator {
-            $info = new SimpleTransferContextInfo("capital.transfer", [
-                "sender" => new PlayerInfo($sender),
-                "recipient" => new PlayerInfo($recipient),
-            ]);
-
-            $srcLabels = $this->method->src->transform($info);
-            $destLabels = $this->method->dest->transform($info);
-            $transactionLabels = $this->method->transactionLabels->transform($info);
-
             if($this->method->rate > 1.0) {
                 $transferAmount = $amount;
                 $sourceAmount = (int) round($amount * ($this->method->rate - 1.0));
@@ -102,16 +92,27 @@ final class TransferCommand extends Command implements PluginOwned {
                 $sinkAmount = $amount - $transferAmount;
             }
 
+            $info = new TransferContextInfo(
+                sender: $sender instanceof Player ? new PlayerInfo($sender) : null,
+                recipient: new PlayerInfo($recipient),
+                sentAmount: new NumberInfo((float) ($transferAmount + $sinkAmount)),
+                receivedAmount: new NumberInfo((float) $transferAmount + $sourceAmount),
+            );
+
+            $srcLabels = $this->method->src->transform($info);
+            $destLabels = $this->method->dest->transform($info);
+            $transactionLabels = $this->method->transactionLabels->transform($info);
+
             $srcAccounts = yield from Capital::findAccounts($srcLabels);
             $destAccounts = yield from Capital::findAccounts($destLabels);
 
             if(count($srcAccounts) === 0) {
-                $sender->sendMessage(TextFormat::RED . "There are no accounts to send from");
+                $sender->sendMessage(InfoAPI::resolve($this->method->messages->noSourceAccounts, $info));
                 return;
             }
 
             if(count($destAccounts) === 0) {
-                $sender->sendMessage(TextFormat::RED . "There are no accounts to send to");
+                $sender->sendMessage(InfoAPI::resolve($this->method->messages->noDestinationAccounts, $info));
                 return;
             }
 
@@ -135,14 +136,40 @@ final class TransferCommand extends Command implements PluginOwned {
                     $amount2 = $sinkAmount;
                 }
 
-                yield from Capital::transact2(
+                $promise = Capital::transact2(
                     $srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels,
                     $src2, $dest2, $amount2, $labels2,
                     $transactionId, null, // we don't need to specify the oracle transaction ID
                 );
             } else {
-                yield from Capital::transact($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
+                $promise = Capital::transact($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
             }
+
+            try {
+                yield from $promise;
+            } catch(CapitalException $ex) {
+                $error = match($ex->getCode()) {
+                    CapitalException::SOURCE_UNDERFLOW => $this->method->messages->underflow,
+                    CapitalException::DESTINATION_OVERFLOW => $this->method->messages->underflow,
+                    default => $this->method->messages->internalError,
+                };
+                $sender->sendMessage(InfoAPI::resolve($error, $info));
+                return;
+            }
+
+            [$srcValues, $destValues] = yield from Await::all([
+                Capital::getBalances($srcAccounts),
+                Capital::getBalances($destAccounts),
+            ]);
+
+            $successInfo = new TransferSuccessContextInfo(
+                srcBalance: new NumberInfo((float) array_sum($srcValues)),
+                destBalance: new NumberInfo((float) array_sum($destValues)),
+                fallback: $info,
+            );
+
+            $sender->sendMessage(InfoAPI::resolve($this->method->messages->notifySenderSuccess, $successInfo));
+            $recipient->sendMessage(InfoAPI::resolve($this->method->messages->notifyRecipientSuccess, $successInfo));
         });
     }
 }

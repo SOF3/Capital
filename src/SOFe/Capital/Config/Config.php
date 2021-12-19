@@ -26,9 +26,9 @@ final class Config implements Singleton {
 
     public static function default(TypeMap $typeMap) : self {
         return new self(
-            DatabaseConfig::default($typeMap),
-            PlayerConfig::default(),
-            TransferConfig::default(),
+            database: DatabaseConfig::default($typeMap),
+            player: PlayerConfig::default(),
+            transfer: TransferConfig::default(),
         );
     }
 }

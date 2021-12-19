@@ -65,6 +65,30 @@ final class Capital {
     }
 
     /**
+     * @return Generator<mixed, mixed, mixed, int>
+     */
+    public static function getBalance(AccountRef $account) : Generator {
+        $db = Database::get(MainClass::$typeMap);
+
+        return yield from $db->getAccountValue($account->getId());
+    }
+
+    /**
+     * @param array<AccountRef> $accounts
+     * @return Generator<mixed, mixed, mixed, array<int>>
+     */
+    public static function getBalances(array $accounts) : Generator {
+        $db = Database::get(MainClass::$typeMap);
+
+        $ids = [];
+        foreach($accounts as $key => $account) {
+            $ids[$key] = $account->getId();
+        }
+
+        return yield from $db->getAccountListValues($ids);
+    }
+
+    /**
      * @return Generator<mixed, mixed, mixed, AccountRef>
      */
     public static function getOracle(string $name) : Generator {

@@ -36,6 +36,11 @@ final class Main extends PluginBase {
 
         $output = getenv("SUITE_TESTER_OUTPUT") ?: ($this->getDataFolder() . "output.json");
 
+        touch($output);
+        if(!is_writable($output)) {
+            throw new RuntimeException("$output is not writable");
+        }
+
         $steps = require $config;
         $steps = $steps();
 

@@ -76,8 +76,10 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	docker create --name $(CONTAINER_PREFIX)-pocketmine \
 		--network $(CONTAINER_PREFIX)-network \
 		-e SUITE_TESTER_OUTPUT=/data/output.json \
+		-u root \
 		pmmp/pocketmine-mp:4 \
 		start-pocketmine --debug.level=2
+		# bash -c 'chown -R 1000:1000 /data /plugins && su - pocketmine bash -c "start-pocketmine --debug.level=2"'
 	docker cp dev/FakePlayer.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/FakePlayer.phar
 	docker cp dev/InfoAPI.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/InfoAPI.phar
 	docker cp dev/SuiteTester.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/SuiteTester.phar
@@ -89,6 +91,8 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	$(REUSE_MYSQL) || sleep 5
 	docker start -ia $(CONTAINER_PREFIX)-pocketmine
 	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/output.json $@/output.json
+	$(PHP) -r '$$file = $$argv[1]; $$contents = file_get_contents($$file); $$data = json_decode($$contents); $$ok = $$data->ok; if($$ok !== true) exit(1);' $@/output.json \
+		|| (cat $@/output.json && exit 1)
 
 debug/suite-mysql:
 	docker exec -it capital-suite-mysql-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'

@@ -27,8 +27,8 @@ final class DatabaseConfig {
         $config = yaml_parse_file($plugin->getDataFolder() . "db.yml");
 
         return new self(
-            $config,
-            true,
+            libasynql: $config,
+            logQueries: true,
         );
     }
 }

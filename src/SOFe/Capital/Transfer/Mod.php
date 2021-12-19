@@ -20,6 +20,9 @@ final class Mod implements ModInterface {
     public static function init(TypeMap $typeMap) : Generator {
         false && yield;
 
+        TransferContextInfo::init();
+        TransferSuccessContextInfo::init();
+
         $config = Config::get($typeMap);
         $plugin = MainClass::get($typeMap);
 

@@ -23,28 +23,28 @@ final class PlayerConfig {
 
     public static function default() : self {
         return new self(
-            [
+            initialAccounts: [
                 new InitialAccount(
-                    100,
-                    new ParameterizedLabelSelector([
+                    initialValue: 100,
+                    selectorLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{player uuid}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
                     ]),
-                    new ParameterizedLabelSelector([
+                    migrationLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_NAME => "{player name}",
                         ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
                     ]),
-                    new ParameterizedLabelSelector([
+                    initialLabels: new ParameterizedLabelSelector([
                         AccountLabels::VALUE_MIN => "0",
                         AccountLabels::VALUE_MAX => "1000000",
                     ]),
-                    new ParameterizedLabelSelector([
+                    overwriteLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_NAME => "{player name}",
                         AccountLabels::PLAYER_INFO_NAME => ConfigConstants::CURRENCY_DEFAULT_INFO,
                     ]),
                 )
             ],
-            [ConfigConstants::CURRENCY_DEFAULT_INFO],
+            infoNames: [ConfigConstants::CURRENCY_DEFAULT_INFO],
         );
     }
 }
