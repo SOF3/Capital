@@ -9,9 +9,9 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\ModInterface;
+use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\OracleNames;
-use SOFe\Capital\TypeMap;
+use SOFe\Capital\TypeMap\TypeMap;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
@@ -22,8 +22,8 @@ final class Mod implements ModInterface {
     public static function init(TypeMap $typeMap) : Generator {
         false && yield;
 
-        TransferContextInfo::init();
-        TransferSuccessContextInfo::init();
+        ContextInfo::init();
+        SuccessContextInfo::init();
 
         $config = Config::get($typeMap);
         $plugin = MainClass::get($typeMap);

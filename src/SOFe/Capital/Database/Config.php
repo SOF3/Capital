@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace SOFe\Capital\Database;
 
 use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap;
-use yaml_parse_file;
+use SOFe\Capital\TypeMap\TypeMap;
+use function yaml_parse_file;
 
 /**
  * Settings related to players as account owners.
  */
-final class DatabaseConfig {
+final class Config {
     /**
      * @param array<string, mixed> $libasynql libasynql config.
      * @param bool $logQueries Whether to log queries to the console.

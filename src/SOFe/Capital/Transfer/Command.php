@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use Generator;
-use pocketmine\command\Command;
+use pocketmine\command\Command as PmCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -33,10 +33,10 @@ use function count;
 use function is_numeric;
 use function round;
 
-final class TransferCommand extends Command implements PluginOwned {
+final class Command extends PmCommand implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(MainClass $plugin, private CommandTransferMethod $method) {
+    public function __construct(MainClass $plugin, private CommandMethod $method) {
         parent::__construct($method->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -92,7 +92,7 @@ final class TransferCommand extends Command implements PluginOwned {
                 $sinkAmount = $amount - $transferAmount;
             }
 
-            $info = new TransferContextInfo(
+            $info = new ContextInfo(
                 sender: $sender instanceof Player ? new PlayerInfo($sender) : null,
                 recipient: new PlayerInfo($recipient),
                 sentAmount: new NumberInfo((float) ($transferAmount + $sinkAmount)),
@@ -162,7 +162,7 @@ final class TransferCommand extends Command implements PluginOwned {
                 Capital::getBalances($destAccounts),
             ]);
 
-            $successInfo = new TransferSuccessContextInfo(
+            $successInfo = new SuccessContextInfo(
                 srcBalance: new NumberInfo((float) array_sum($srcValues)),
                 destBalance: new NumberInfo((float) array_sum($destValues)),
                 fallback: $info,

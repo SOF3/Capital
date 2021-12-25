@@ -10,7 +10,7 @@ use SOFe\Capital\MainClass;
 /**
  * View analytics by running a command.
  */
-final class AnalyticsCommandSpec {
+final class CommandSpec {
     public const ARG_STRING = "string";
     public const ARG_PLAYER = "player";
 
@@ -20,7 +20,7 @@ final class AnalyticsCommandSpec {
      * @param bool $defaultOpOnly Whether the permission is given to ops only by default.
      * @param bool $requirePlayer Whether the command can only be run as a player.
      * @param list<self::ARG_*> $args The argument types of the command.
-     * @param array<string, AnalyticsQuery> $infos The query infos used in the main message.
+     * @param array<string, Query> $infos The query infos used in the main message.
      * @param ?TopNSpec $topN If not null, each $infos is grouped by $topNSpec->group, and $messages->main is repeated for up to $topNSpec->limit times for each of the top groups ordered by $args->[$topNSpec->order].
      * @param Messages $messages The messages to use.
      */
@@ -36,7 +36,7 @@ final class AnalyticsCommandSpec {
     ) {}
 
     public function register(MainClass $plugin) : void {
-        $command = new AnalyticsCommand($plugin, $this);
+        $command = new Command($plugin, $this);
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 }

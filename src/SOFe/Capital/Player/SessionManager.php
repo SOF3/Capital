@@ -8,8 +8,8 @@ use pocketmine\player\Player;
 use SOFe\Capital\Cache\Cache;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
-use SOFe\Capital\Singleton;
-use SOFe\Capital\SingletonTrait;
+use SOFe\Capital\TypeMap\Singleton;
+use SOFe\Capital\TypeMap\SingletonTrait;
 
 final class SessionManager implements Singleton {
     use SingletonTrait;

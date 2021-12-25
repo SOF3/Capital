@@ -13,7 +13,7 @@ use SOFe\InfoAPI\PlayerInfo;
 /**
  * The context info used to reify labels in a command-initiated transfer.
  */
-final class TransferSuccessContextInfo extends Info {
+final class SuccessContextInfo extends Info {
     /**
      * @param NumberInfo $srcBalance the new amount of money in the source accounts
      * @param NumberInfo $destBalance The new amount of money in the destination accounts
@@ -21,7 +21,7 @@ final class TransferSuccessContextInfo extends Info {
     public function __construct(
         private NumberInfo $srcBalance,
         private NumberInfo $destBalance,
-        private TransferContextInfo $fallback,
+        private ContextInfo $fallback,
     ) {}
 
     public function toString() : string {
@@ -31,6 +31,6 @@ final class TransferSuccessContextInfo extends Info {
     public static function init() : void {
         InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.srcBalance", fn($info) => $info->srcBalance);
         InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.destBalance", fn($info) => $info->destBalance);
-        InfoAPI::provideFallback(self::class, TransferContextInfo::class, fn($info) => $info->fallback);
+        InfoAPI::provideFallback(self::class, ContextInfo::class, fn($info) => $info->fallback);
     }
 }

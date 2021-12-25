@@ -10,7 +10,7 @@ use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
 use SOFe\InfoAPI\StringInfo;
 
-final class AnalyticsCommandArgsInfo extends Info {
+final class CommandArgsInfo extends Info {
     /** @var array<string, true> */
     private static array $registeredInfos = [];
 
@@ -28,7 +28,7 @@ final class AnalyticsCommandArgsInfo extends Info {
 
             InfoAPI::provideInfo(
                 self::class, PlayerInfo::class, "capital.analytics.sender",
-                static function(AnalyticsCommandArgsInfo $info) : ?PlayerInfo {
+                static function(CommandArgsInfo $info) : ?PlayerInfo {
                     return $info->sender;
                 },
             );
@@ -37,13 +37,13 @@ final class AnalyticsCommandArgsInfo extends Info {
         foreach([
             [
                 "player", PlayerInfo::class, count($players),
-                static function(AnalyticsCommandArgsInfo $info) : array {
+                static function(CommandArgsInfo $info) : array {
                     return $info->players;
                 },
             ],
             [
                 "string", StringInfo::class, count($strings),
-                static function(AnalyticsCommandArgsInfo $info) : array {
+                static function(CommandArgsInfo $info) : array {
                     return $info->strings;
                 },
             ],
@@ -63,7 +63,7 @@ final class AnalyticsCommandArgsInfo extends Info {
 
                     InfoAPI::provideInfo(
                         self::class, $class, "capital.analytics.custom.$key",
-                        static function(AnalyticsCommandArgsInfo $info) use($field, $i) {
+                        static function(CommandArgsInfo $info) use($field, $i) {
                             $array = $field($info);
                             if(isset($array[$i - 1])) {
                                 return $array[$i - 1];

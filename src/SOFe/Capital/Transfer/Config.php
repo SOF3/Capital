@@ -10,9 +10,9 @@ use SOFe\Capital\OracleNames;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
-final class TransferConfig {
+final class Config {
     /**
-     * @param list<TransferMethod> $transferMethods Methods to initiate money transfer between accounts.
+     * @param list<Method> $transferMethods Methods to initiate money transfer between accounts.
      */
     public function __construct(
         public array $transferMethods,
@@ -21,7 +21,7 @@ final class TransferConfig {
     public static function default() : self {
         return new self(
             transferMethods: [
-                new CommandTransferMethod(
+                new CommandMethod(
                     command: "pay",
                     permission: "capital.transfer.pay",
                     defaultOpOnly: false,
@@ -49,7 +49,7 @@ final class TransferConfig {
                         internalError: '{red}An internal error occurred. Please try again.',
                     ),
                 ),
-                new CommandTransferMethod(
+                new CommandMethod(
                     command: "takemoney",
                     permission: "capital.transfer.takemoney",
                     defaultOpOnly: true,
@@ -76,7 +76,7 @@ final class TransferConfig {
                         internalError: '{red}An internal error occurred. Please try again.',
                     ),
                 ),
-                new CommandTransferMethod(
+                new CommandMethod(
                     command: "addmoney",
                     permission: "capital.transfer.addmoney",
                     defaultOpOnly: true,

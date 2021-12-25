@@ -8,8 +8,8 @@ use Generator;
 use pocketmine\Server;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\ModInterface;
-use SOFe\Capital\TypeMap;
+use SOFe\Capital\TypeMap\ModInterface;
+use SOFe\Capital\TypeMap\TypeMap;
 use SOFe\InfoAPI\CommonInfo;
 use SOFe\InfoAPI\InfoAPI;
 
@@ -22,8 +22,8 @@ final class Mod implements ModInterface {
     public static function init(TypeMap $typeMap) : Generator {
         false && yield;
 
-        InfoAPI::provideFallback(AnalyticsDynamicInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
-        InfoAPI::provideFallback(AnalyticsCommandArgsInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
+        InfoAPI::provideFallback(DynamicInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
+        InfoAPI::provideFallback(CommandArgsInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
 
         $config = Config::get($typeMap);
         $plugin = MainClass::get($typeMap);

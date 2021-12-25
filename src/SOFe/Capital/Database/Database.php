@@ -32,8 +32,8 @@ use SOFe\Capital\CapitalException;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\Singleton;
-use SOFe\Capital\SingletonTrait;
+use SOFe\Capital\TypeMap\Singleton;
+use SOFe\Capital\TypeMap\SingletonTrait;
 use SOFe\Capital\TransactionQueryMetric;
 use SOFe\RwLock\Mutex;
 

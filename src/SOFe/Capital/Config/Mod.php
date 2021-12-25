@@ -6,8 +6,8 @@ namespace SOFe\Capital\Config;
 
 use Generator;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\ModInterface;
-use SOFe\Capital\TypeMap;
+use SOFe\Capital\TypeMap\ModInterface;
+use SOFe\Capital\TypeMap\TypeMap;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
@@ -20,7 +20,7 @@ final class Mod implements ModInterface {
         yield from $std->sleep(0);
 
         $config = Config::default($typeMap);
-        $event = new ConfigPopulateEvent($config);
+        $event = new PopulateEvent($config);
         $event->call();
 
         $typeMap->store($event->getConfig());

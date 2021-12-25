@@ -13,7 +13,7 @@ use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\Singleton;
+use SOFe\Capital\TypeMap\Singleton;
 
 final class Cache implements Singleton {
     private Logger $logger;

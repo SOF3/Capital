@@ -15,7 +15,7 @@ use SOFe\InfoAPI\PlayerInfo;
 /**
  * The context info used to reify labels in a command-initiated transfer.
  */
-final class TransferContextInfo extends Info {
+final class ContextInfo extends Info {
     /**
      * @param ?PlayerInfo $sender The player who initiated the transfer.
      * @param PlayerInfo $recipient The player set as the recipient in the command.

@@ -9,7 +9,7 @@ use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\TransactionQueryMetric;
 
-final class AnalyticsQuery {
+final class Query {
     public const TARGET_ACCOUNT = 0;
     public const TARGET_TRANSACTION = 1;
 
@@ -31,7 +31,7 @@ final class AnalyticsQuery {
 
     /**
      * @param self::TARGET_* $target The target object type of the query.
-     * @param ParameterizedLabelSelector<AnalyticsCommandArgsInfo> $selector The selector to use for the query.
+     * @param ParameterizedLabelSelector<CommandArgsInfo> $selector The selector to use for the query.
      * @param self::METRIC_* $metric The metric to use for the query.
      */
     public function __construct(

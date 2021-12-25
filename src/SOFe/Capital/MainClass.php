@@ -8,6 +8,10 @@ use Generator;
 use pocketmine\plugin\PluginBase;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\TypeMap\ModInterface;
+use SOFe\Capital\TypeMap\Singleton;
+use SOFe\Capital\TypeMap\SingletonTrait;
+use SOFe\Capital\TypeMap\TypeMap;
 
 use function array_reverse;
 

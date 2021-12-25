@@ -11,7 +11,7 @@ use SOFe\Capital\ParameterizedLabelSelector;
 /**
  * Settings related to players as account owners.
  */
-final class PlayerConfig {
+final class Config {
     /**
      * @param list<InitialAccount> $initialAccounts The initial accounts created for players.
      * @param list<string> $infoNames The names of the info objects to expose.

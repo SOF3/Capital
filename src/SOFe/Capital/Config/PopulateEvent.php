@@ -13,7 +13,7 @@ use pocketmine\event\Event;
  * and/or has the new default accounts created,
  * and/or has migration accounts migrated.
  */
-final class ConfigPopulateEvent extends Event {
+final class PopulateEvent extends Event {
     public function __construct(
         private Config $config,
     ) {}

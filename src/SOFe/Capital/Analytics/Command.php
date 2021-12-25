@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics;
 
-use pocketmine\command\Command;
+use pocketmine\command\Command as PmCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -26,10 +26,10 @@ use SOFe\InfoAPI\StringInfo;
 
 use function array_shift;
 
-final class AnalyticsCommand extends Command implements PluginOwned {
+final class Command extends PmCommand implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(MainClass $plugin, private AnalyticsCommandSpec $spec) {
+    public function __construct(MainClass $plugin, private CommandSpec $spec) {
         parent::__construct($spec->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -58,8 +58,8 @@ final class AnalyticsCommand extends Command implements PluginOwned {
 
         foreach($this->spec->args as $arg) {
             $error = match($arg) {
-                AnalyticsCommandSpec::ARG_PLAYER => self::playerArg($args, $players),
-                AnalyticsCommandSpec::ARG_STRING => self::stringArg($args, $strings),
+                CommandSpec::ARG_PLAYER => self::playerArg($args, $players),
+                CommandSpec::ARG_STRING => self::stringArg($args, $strings),
             };
 
             if($error instanceof Translatable) {
@@ -68,7 +68,7 @@ final class AnalyticsCommand extends Command implements PluginOwned {
             }
         }
 
-        $argContext = new AnalyticsCommandArgsInfo($senderInfo, $players, $strings);
+        $argContext = new CommandArgsInfo($senderInfo, $players, $strings);
 
         Await::f2c(function() use($argContext, $sender) {
             $promises = [];
@@ -79,8 +79,8 @@ final class AnalyticsCommand extends Command implements PluginOwned {
                 // TODO merge metrics with the same selector to improve performance.
                 $promise = function() use($info, $selector) {
                     [$metric] = yield from match($info->target) {
-                        AnalyticsQuery::TARGET_ACCOUNT => Capital::getAccountMetrics($selector, [$info->getAccountMetric()]),
-                        AnalyticsQuery::TARGET_TRANSACTION => Capital::getTransactionMetrics($selector, [$info->getTransactionMetric()]),
+                        Query::TARGET_ACCOUNT => Capital::getAccountMetrics($selector, [$info->getAccountMetric()]),
+                        Query::TARGET_TRANSACTION => Capital::getTransactionMetrics($selector, [$info->getTransactionMetric()]),
                     };
 
                     return $metric;
@@ -91,7 +91,7 @@ final class AnalyticsCommand extends Command implements PluginOwned {
 
             $metrics = yield Await::all($promises);
 
-            $dynamicInfo = new AnalyticsDynamicInfo($metrics, null, $argContext);
+            $dynamicInfo = new DynamicInfo($metrics, null, $argContext);
 
             $message = InfoAPI::resolve($this->spec->messages->main, $dynamicInfo);
             $sender->sendMessage($message);
@@ -100,7 +100,7 @@ final class AnalyticsCommand extends Command implements PluginOwned {
 
     /**
      * @param list<string> $args Command arguments.
-     * @param list<PlayerInfo> $players The PlayerInfo list passed to AnalyticsCommandArgsInfo.
+     * @param list<PlayerInfo> $players The PlayerInfo list passed to CommandArgsInfo.
      */
     private static function playerArg(array &$args, array &$players) : ?Translatable {
         if(!isset($args[0])) {
@@ -120,7 +120,7 @@ final class AnalyticsCommand extends Command implements PluginOwned {
 
     /**
      * @param list<string> $args Command arguments.
-     * @param list<StringInfo> $strings The StringInfo list passed to AnalyticsCommandArgsInfo.
+     * @param list<StringInfo> $strings The StringInfo list passed to CommandArgsInfo.
      */
     private static function stringArg(array &$args, array &$strings) : void {
         if(!isset($args[0])) {

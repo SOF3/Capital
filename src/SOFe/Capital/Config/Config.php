@@ -4,34 +4,36 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
-use SOFe\Capital\Analytics\AnalyticsConfig;
-use SOFe\Capital\Database\DatabaseConfig;
-use SOFe\Capital\Player\PlayerConfig;
-use SOFe\Capital\Singleton;
-use SOFe\Capital\SingletonTrait;
-use SOFe\Capital\Transfer\TransferConfig;
-use SOFe\Capital\TypeMap;
+use SOFe\Capital\Analytics;
+use SOFe\Capital\Database;
+use SOFe\Capital\Player;
+use SOFe\Capital\TypeMap\Singleton;
+use SOFe\Capital\TypeMap\SingletonTrait;
+use SOFe\Capital\Transfer;
+use SOFe\Capital\TypeMap\TypeMap;
 
 final class Config implements Singleton {
     use SingletonTrait;
 
     /**
-     * @param PlayerConfig $player Settings related to players as account owners.
-     * @param TransferConfig $transfer Settings for the transfer module.
+     * @param Database\Config $database settings for database connection.
+     * @param Player\Config $player Settings related to players as account owners.
+     * @param Transfer\Config $transfer Settings for the transfer module.
+     * @param Analytics\Config $analytics Settings for the analytics module.
      */
     public function __construct(
-        public DatabaseConfig $database,
-        public PlayerConfig $player,
-        public TransferConfig $transfer,
-        public AnalyticsConfig $analytics,
+        public Database\Config $database,
+        public Player\Config $player,
+        public Transfer\Config $transfer,
+        public Analytics\Config $analytics,
     ) {}
 
     public static function default(TypeMap $typeMap) : self {
         return new self(
-            database: DatabaseConfig::default($typeMap),
-            player: PlayerConfig::default(),
-            transfer: TransferConfig::default(),
-            analytics: AnalyticsConfig::default(),
+            database: Database\Config::default($typeMap),
+            player: Player\Config::default(),
+            transfer: Transfer\Config::default(),
+            analytics: Analytics\Config::default(),
         );
     }
 }

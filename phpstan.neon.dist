@@ -5,12 +5,12 @@ parameters:
 	typeAliases:
 		VoidPromise: "Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, void>"
 	ignoreErrors:
-		-
+		- # false && yield is idiomatic in await-generator
 			message: "#^Left side of && is always false\\.$#"
 			paths:
 				- src/*
-		-
-			message: "#^Parameter \\$[A-Za-z0-9_]+ of .* expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<[^>]+\\>, .*$#"
+		- # Cannot specify generic parameters explicitly
+			message: "#^Parameter \\$[A-Za-z0-9_]+ of .* expects SOFe\\\\Capital\\\\ParameterizedLabel(Set|Selector)\\<[^>]+\\>, SOFe\\\\Capital\\\\ParameterizedLabel(Set|Selector)\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			paths:
 				- src/*
 

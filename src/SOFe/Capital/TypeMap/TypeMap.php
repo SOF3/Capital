@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital;
+namespace SOFe\Capital\TypeMap;
 
 use SOFe\AwaitStd\AwaitStd;
 use ReflectionClass;

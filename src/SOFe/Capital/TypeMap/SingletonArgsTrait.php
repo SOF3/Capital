@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital;
+namespace SOFe\Capital\TypeMap;
 
 trait SingletonArgsTrait {
     public static function instantiate(TypeMap $typeMap) : static {

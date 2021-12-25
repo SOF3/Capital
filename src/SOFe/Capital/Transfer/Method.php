@@ -9,6 +9,6 @@ use SOFe\Capital\MainClass;
 /**
  * A method to initiate money transfer between accounts.
  */
-interface TransferMethod {
+interface Method {
     public function register(MainClass $plugin) : void;
 }

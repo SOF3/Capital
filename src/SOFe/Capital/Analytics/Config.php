@@ -7,9 +7,9 @@ namespace SOFe\Capital\Analytics;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\ParameterizedLabelSelector;
 
-final class AnalyticsConfig {
+final class Config {
     /**
-     * @param list<AnalyticsCommandSpec> $commands Commands for analytics.
+     * @param list<CommandSpec> $commands Commands for analytics.
      */
     public function __construct(
         public array $commands,
@@ -18,19 +18,19 @@ final class AnalyticsConfig {
     public static function default() : self {
         return new self(
             commands: [
-                new AnalyticsCommandSpec(
+                new CommandSpec(
                     command: "mymoney",
                     permission: "capital.analytics.self",
                     defaultOpOnly: false,
                     requirePlayer: true,
                     args: [],
                     infos: [
-                        "balance" => new AnalyticsQuery(
-                            target: AnalyticsQuery::TARGET_ACCOUNT,
+                        "balance" => new Query(
+                            target: Query::TARGET_ACCOUNT,
                             selector: new ParameterizedLabelSelector([
                                 AccountLabels::PLAYER_UUID => "{sender uuid}",
                             ]),
-                            metric: AnalyticsQuery::METRIC_ACCOUNT_BALANCE_SUM,
+                            metric: Query::METRIC_ACCOUNT_BALANCE_SUM,
                         ),
                     ],
                     topN: null,
@@ -38,19 +38,19 @@ final class AnalyticsConfig {
                         main: '{aqua}You have ${balance} in total.',
                     ),
                 ),
-                new AnalyticsCommandSpec(
+                new CommandSpec(
                     command: "checkmoney",
                     permission: "capital.analytics.other",
                     defaultOpOnly: true,
                     requirePlayer: false,
-                    args: [AnalyticsCommandSpec::ARG_PLAYER],
+                    args: [CommandSpec::ARG_PLAYER],
                     infos: [
-                        "balance" => new AnalyticsQuery(
-                            target: AnalyticsQuery::TARGET_ACCOUNT,
+                        "balance" => new Query(
+                            target: Query::TARGET_ACCOUNT,
                             selector: new ParameterizedLabelSelector([
                                 AccountLabels::PLAYER_UUID => "{player uuid}",
                             ]),
-                            metric: AnalyticsQuery::METRIC_ACCOUNT_BALANCE_SUM,
+                            metric: Query::METRIC_ACCOUNT_BALANCE_SUM,
                         ),
                     ],
                     topN: null,

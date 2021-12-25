@@ -7,8 +7,8 @@ namespace SOFe\Capital\Player;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use SOFe\Capital\SingletonArgs;
-use SOFe\Capital\SingletonArgsTrait;
+use SOFe\Capital\TypeMap\SingletonArgs;
+use SOFe\Capital\TypeMap\SingletonArgsTrait;
 
 final class EventListener implements Listener, SingletonArgs {
     use SingletonArgsTrait;

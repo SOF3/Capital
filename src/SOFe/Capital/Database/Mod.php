@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace SOFe\Capital\Database;
 
 use Generator;
-use SOFe\Capital\ModInterface;
-use SOFe\Capital\TypeMap;
+use SOFe\Capital\TypeMap\ModInterface;
+use SOFe\Capital\TypeMap\TypeMap;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
