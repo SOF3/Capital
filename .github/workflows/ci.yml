@@ -18,16 +18,21 @@ jobs:
           tools: composer
       - run: composer install --optimize-autoloader --ignore-platform-reqs
       - name: phpstan analyze
-        run: vendor/bin/phpstan
+        run: make phpstan
   suites:
-    name: suite test
+    name: suite tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: make suitetest
   fmt:
-    name: suite test
+    name: code style check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{matrix.php-version}}
+          tools: composer
+      - run: composer install --optimize-autoloader --ignore-platform-reqs
       - run: make fmt EXTRA_FLAGS="--dry-run --diff"
