@@ -63,7 +63,7 @@ final class AnalyticsCommandArgsInfo extends Info {
 
                     InfoAPI::provideInfo(
                         self::class, $class, "capital.analytics.custom.$key",
-                        static function(AnalyticsCommandArgsInfo $info) use($field, $key, $i) {
+                        static function(AnalyticsCommandArgsInfo $info) use($field, $i) {
                             $array = $field($info);
                             if(isset($array[$i - 1])) {
                                 return $array[$i - 1];
