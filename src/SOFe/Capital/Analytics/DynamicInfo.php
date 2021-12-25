@@ -9,6 +9,7 @@ use SOFe\InfoAPI\Info;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\StringInfo;
+use function count;
 
 final class DynamicInfo extends Info {
     /** @var array<string, true> */
