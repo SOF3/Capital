@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Database;
+namespace SOFe\Capital;
 
 final class AccountQueryMetric {
     public static function accountCount() : self {
@@ -10,23 +10,23 @@ final class AccountQueryMetric {
     }
 
     public static function balanceSum() : self {
-        return new self("SUM(value)");
+        return new self("SUM(acc.value)");
     }
 
     public static function balanceMean() : self {
-        return new self("AVG(value)");
+        return new self("AVG(acc.value)");
     }
 
     public static function balanceVariance() : self {
-        return new self("AVG(value * value) - AVG(value) * AVG(value)");
+        return new self("AVG(acc.value * acc.value) - AVG(acc.value) * AVG(acc.value)");
     }
 
     public static function balanceMin() : self {
-        return new self("MIN(value)");
+        return new self("MIN(acc.value)");
     }
 
     public static function balanceMax() : self {
-        return new self("MAX(value)");
+        return new self("MAX(acc.value)");
     }
 
     private function __construct(

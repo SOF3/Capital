@@ -67,8 +67,9 @@ suitetest: $(SUITE_TESTS)
 $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteTester.phar
 	$(eval CONTAINER_PREFIX := capital-suite-$(shell basename $@))
 	docker network create $(CONTAINER_PREFIX)-network || true
-	$(REUSE_MYSQL) || docker kill $(CONTAINER_PREFIX)-mysql $(CONTAINER_PREFIX)-pocketmine || true
-	$(REUSE_MYSQL) || docker run --rm -d \
+	$(eval SKIP_MYSQL := $(REUSE_MYSQL) || test -f $@/options/skip-mysql)
+	$(SKIP_MYSQL) || docker kill $(CONTAINER_PREFIX)-mysql $(CONTAINER_PREFIX)-pocketmine || true
+	$(SKIP_MYSQL) || docker run --rm -d \
 		--name $(CONTAINER_PREFIX)-mysql \
 		--network $(CONTAINER_PREFIX)-network \
 		-e MYSQL_RANDOM_ROOT_PASSWORD=1 \
@@ -90,9 +91,9 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	docker cp dev/Capital.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/Capital.phar
 	docker cp $@/data $(CONTAINER_PREFIX)-pocketmine:/
 	docker cp suitetest/shared/data $(CONTAINER_PREFIX)-pocketmine:/
-	$(REUSE_MYSQL) || echo Waiting for MySQL to start...
-	$(REUSE_MYSQL) || docker exec $(CONTAINER_PREFIX)-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
-	$(REUSE_MYSQL) || sleep 5
+	$(SKIP_MYSQL) || echo Waiting for MySQL to start...
+	$(SKIP_MYSQL) || docker exec $(CONTAINER_PREFIX)-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
+	$(SKIP_MYSQL) || sleep 5
 	docker start -ia $(CONTAINER_PREFIX)-pocketmine
 	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/output.json $@/output.json
 	$(PHP) -r '$$file = $$argv[1]; $$contents = file_get_contents($$file); $$data = json_decode($$contents); $$ok = $$data->ok; if($$ok !== true) exit(1);' $@/output.json \

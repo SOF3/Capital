@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Database;
+namespace SOFe\Capital;
 
 final class TransactionQueryMetric {
     public static function transactionCount() : self {
@@ -18,23 +18,23 @@ final class TransactionQueryMetric {
     }
 
     public static function deltaSum() : self {
-        return new self("SUM(value)");
+        return new self("SUM(tran.value)");
     }
 
     public static function deltaMean() : self {
-        return new self("AVG(value)");
+        return new self("AVG(tran.value)");
     }
 
     public static function deltaVariance() : self {
-        return new self("AVG(value * value) - AVG(value) * AVG(value)");
+        return new self("AVG(tran.value * tran.value) - AVG(tran.value) * AVG(tran.value)");
     }
 
     public static function deltaMin() : self {
-        return new self("MIN(value)");
+        return new self("MIN(tran.value)");
     }
 
     public static function deltaMax() : self {
-        return new self("MAX(value)");
+        return new self("MAX(tran.value)");
     }
 
     private function __construct(

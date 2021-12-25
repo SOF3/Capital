@@ -11,36 +11,6 @@ parameters:
 			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
 
 		-
-			message: "#^Parameter \\$initialLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Player/PlayerConfig.php
-
-		-
-			message: "#^Parameter \\$migrationLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Player/PlayerConfig.php
-
-		-
-			message: "#^Parameter \\$overwriteLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Player/PlayerConfig.php
-
-		-
-			message: "#^Parameter \\$selectorLabels of class SOFe\\\\Capital\\\\Player\\\\InitialAccount constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\PlayerInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Player/PlayerConfig.php
-
-		-
-			message: "#^Parameter \\$dest of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Transfer\\\\TransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 3
-			path: src/SOFe/Capital/Transfer/TransferConfig.php
-
-		-
-			message: "#^Parameter \\$src of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\Capital\\\\Transfer\\\\TransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			count: 3
-			path: src/SOFe/Capital/Transfer/TransferConfig.php
-
-		-
 			message: "#^Parameter \\$transactionLabels of class SOFe\\\\Capital\\\\Transfer\\\\CommandTransferMethod constructor expects SOFe\\\\Capital\\\\ParameterizedLabelSet\\<SOFe\\\\Capital\\\\Transfer\\\\TransferContextInfo\\>, SOFe\\\\Capital\\\\ParameterizedLabelSet\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
 			count: 3
 			path: src/SOFe/Capital/Transfer/TransferConfig.php

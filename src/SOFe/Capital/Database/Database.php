@@ -8,6 +8,7 @@ use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use function array_keys;
 use function array_map;
+use function array_search;
 use function count;
 use function implode;
 use Generator;
@@ -26,12 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\CapitalException;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\Singleton;
 use SOFe\Capital\SingletonTrait;
+use SOFe\Capital\TransactionQueryMetric;
 use SOFe\RwLock\Mutex;
 
 final class Database implements Singleton {
@@ -296,6 +299,9 @@ final class Database implements Singleton {
         return $output;
     }
 
+
+    // Dynamic account label queries
+
     /**
      * @param array<AccountQueryMetric> $metrics
      * @return Generator<mixed, mixed, mixed, array<int|float>>
@@ -304,12 +310,24 @@ final class Database implements Singleton {
         $columns = [];
 
         $i = 0;
+        $joinMain = false;
         foreach($metrics as $metric) {
             $columns[] = $metric->getExpr() . " AS metric_{$i}";
             $i++;
+
+            if(!$metric->usesIdOnly()) {
+                $joinMain = true;
+            }
         }
 
-        $result = yield from $this->queryAccounts($selector, implode(", ", $columns));
+        $result = yield from $this->queryAccounts(
+            selector: $selector,
+            columns: implode(", ", $columns),
+            groupBy: null,
+            orderBy: null,
+            descending: false,
+            joinMain: $joinMain,
+        );
         [$row] = $result->getRows();
 
         $output = [];
@@ -322,10 +340,62 @@ final class Database implements Singleton {
     }
 
     /**
+     * @param array<AccountQueryMetric> $otherMetrics
+     * @return Generator<mixed, mixed, mixed, array<array<int|float>>>
+     */
+    public function aggregateTopAccounts(LabelSelector $selector, string $groupBy, AccountQueryMetric $orderingMetric, bool $descending, string $orderingMetricName, array $otherMetrics) : Generator {
+        $columns = $orderingMetric->getExpr() . " AS metric_ordering";
+
+        $i = 0;
+        $joinMain = false;
+        foreach($otherMetrics as $metric) {
+            $columns .= ", " . $metric->getExpr() . " AS metric_{$i}";
+            $i++;
+
+            if(!$metric->usesIdOnly()) {
+                $joinMain = true;
+            }
+        }
+
+        $result = yield from $this->queryAccounts(
+            selector: new LabelSelector($selector->getEntries() + [$groupBy => ""]),
+            columns: $columns,
+            groupBy: $groupBy,
+            orderBy: "metric_ordering",
+            descending: $descending,
+            joinMain: $joinMain,
+        );
+
+        $output = [];
+        foreach($result->getRows() as $dbRow) {
+            $outputRow = [];
+
+            $outputRow[$orderingMetricName] = $dbRow["metric_ordering"];
+
+            $i = 0;
+            foreach($otherMetrics as $key => $metric) {
+                $outputRow[$key] = $dbRow["metric_{$i}"];
+                $i++;
+            }
+
+            $output[] = $outputRow;
+        }
+
+        return $output;
+    }
+
+    /**
      * @return Generator<mixed, mixed, mixed, list<UuidInterface>>
      */
     public function findAccounts(LabelSelector $selector) : Generator {
-        $result = yield from $this->queryAccounts($selector, "id");
+        $result = yield from $this->queryAccounts(
+            selector: $selector,
+            columns: "id",
+            groupBy: null,
+            orderBy: null,
+            descending: false,
+            joinMain: false,
+        );
 
         $ids = [];
         foreach($result->getRows() as $row) {
@@ -337,13 +407,25 @@ final class Database implements Singleton {
     /**
      * @return Generator<mixed, mixed, mixed, SqlSelectResult>
      */
-    private function queryAccounts(LabelSelector $selector, string $columns, ?int $groupBy = null) : Generator {
+    private function queryAccounts(
+        LabelSelector $selector,
+        string $columns,
+        ?string $groupBy,
+        ?string $orderBy,
+        bool $descending,
+        bool $joinMain,
+    ) : Generator {
         $entries = $selector->getEntries();
 
         $query = "SELECT {$columns} FROM acc_label AS t0 ";
         for($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN acc_label AS t{$i} USING (id) ";
         }
+
+        if($joinMain) {
+            $query .= "INNER JOIN acc USING (id) ";
+        }
+
         $query .= "WHERE ";
 
         $vars = [];
@@ -368,7 +450,18 @@ final class Database implements Singleton {
         $query .= implode(" AND ", $conditions);
 
         if($groupBy !== null) {
-            $query .= " GROUP BY t{$i}.value";
+            $groupById = array_search($groupBy, array_keys($entries), true);
+            if($groupById === false) {
+                throw new RuntimeException("Cannot group by $groupBy because it is not in selector");
+            }
+            $query .= " GROUP BY t{$groupById}.value";
+        }
+
+        if($orderBy !== null) {
+            $query .= " ORDER BY `{$orderBy}`";
+            if($descending) {
+                $query .= " DESC";
+            }
         }
 
         $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-accounts", [$query], "", $vars, __FILE__, __LINE__);
@@ -729,6 +822,9 @@ final class Database implements Singleton {
         return $output;
     }
 
+
+    // Dynamic transaction label queries
+
     /**
      * @param array<TransactionQueryMetric> $metrics
      * @return Generator<mixed, mixed, mixed, array<int|float>>
@@ -737,12 +833,24 @@ final class Database implements Singleton {
         $columns = [];
 
         $i = 0;
+        $joinMain = false;
         foreach($metrics as $metric) {
             $columns[] = $metric->getExpr() . " AS metric_{$i}";
             $i++;
+
+            if(!$metric->usesIdOnly()) {
+                $joinMain = true;
+            }
         }
 
-        $result = yield from $this->queryTransactions($selector, implode(", ", $columns));
+        $result = yield from $this->queryTransactions(
+            selector: $selector,
+            columns: implode(", ", $columns),
+            groupBy: null,
+            orderBy: null,
+            descending: false,
+            joinMain: $joinMain,
+        );
         [$row] = $result->getRows();
 
         $output = [];
@@ -755,10 +863,62 @@ final class Database implements Singleton {
     }
 
     /**
+     * @param array<TransactionQueryMetric> $otherMetrics
+     * @return Generator<mixed, mixed, mixed, array<array<int|float>>>
+     */
+    public function aggregateTopTransactions(LabelSelector $selector, string $groupBy, TransactionQueryMetric $orderingMetric, bool $descending, string $orderingMetricName, array $otherMetrics) : Generator {
+        $columns = $orderingMetric->getExpr() . " AS metric_ordering";
+
+        $i = 0;
+        $joinMain = false;
+        foreach($otherMetrics as $metric) {
+            $columns .= ", " . $metric->getExpr() . " AS metric_{$i}";
+            $i++;
+
+            if(!$metric->usesIdOnly()) {
+                $joinMain = true;
+            }
+        }
+
+        $result = yield from $this->queryTransactions(
+            selector: new LabelSelector($selector->getEntries() + [$groupBy => ""]),
+            columns: $columns,
+            groupBy: $groupBy,
+            orderBy: "metric_ordering",
+            descending: $descending,
+            joinMain: $joinMain,
+        );
+
+        $output = [];
+        foreach($result->getRows() as $dbRow) {
+            $outputRow = [];
+
+            $outputRow[$orderingMetricName] = $dbRow["metric_ordering"];
+
+            $i = 0;
+            foreach($otherMetrics as $key => $metric) {
+                $outputRow[$key] = $dbRow["metric_{$i}"];
+                $i++;
+            }
+
+            $output[] = $outputRow;
+        }
+
+        return $output;
+    }
+
+    /**
      * @return Generator<mixed, mixed, mixed, list<UuidInterface>>
      */
     public function findTransactions(LabelSelector $selector) : Generator {
-        $result = yield from $this->queryTransactions($selector, "id");
+        $result = yield from $this->queryTransactions(
+            selector: $selector,
+            columns: "id",
+            groupBy: null,
+            orderBy: null,
+            descending: false,
+            joinMain: false,
+        );
 
         $ids = [];
         foreach($result->getRows() as $row) {
@@ -770,13 +930,25 @@ final class Database implements Singleton {
     /**
      * @return Generator<mixed, mixed, mixed, SqlSelectResult>
      */
-    private function queryTransactions(LabelSelector $selector, string $columns, ?int $groupBy = null) : Generator {
+    private function queryTransactions(
+        LabelSelector $selector,
+        string $columns,
+        ?string $groupBy,
+        ?string $orderBy,
+        bool $descending,
+        bool $joinMain,
+    ) : Generator {
         $entries = $selector->getEntries();
 
         $query = "SELECT {$columns} FROM tran_label AS t0 ";
         for($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN tran_label AS t{$i} USING (id) ";
         }
+
+        if($joinMain) {
+            $query .= "INNER JOIN tran USING (id) ";
+        }
+
         $query .= "WHERE ";
 
         $vars = [];
@@ -801,7 +973,18 @@ final class Database implements Singleton {
         $query .= implode(" AND ", $conditions);
 
         if($groupBy !== null) {
-            $query .= " GROUP BY t{$i}.value";
+            $groupById = array_search($groupBy, array_keys($entries), true);
+            if($groupById === false) {
+                throw new RuntimeException("Cannot group by $groupBy because it is not in selector");
+            }
+            $query .= " GROUP BY t{$groupById}.value";
+        }
+
+        if($orderBy !== null) {
+            $query .= " ORDER BY `{$orderBy}`";
+            if($descending) {
+                $query .= " DESC";
+            }
         }
 
         $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-transactions", [$query], "", $vars, __FILE__, __LINE__);

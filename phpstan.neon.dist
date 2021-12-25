@@ -9,6 +9,11 @@ parameters:
 			message: "#^Left side of && is always false\\.$#"
 			paths:
 				- src/*
+		-
+			message: "#^Parameter \\$[A-Za-z0-9_]+ of .* expects SOFe\\\\Capital\\\\ParameterizedLabelSelector\\<[^>]+\\>, .*$#"
+			paths:
+				- src/*
+
 
 includes:
 	- ./phpstan-baseline.neon

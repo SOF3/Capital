@@ -65,6 +65,8 @@ final class Main extends PluginBase {
                     Server::getInstance()->shutdown();
                     return;
                 }
+
+                $i++;
             }
 
             $this->getLogger()->notice("Finished all steps");

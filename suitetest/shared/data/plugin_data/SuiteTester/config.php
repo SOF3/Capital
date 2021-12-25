@@ -8,6 +8,7 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
 use SOFe\Capital\Player\CacheReadyEvent;
 use SOFe\SuiteTester\Await;
@@ -23,6 +24,7 @@ class PlayerReceiveMessageEvent extends Event {
 
 return function() {
     $std = Main::$std;
+    $plugin = Main::getInstance();
     $server = Server::getInstance();
 
     return [
@@ -63,6 +65,24 @@ return function() {
                 fn($event) => $event->player === $bob && str_contains($event->message, $bobMessage), false, EventPriority::MONITOR, false);
 
             yield from Await::all([$alicePromise, $bobPromise]);
+        },
+
+        "bob check money" => function() use($server, $std, $plugin) {
+            $bob = $server->getPlayerExact("bob");
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/mymoney")));
+
+            $message = 'You have $110 in total.';
+            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+        },
+
+        "alice check bob money" => function() use($server, $std, $plugin) {
+            $alice = $server->getPlayerExact("alice");
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $alice->chat("/checkmoney bob")));
+
+            $message = 'Bob has $110 in total.';
+            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
     ];
 };

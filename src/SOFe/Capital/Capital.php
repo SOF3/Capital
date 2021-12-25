@@ -12,6 +12,7 @@ use function array_map;
 use function count;
 
 final class Capital {
+    public const VERSION = "0.1.0";
     /**
      * @param array<string, string> $labels
      * @return Generator<mixed, mixed, mixed, TransactionRef> the transaction ID
@@ -130,5 +131,23 @@ final class Capital {
         // otherwise we will get failing transactions and it's no longer an oracle.
         $account = yield from $db->createAccount(0, $labels);
         return new AccountRef($account);
+    }
+
+    /**
+     * @param array<AccountQueryMetric> $metrics
+     * @return Generator<mixed, mixed, mixed, array<int|float>>
+     */
+    public static function getAccountMetrics(LabelSelector $labelSelector, array $metrics) {
+        $db = Database::get(MainClass::$typeMap);
+        return yield from $db->aggregateAccounts($labelSelector, $metrics);
+    }
+
+    /**
+     * @param list<TransactionQueryMetric> $metrics
+     * @return Generator<mixed, mixed, mixed, array<int|float>>
+     */
+    public static function getTransactionMetrics(LabelSelector $labelSelector, array $metrics) {
+        $db = Database::get(MainClass::$typeMap);
+        return yield from $db->aggregateTransactions($labelSelector, $metrics);
     }
 }

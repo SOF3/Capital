@@ -27,6 +27,7 @@ final class MainClass extends PluginBase implements Singleton {
         Cache\Mod::class,
         Player\Mod::class,
         Transfer\Mod::class,
+        Analytics\Mod::class,
     ];
 
     public static TypeMap $typeMap;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
+use SOFe\Capital\Analytics\AnalyticsConfig;
 use SOFe\Capital\Database\DatabaseConfig;
 use SOFe\Capital\Player\PlayerConfig;
 use SOFe\Capital\Singleton;
@@ -22,6 +23,7 @@ final class Config implements Singleton {
         public DatabaseConfig $database,
         public PlayerConfig $player,
         public TransferConfig $transfer,
+        public AnalyticsConfig $analytics,
     ) {}
 
     public static function default(TypeMap $typeMap) : self {
@@ -29,6 +31,7 @@ final class Config implements Singleton {
             database: DatabaseConfig::default($typeMap),
             player: PlayerConfig::default(),
             transfer: TransferConfig::default(),
+            analytics: AnalyticsConfig::default(),
         );
     }
 }
