@@ -9,16 +9,18 @@ use SOFe\Capital\ParameterizedLabelSelector;
 
 final class Config {
     /**
-     * @param list<CommandSpec> $commands Commands for analytics.
+     * @param list<SingleCommandSpec> $singleCommands Commands for analytics.
+     * @param list<TopCommandSpec> $topCommands Commands for analytics.
      */
     public function __construct(
-        public array $commands,
+        public array $singleCommands,
+        public array $topCommands,
     ) {}
 
     public static function default() : self {
         return new self(
-            commands: [
-                new CommandSpec(
+            singleCommands: [
+                new SingleCommandSpec(
                     command: "mymoney",
                     permission: "capital.analytics.self",
                     defaultOpOnly: false,
@@ -33,17 +35,16 @@ final class Config {
                             metric: Query::METRIC_ACCOUNT_BALANCE_SUM,
                         ),
                     ],
-                    topN: null,
-                    messages: new Messages(
+                    messages: new SingleMessages(
                         main: '{aqua}You have ${balance} in total.',
                     ),
                 ),
-                new CommandSpec(
+                new SingleCommandSpec(
                     command: "checkmoney",
                     permission: "capital.analytics.other",
                     defaultOpOnly: true,
                     requirePlayer: false,
-                    args: [CommandSpec::ARG_PLAYER],
+                    args: [CommandArgsInfo::ARG_PLAYER],
                     infos: [
                         "balance" => new Query(
                             target: Query::TARGET_ACCOUNT,
@@ -53,9 +54,30 @@ final class Config {
                             metric: Query::METRIC_ACCOUNT_BALANCE_SUM,
                         ),
                     ],
-                    topN: null,
-                    messages: new Messages(
+                    messages: new SingleMessages(
                         main: '{aqua}{player} has ${balance} in total.',
+                    ),
+                ),
+            ],
+            topCommands: [
+                new TopCommandSpec(
+                    command: "topmoney",
+                    permission: "capital.analytics.top",
+                    defaultOpOnly: false,
+                    requirePlayer: false,
+                    args: [],
+                    labelSelector: new ParameterizedLabelSelector([]),
+                    groupLabels: [AccountLabels::PLAYER_NAME],
+                    target: Query::TARGET_ACCOUNT,
+                    infos: [
+                        "balance" => Query::METRIC_ACCOUNT_BALANCE_SUM,
+                    ],
+                    orderingInfo: "balance",
+                    descending: true,
+                    limit: 5,
+                    messages: new TopMessages(
+                        header: '{gold}Top 5 players:',
+                        main: '{aqua}#{rank}: {group1} - ${balance}',
                     ),
                 ),
             ],

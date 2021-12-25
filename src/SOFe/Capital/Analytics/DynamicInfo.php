@@ -8,6 +8,7 @@ use RuntimeException;
 use SOFe\InfoAPI\Info;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
+use SOFe\InfoAPI\StringInfo;
 
 final class DynamicInfo extends Info {
     /** @var array<string, true> */
@@ -15,9 +16,11 @@ final class DynamicInfo extends Info {
 
     /**
      * @param array<string, int|float> $values
+     * @param list<string> $groups
      */
     public function __construct(
         private array $values,
+        private array $groups,
         private ?int $rank,
         private CommandArgsInfo $args,
     ) {
@@ -37,10 +40,29 @@ final class DynamicInfo extends Info {
             });
         }
 
+        for($i = 1; $i <= count($groups); $i++) {
+            if(!isset(self::$registeredInfos["\0group$i"])) {
+                self::$registeredInfos["\0group$i"] = true;
+
+                $closure = static function(DynamicInfo $info) use($i) : ?StringInfo {
+                    if(isset($info->groups[$i - 1])) {
+                        return new StringInfo($info->groups[$i - 1]);
+                    } else {
+                        return null;
+                    }
+                };
+
+                InfoAPI::provideInfo(self::class, StringInfo::class, "capital.analytics.group.group$i", $closure);
+                if($i === 1) {
+                    InfoAPI::provideInfo(self::class, StringInfo::class, "capital.analytics.group.group", $closure);
+                }
+            }
+        }
+
         if(!isset(self::$registeredInfos["\0rank"])) {
             self::$registeredInfos["\0rank"] = true;
             InfoAPI::provideInfo(
-                self::class, CommandArgsInfo::class, "capital.analytics.rank",
+                self::class, CommandArgsInfo::class, "capital.analytics.group.rank",
                 static function(DynamicInfo $info) : ?NumberInfo {
                     return $info->rank !== null ? new NumberInfo((float) $info->rank) : null;
                 },

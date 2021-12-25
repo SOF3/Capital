@@ -12,6 +12,9 @@ use SOFe\InfoAPI\StringInfo;
 use function count;
 
 final class CommandArgsInfo extends Info {
+    public const ARG_STRING = "string";
+    public const ARG_PLAYER = "player";
+
     /** @var array<string, true> */
     private static array $registeredInfos = [];
 

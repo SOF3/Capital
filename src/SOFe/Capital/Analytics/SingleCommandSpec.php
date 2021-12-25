@@ -8,21 +8,21 @@ use pocketmine\Server;
 use SOFe\Capital\MainClass;
 
 /**
- * View analytics by running a command.
+ * View metrics by running a command.
+ *
+ * SingleCommand supports using different selectors,
+ * but it can only return a single value for each metric.
+ * Useful for getting analytics about a specific player or the entire server.
  */
-final class CommandSpec {
-    public const ARG_STRING = "string";
-    public const ARG_PLAYER = "player";
-
+final class SingleCommandSpec {
     /**
      * @param string $command The name of the command.
      * @param string $permission The permission for the command.
      * @param bool $defaultOpOnly Whether the permission is given to ops only by default.
      * @param bool $requirePlayer Whether the command can only be run as a player.
-     * @param list<self::ARG_*> $args The argument types of the command.
+     * @param list<CommandArgsInfo::ARG_*> $args The argument types of the command.
      * @param array<string, Query> $infos The query infos used in the main message.
-     * @param ?TopNSpec $topN If not null, each $infos is grouped by $topNSpec->group, and $messages->main is repeated for up to $topNSpec->limit times for each of the top groups ordered by $args->[$topNSpec->order].
-     * @param Messages $messages The messages to use.
+     * @param SingleMessages $messages The messages to use.
      */
     public function __construct(
         public string $command,
@@ -31,12 +31,11 @@ final class CommandSpec {
         public bool $requirePlayer,
         public array $args,
         public array $infos,
-        public ?TopNSpec $topN,
-        public Messages $messages,
+        public SingleMessages $messages,
     ) {}
 
     public function register(MainClass $plugin) : void {
-        $command = new Command($plugin, $this);
+        $command = new SingleCommand($plugin, $this);
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 }

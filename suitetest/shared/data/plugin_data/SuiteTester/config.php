@@ -84,5 +84,22 @@ return function() {
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
+
+        "bob check top money" => function() use($server, $std, $plugin) {
+            $bob = $server->getPlayerExact("bob");
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/topmoney")));
+
+            $message = 'Top 5 players:';
+            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+
+            $message = '#1: Bob - $110';
+            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+
+            $message = '#2: Alice - $100';
+            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+        },
     ];
 };

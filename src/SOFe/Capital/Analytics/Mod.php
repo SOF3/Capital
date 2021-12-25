@@ -7,6 +7,7 @@ namespace SOFe\Capital\Analytics;
 use Generator;
 use pocketmine\Server;
 use SOFe\Capital\Config\Config;
+use SOFe\Capital\Database\Database;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\TypeMap\TypeMap;
@@ -27,9 +28,14 @@ final class Mod implements ModInterface {
 
         $config = Config::get($typeMap);
         $plugin = MainClass::get($typeMap);
+        $db = Database::get($typeMap);
 
-        foreach($config->analytics->commands as $command) {
+        foreach($config->analytics->singleCommands as $command) {
             $command->register($plugin);
+        }
+
+        foreach($config->analytics->topCommands as $command) {
+            $command->register($plugin, $db);
         }
     }
 

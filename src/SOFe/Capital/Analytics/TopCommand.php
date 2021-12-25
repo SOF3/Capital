@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics;
 
-use pocketmine\command\Command as PmCommand;
+use pocketmine\command\Command as Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -18,7 +18,7 @@ use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use SOFe\AwaitGenerator\Await;
-use SOFe\Capital\Capital;
+use SOFe\Capital\Database\Database;
 use SOFe\Capital\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
@@ -27,10 +27,10 @@ use SOFe\InfoAPI\StringInfo;
 use function array_shift;
 use function assert;
 
-final class Command extends PmCommand implements PluginOwned {
+final class TopCommand extends Command implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(MainClass $plugin, private CommandSpec $spec) {
+    public function __construct(MainClass $plugin, private Database $db, private TopCommandSpec $spec) {
         parent::__construct($spec->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -59,8 +59,8 @@ final class Command extends PmCommand implements PluginOwned {
 
         foreach($this->spec->args as $arg) {
             $error = match($arg) {
-                CommandSpec::ARG_PLAYER => self::playerArg($args, $players),
-                CommandSpec::ARG_STRING => self::stringArg($args, $strings),
+                CommandArgsInfo::ARG_PLAYER => self::playerArg($args, $players),
+                CommandArgsInfo::ARG_STRING => self::stringArg($args, $strings),
             };
 
             if($error instanceof Translatable) {
@@ -72,30 +72,36 @@ final class Command extends PmCommand implements PluginOwned {
         $argContext = new CommandArgsInfo($senderInfo, $players, $strings);
 
         Await::f2c(function() use($argContext, $sender) {
-            $promises = [];
+            $selector = $this->spec->labelSelector->transform($argContext);
+            $groupBy = $this->spec->groupLabels;
+            $descending = $this->spec->descending;
+            $limit = $this->spec->limit;
+            $orderingMetricName = $this->spec->orderingInfo;
+            $orderingMetric = new Query($this->spec->target, $this->spec->labelSelector, $this->spec->infos[$this->spec->orderingInfo]);
 
-            foreach($this->spec->infos as $key => $info) {
-                $selector = $info->selector->transform($argContext);
-
-                // TODO merge metrics with the same selector to improve performance.
-                $promise = function() use($info, $selector) {
-                    [$metric] = yield from match($info->target) {
-                        Query::TARGET_ACCOUNT => Capital::getAccountMetrics($selector, [$info->getAccountMetric()]),
-                        Query::TARGET_TRANSACTION => Capital::getTransactionMetrics($selector, [$info->getTransactionMetric()]),
+            $otherMetrics = [];
+            foreach($this->spec->infos as $name => $info) {
+                if($name !== $orderingMetricName) {
+                    $query = new Query($this->spec->target, $this->spec->labelSelector, $info);
+                    $otherMetrics[$name] = match($this->spec->target) {
+                        Query::TARGET_ACCOUNT => $query->getAccountMetric(),
+                        Query::TARGET_TRANSACTION => $query->getTransactionMetric(),
                     };
-
-                    return $metric;
-                };
-
-                $promises[$key] = $promise();
+                }
             }
 
-            $metrics = yield Await::all($promises);
+            $top = yield from match($this->spec->target) {
+                Query::TARGET_ACCOUNT => $this->db->aggregateTopAccounts($selector, $groupBy, $orderingMetric->getAccountMetric(), $descending, $orderingMetricName, $otherMetrics, $limit),
+                Query::TARGET_TRANSACTION => $this->db->aggregateTopTransactions($selector, $groupBy, $orderingMetric->getTransactionMetric(), $descending, $orderingMetricName, $otherMetrics, $limit),
+            };
 
-            $dynamicInfo = new DynamicInfo($metrics, null, $argContext);
+            $sender->sendMessage(InfoAPI::resolve($this->spec->messages->header, $argContext));
+            foreach($top as $i => $entry) {
+                $dynamicInfo = new DynamicInfo($entry->getMetrics(), $entry->getGroupValues(), $i + 1, $argContext);
 
-            $message = InfoAPI::resolve($this->spec->messages->main, $dynamicInfo);
-            $sender->sendMessage($message);
+                $message = InfoAPI::resolve($this->spec->messages->main, $dynamicInfo);
+                $sender->sendMessage($message);
+            }
         });
     }
 
