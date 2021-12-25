@@ -25,7 +25,7 @@ final class SuccessContextInfo extends Info {
     ) {}
 
     public function toString() : string {
-		throw new RuntimeException("ContextInfo must not be returned as a provided info");
+        throw new RuntimeException("ContextInfo must not be returned as a provided info");
     }
 
     public static function init() : void {

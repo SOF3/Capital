@@ -25,6 +25,7 @@ use SOFe\InfoAPI\PlayerInfo;
 use SOFe\InfoAPI\StringInfo;
 
 use function array_shift;
+use function assert;
 
 final class Command extends PmCommand implements PluginOwned {
     use PluginOwnedTrait;

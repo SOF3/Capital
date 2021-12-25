@@ -13,17 +13,17 @@ use SOFe\Capital\Database\Database;
  * @implements CacheType<UuidInterface, array<string, string>>
  */
 final class AccountLabelCacheType implements CacheType {
-    public function keyToString($key): string {
+    public function keyToString($key) : string {
         return $key->getBytes();
     }
 
-    public function fetchEntry(Database $db, $key): Generator {
+    public function fetchEntry(Database $db, $key) : Generator {
         $value = yield from $db->getAccountAllLabels($key);
 
         return $value;
     }
 
-    public function fetchEntries(Database $db, array $keys): Generator {
+    public function fetchEntries(Database $db, array $keys) : Generator {
         $ids = [];
         foreach($keys as $key) {
             $ids[$key] = Uuid::fromBytes($key);
@@ -34,14 +34,14 @@ final class AccountLabelCacheType implements CacheType {
     /**
      * @return ?VoidPromise
      */
-    public function onEntryRefresh(string $key, $old, $new): ?Generator {
+    public function onEntryRefresh(string $key, $old, $new) : ?Generator {
         return null;
     }
 
     /**
      * @return ?VoidPromise
      */
-    public function onEntryFree(string $key, $value): ?Generator {
+    public function onEntryFree(string $key, $value) : ?Generator {
         return null;
     }
 }

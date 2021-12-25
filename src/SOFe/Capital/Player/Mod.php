@@ -7,8 +7,8 @@ namespace SOFe\Capital\Player;
 use Generator;
 use pocketmine\Server;
 use SOFe\Capital\Config\Config;
-use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\MainClass;
+use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\TypeMap\TypeMap;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
@@ -34,7 +34,7 @@ final class Mod implements ModInterface {
             InfoAPI::provideInfo(
                 PlayerInfo::class, NumberInfo::class,
                 "capital.player.$name",
-                function(PlayerInfo $info) use($name, $sessionManager): ?NumberInfo {
+                function(PlayerInfo $info) use($name, $sessionManager) : ?NumberInfo {
                     $session = $sessionManager->getSession($info->getValue());
                     $value = $session?->getInfo($name);
 
@@ -47,7 +47,7 @@ final class Mod implements ModInterface {
         }
     }
 
-    public static function shutdown(TypeMap $typeMap): void {
+    public static function shutdown(TypeMap $typeMap) : void {
         SessionManager::get($typeMap)->shutdown();
     }
 }

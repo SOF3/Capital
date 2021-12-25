@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\TypeMap;
 
-use SOFe\AwaitStd\AwaitStd;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
+use SOFe\AwaitStd\AwaitStd;
 
 use function get_class;
 

@@ -36,7 +36,7 @@ final class MainClass extends PluginBase implements Singleton {
 
     public static TypeMap $typeMap;
 
-    protected function onEnable(): void {
+    protected function onEnable() : void {
         $typeMap = new TypeMap;
         self::$typeMap = $typeMap;
 
@@ -51,7 +51,7 @@ final class MainClass extends PluginBase implements Singleton {
         });
     }
 
-    protected function onDisable(): void {
+    protected function onDisable() : void {
         $typeMap = self::$typeMap;
         foreach(array_reverse(self::MODULES) as $module) {
             $module::shutdown($typeMap);

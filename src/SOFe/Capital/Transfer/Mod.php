@@ -9,8 +9,8 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\OracleNames;
+use SOFe\Capital\TypeMap\ModInterface;
 use SOFe\Capital\TypeMap\TypeMap;
 
 final class Mod implements ModInterface {

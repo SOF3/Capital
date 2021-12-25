@@ -7,9 +7,9 @@ namespace SOFe\Capital\Config;
 use SOFe\Capital\Analytics;
 use SOFe\Capital\Database;
 use SOFe\Capital\Player;
+use SOFe\Capital\Transfer;
 use SOFe\Capital\TypeMap\Singleton;
 use SOFe\Capital\TypeMap\SingletonTrait;
-use SOFe\Capital\Transfer;
 use SOFe\Capital\TypeMap\TypeMap;
 
 final class Config implements Singleton {

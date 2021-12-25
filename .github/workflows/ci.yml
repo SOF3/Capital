@@ -25,3 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: make suitetest
+  fmt:
+    name: suite test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: make fmt EXTRA_FLAGS="--dry-run --diff"

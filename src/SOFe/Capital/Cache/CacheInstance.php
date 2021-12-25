@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Cache;
 
-use function array_keys;
 use Generator;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
+use function array_keys;
+use function count;
+use function json_encode;
 
 /**
  * @template K

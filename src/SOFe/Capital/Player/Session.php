@@ -14,6 +14,7 @@ use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 use SOFe\InfoAPI\PlayerInfo;
+use function count;
 
 final class Session {
     private bool $closed = false;

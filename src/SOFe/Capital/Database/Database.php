@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Database;
 
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
-use function array_keys;
-use function array_map;
-use function array_search;
-use function count;
-use function implode;
 use Generator;
 use Logger;
 use poggit\libasynql\DataConnector;
@@ -32,10 +25,20 @@ use SOFe\Capital\CapitalException;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
+use SOFe\Capital\TransactionQueryMetric;
 use SOFe\Capital\TypeMap\Singleton;
 use SOFe\Capital\TypeMap\SingletonTrait;
-use SOFe\Capital\TransactionQueryMetric;
 use SOFe\RwLock\Mutex;
+use function array_keys;
+use function array_map;
+use function array_search;
+use function count;
+use function implode;
+use function max;
+use function min;
+use function preg_match;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 final class Database implements Singleton {
     use SingletonTrait;

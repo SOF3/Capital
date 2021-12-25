@@ -9,6 +9,7 @@ use SOFe\InfoAPI\Info;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
 use SOFe\InfoAPI\StringInfo;
+use function count;
 
 final class CommandArgsInfo extends Info {
     /** @var array<string, true> */

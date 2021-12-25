@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Cache;
 
-use function array_diff;
-use function count;
 use Generator;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
+use function array_diff;
+use function count;
 
 /**
  * @implements CacheType<LabelSelector, list<UuidInterface>>
@@ -25,11 +25,11 @@ final class LabelSelectorCacheType implements CacheType {
         private CacheInstance $accountLabelCache,
     ) {}
 
-    public function keyToString($key): string {
+    public function keyToString($key) : string {
         return $key->toBytes();
     }
 
-    public function fetchEntry(Database $db, $selector): Generator {
+    public function fetchEntry(Database $db, $selector) : Generator {
         $accounts = yield from $db->findAccounts($selector);
 
         $promises = [];
@@ -44,7 +44,7 @@ final class LabelSelectorCacheType implements CacheType {
         return $accounts;
     }
 
-    public function fetchEntries(Database $db, array $keys): Generator {
+    public function fetchEntries(Database $db, array $keys) : Generator {
         $promises = [];
         $output = [];
 
@@ -62,7 +62,7 @@ final class LabelSelectorCacheType implements CacheType {
         return $output;
     }
 
-    public function onEntryRefresh(string $key, $old, $new): ?Generator {
+    public function onEntryRefresh(string $key, $old, $new) : ?Generator {
         $removed = array_diff($old, $new);
         $added = array_diff($new, $old);
 
@@ -82,7 +82,7 @@ final class LabelSelectorCacheType implements CacheType {
         }
     }
 
-    public function onEntryFree(string $key, $accounts): ?Generator {
+    public function onEntryFree(string $key, $accounts) : ?Generator {
         foreach($accounts as $account) {
             $this->accountCache->free($account);
             $this->accountLabelCache->free($account);

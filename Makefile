@@ -7,7 +7,7 @@ SUITE_TESTS = suitetest/cases/sqlite suitetest/cases/mysql
 CAPITAL_SOURCE_FILES = plugin.yml $(shell find src resources -type f)
 CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar dev/rwlock.phar
 
-.PHONY: all phpstan debug/suite-mysql suitetest $(SUITE_TESTS)
+.PHONY: all phpstan fmt debug/suite-mysql suitetest $(SUITE_TESTS)
 
 default: phpstan dev/Capital.phar
 
@@ -18,13 +18,16 @@ phpstan-baseline.neon/clear:
 phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
 	$(PHP) vendor/bin/phpstan analyze --generate-baseline
 
+fmt: $(shell find src -type f) .php-cs-fixer.php
+	$(PHP) vendor/bin/php-cs-fixer fix $$EXTRA_FLAGS
+
 dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRIONS)
 	$(PHP) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
 
 	for file in $(CAPITAL_VIRIONS); do $(PHP) $$file $@ SOFe\\Capital\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 16)\\ ; done
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
-	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --sql resources --prefix capital
+	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capital
 
 dev/ConsoleScript.php: Makefile
 	wget -O $@ https://github.com/pmmp/DevTools/raw/master/src/ConsoleScript.php

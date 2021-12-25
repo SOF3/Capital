@@ -8,6 +8,7 @@ use function assert;
 use function implode;
 use function strlen;
 use function strpos;
+use function substr;
 
 final class LabelSelector {
     /** A special constant string that matches all labels. */
