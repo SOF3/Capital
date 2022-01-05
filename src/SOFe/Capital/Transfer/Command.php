@@ -67,6 +67,10 @@ final class Command extends PmCommand implements PluginOwned {
             return;
         }
 
+        if(!is_numeric($amountString)) {
+            throw new InvalidCommandSyntaxException;
+        }
+
         $amount = (int) $amountString;
         if($amount < $this->method->minimumAmount) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
@@ -75,10 +79,6 @@ final class Command extends PmCommand implements PluginOwned {
         if($amount > $this->method->maximumAmount) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
             return;
-        }
-
-        if(!is_numeric($amountString)) {
-            throw new InvalidCommandSyntaxException;
         }
 
         Await::f2c(function() use($sender, $recipient, $amount) : Generator {
