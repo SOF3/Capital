@@ -10,7 +10,7 @@ INSERT INTO acc (id, value) VALUES (:id, :value);
 -- #            { delta
 -- #            :id string
 -- #            :delta int
-UPDATE acc SET value = value + :delta WHERE id = :id;
+UPDATE acc SET value = value + :delta, touch = CURRENT_TIMESTAMP WHERE id = :id;
 -- #            }
 -- #        }
 -- #        { fetch

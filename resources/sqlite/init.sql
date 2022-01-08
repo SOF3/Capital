@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS acc_label (
     PRIMARY KEY (id, name),
     FOREIGN KEY (id) REFERENCES acc(id) ON DELETE CASCADE
 );
--- #        &
+-- #&
 CREATE INDEX IF NOT EXISTS acc_label_kv ON acc_label(name, value);
 -- #&
 CREATE TABLE IF NOT EXISTS tran (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS tran (
     FOREIGN KEY (src) REFERENCES acc(id) ON DELETE SET NULL,
     FOREIGN KEY (dest) REFERENCES acc(id) ON DELETE SET NULL
 );
--- #        &
+-- #&
 CREATE INDEX IF NOT EXISTS tran_created ON tran(created);
 -- #&
 CREATE TABLE IF NOT EXISTS tran_label (
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS tran_label (
     PRIMARY KEY (id, name),
     FOREIGN KEY (id) REFERENCES tran(id) ON DELETE CASCADE
 );
--- #        &
+-- #&
 CREATE INDEX IF NOT EXISTS tran_label_kv ON tran_label(name, value);
 -- #        }
 -- #    }

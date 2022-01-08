@@ -21,6 +21,15 @@ CREATE TABLE IF NOT EXISTS acc_label (
     FOREIGN KEY (id) REFERENCES acc(id) ON DELETE CASCADE
 );
 -- #&
+CREATE TABLE IF NOT EXISTS acc_archive (
+    archive_batch BIGINT NOT NULL,
+    id CHAR(36) NOT NULL,
+    value BIGINT NOT NULL,
+    touch TIMESTAMP NOT NULL,
+    labels TEXT NOT NULL,
+    PRIMARY KEY (archive_batch, id)
+);
+-- #&
 CREATE TABLE IF NOT EXISTS tran (
     id CHAR(36) PRIMARY KEY,
     src CHAR(36) NULL,
@@ -41,6 +50,17 @@ CREATE TABLE IF NOT EXISTS tran_label (
     PRIMARY KEY (id, name),
     KEY (name, value),
     FOREIGN KEY (id) REFERENCES tran(id) ON DELETE CASCADE
+);
+-- #&
+CREATE TABLE IF NOT EXISTS tran_archive (
+    archive_batch BIGINT NOT NULL,
+    id CHAR(36) NOT NULL,
+    src CHAR(36) NULL,
+    dest CHAR(36) NULL,
+    value BIGINT NOT NULL,
+    touch TIMESTAMP NOT NULL,
+    labels TEXT NOT NULL,
+    PRIMARY KEY (archive_batch, id)
 );
 -- #            }
 -- #            { procedures
@@ -70,8 +90,8 @@ CREATE PROCEDURE tran_create (
     ELSE
         SET param_status = 0;
 
-        UPDATE acc SET value = var_src_value WHERE id = param_src;
-        UPDATE acc SET value = var_dest_value WHERE id = param_dest;
+        UPDATE acc SET value = var_src_value, touch = CURRENT_TIMESTAMP WHERE id = param_src;
+        UPDATE acc SET value = var_dest_value, touch = CURRENT_TIMESTAMP WHERE id = param_dest;
 
         INSERT INTO tran (id, src, dest, value)
         VALUES (param_id, param_src, param_dest, param_delta);
@@ -113,6 +133,46 @@ CREATE PROCEDURE tran_create_2 (
     ELSE
         COMMIT;
     END IF;
+END
+-- #                }
+-- #                { archive_acc
+CREATE PROCEDURE acc_archive (
+    IN param_expiry INT,
+    IN param_batch_id BIGINT,
+    OUT param_num_rows BIGINT
+) BEGIN
+    START TRANSACTION;
+
+    INSERT INTO acc_archive (archive_batch, id, value, touch, labels)
+    SELECT param_batch_id, id, acc.value, touch,
+        GROUP_CONCAT(acc_label.name, '=', acc_label.value SEPARATOR '\0')
+    FROM acc LEFT JOIN acc_label USING (id)
+    WHERE touch < DATE_SUB(NOW(), INTERVAL param_expiry SECOND);
+
+    DELETE FROM acc_label WHERE id IN (SELECT id FROM acc_archive WHERE archive_batch = param_batch_id);
+    DELETE FROM acc WHERE id IN (SELECT id FROM acc_archive WHERE archive_batch = param_batch_id);
+
+    COMMIT;
+END
+-- #                }
+-- #                { archive_tran
+CREATE PROCEDURE tran_archive (
+    IN param_expiry INT,
+    IN param_batch_id BIGINT,
+    OUT param_num_rows BIGINT
+) BEGIN
+    START TRANSACTION;
+
+    INSERT INTO tran_archive (archive_batch, id, value, touch, labels)
+    SELECT param_batch_id, id, tran.value, touch,
+        GROUP_CONCAT(tran_label.name, '=', tran_label.value SEPARATOR '\0')
+    FROM tran LEFT JOIN tran_label USING (id)
+    WHERE touch < DATE_SUB(NOW(), INTERVAL param_expiry SECOND);
+
+    DELETE FROM tran_label WHERE id IN (SELECT id FROM tran_archive WHERE archive_batch = param_batch_id);
+    DELETE FROM tran WHERE id IN (SELECT id FROM tran_archive WHERE archive_batch = param_batch_id);
+
+    COMMIT;
 END
 -- #                }
 -- #            }
