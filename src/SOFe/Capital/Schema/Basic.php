@@ -12,9 +12,9 @@ use function count;
 /**
  * The basic schema where each player only has one account.
  *
- * @implements Schema<BasicSchemaVariables>
+ * @implements Schema<BasicVars>
  */
-final class BasicSchema implements Schema {
+final class Basic implements Schema {
     public function cloneWithConfig(array $config) : self {
         if(count($config) > 0) {
             throw new InvalidArgumentException("The basis schema does not support configuration");
@@ -31,8 +31,8 @@ final class BasicSchema implements Schema {
         return [];
     }
 
-    public function newV() : BasicSchemaVariables {
-        return new BasicSchemaVariables;
+    public function newV() : BasicVars {
+        return new BasicVars;
     }
 
     public function vToLabels($v, string $playerPath) : array {

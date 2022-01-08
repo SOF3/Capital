@@ -12,9 +12,9 @@ use SOFe\Capital\SchemaVariable;
 /**
  * A schema where each player has one account for each currency.
  *
- * @implements Schema<CurrencySchemaVariables>
+ * @implements Schema<CurrencyVars>
  */
-final class CurrencySchema implements Schema {
+final class Currency implements Schema {
     public const LABEL_CURRENCY = "capital/currencySchema/currency";
 
     private ?string $defaultCurrency = null;
@@ -41,7 +41,7 @@ final class CurrencySchema implements Schema {
     }
 
     /**
-     * @return SchemaVariable<CurrencySchemaVariables, string>
+     * @return SchemaVariable<CurrencyVars, string>
      */
     private function createCurrencyVariable() : SchemaVariable {
         // @phpstan-ignore-next-line
@@ -66,8 +66,8 @@ final class CurrencySchema implements Schema {
         }
     }
 
-    public function newV() : CurrencySchemaVariables {
-        $v = new CurrencySchemaVariables;
+    public function newV() : CurrencyVars {
+        $v = new CurrencyVars;
 
         if($this->defaultCurrency !== null) {
             $v->currency = $this->defaultCurrency;

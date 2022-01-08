@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Database;
 
-use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap\TypeMap;
-use function yaml_parse_file;
-
 /**
  * Settings related to players as account owners.
  */
@@ -21,11 +17,10 @@ final class Config {
         public bool $logQueries,
     ) {}
 
-    public static function default(TypeMap $typeMap) : self {
-        $plugin = MainClass::get($typeMap);
-
-        $config = yaml_parse_file($plugin->getDataFolder() . "db.yml");
-
+    /**
+     * @param array<string, mixed> $config
+     */
+    public static function load(array $config) : self {
         return new self(
             libasynql: $config,
             logQueries: true,
