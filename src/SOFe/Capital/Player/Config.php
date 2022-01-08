@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Player;
 
 use SOFe\Capital\AccountLabels;
-use SOFe\Capital\Config\ConfigConstants;
+use SOFe\Capital\Config\Constants;
 use SOFe\Capital\ParameterizedLabelSelector;
 
 /**
@@ -28,11 +28,11 @@ final class Config {
                     initialValue: 100,
                     selectorLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{player uuid}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     migrationLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_NAME => "{player name}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     initialLabels: new ParameterizedLabelSelector([
                         AccountLabels::VALUE_MIN => "0",
@@ -40,11 +40,11 @@ final class Config {
                     ]),
                     overwriteLabels: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_NAME => "{player name}",
-                        AccountLabels::PLAYER_INFO_NAME => ConfigConstants::CURRENCY_DEFAULT_INFO,
+                        AccountLabels::PLAYER_INFO_NAME => Constants::CURRENCY_DEFAULT_INFO,
                     ]),
                 )
             ],
-            infoNames: [ConfigConstants::CURRENCY_DEFAULT_INFO],
+            infoNames: [Constants::CURRENCY_DEFAULT_INFO],
         );
     }
 }

@@ -8,7 +8,7 @@ namespace SOFe\Capital\Config;
  * Constants used only for default configuration.
  * These values must not be used directly from any other modules.
  */
-final class ConfigConstants {
+final class Constants {
     /** The default distinction of multiple accounts is achieved through the concept of currencies. */
     public const LABEL_CURRENCY = "currency";
 

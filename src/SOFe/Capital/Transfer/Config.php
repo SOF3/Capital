@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use SOFe\Capital\AccountLabels;
-use SOFe\Capital\Config\ConfigConstants;
+use SOFe\Capital\Config\Constants;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
@@ -27,17 +27,17 @@ final class Config {
                     defaultOpOnly: false,
                     src: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{sender uuid}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     dest: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     rate: 1.0,
                     minimumAmount: 0,
                     maximumAmount: 10000,
                     transactionLabels: new ParameterizedLabelSet([
-                        ConfigConstants::LABEL_PAYMENT => "",
+                        Constants::LABEL_PAYMENT => "",
                     ]),
                     messages: new Messages(
                         notifySenderSuccess: '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.',
@@ -55,7 +55,7 @@ final class Config {
                     defaultOpOnly: true,
                     src: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     dest: new ParameterizedLabelSelector([
                         AccountLabels::ORACLE => OracleNames::TRANSFER,
@@ -64,7 +64,7 @@ final class Config {
                     minimumAmount: 0,
                     maximumAmount: 1000000,
                     transactionLabels: new ParameterizedLabelSet([
-                        ConfigConstants::LABEL_OPERATOR => "",
+                        Constants::LABEL_OPERATOR => "",
                     ]),
                     messages: new Messages(
                         notifySenderSuccess: '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.',
@@ -85,13 +85,13 @@ final class Config {
                     ]),
                     dest: new ParameterizedLabelSelector([
                         AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        ConfigConstants::LABEL_CURRENCY => ConfigConstants::CURRENCY_NAME,
+                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
                     ]),
                     rate: 1.0,
                     minimumAmount: 0,
                     maximumAmount: 1000000,
                     transactionLabels: new ParameterizedLabelSet([
-                        ConfigConstants::LABEL_OPERATOR => "",
+                        Constants::LABEL_OPERATOR => "",
                     ]),
                     messages: new Messages(
                         notifySenderSuccess: '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.',
