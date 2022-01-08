@@ -8,10 +8,10 @@ use Generator;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
 use SOFe\Capital\Config\Config;
+use SOFe\Capital\Di\Context;
+use SOFe\Capital\Di\ModInterface;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\OracleNames;
-use SOFe\Capital\TypeMap\ModInterface;
-use SOFe\Capital\TypeMap\TypeMap;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
@@ -19,21 +19,20 @@ final class Mod implements ModInterface {
     /**
      * @return VoidPromise
      */
-    public static function init(TypeMap $typeMap) : Generator {
+    public static function init(Context $context) : Generator {
         false && yield;
 
         ContextInfo::init();
         SuccessContextInfo::init();
 
-        $config = Config::get($typeMap);
-        $plugin = MainClass::get($typeMap);
-
-        foreach($config->transfer->transferMethods as $method) {
-            $method->register($plugin);
-        }
+        $context->call(function(Config $config, MainClass $plugin) {
+            foreach($config->transfer->transferMethods as $method) {
+                $method->register($plugin);
+            }
+        });
 
         Await::g2c(Capital::getOracle(OracleNames::TRANSFER));
     }
 
-    public static function shutdown(TypeMap $typeMap) : void {}
+    public static function shutdown(Context $context) : void {}
 }

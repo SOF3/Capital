@@ -6,16 +6,17 @@ namespace SOFe\Capital\Config;
 
 use SOFe\Capital\Analytics;
 use SOFe\Capital\Database;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\Player;
 use SOFe\Capital\Transfer;
-use SOFe\Capital\TypeMap\Singleton;
-use SOFe\Capital\TypeMap\SingletonTrait;
-use SOFe\Capital\TypeMap\TypeMap;
 use function yaml_parse_file;
 
-final class Config implements Singleton {
-    use SingletonTrait;
+final class Config implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
 
     /**
      * @param Database\Config $database settings for database connection.
@@ -30,8 +31,7 @@ final class Config implements Singleton {
         public Analytics\Config $analytics,
     ) {}
 
-    public static function load(TypeMap $typeMap) : self {
-        $main = MainClass::get($typeMap);
+    public static function fromSingletonArgs(MainClass $main) : self {
         $main->saveResource("config.yml");
         $main->saveResource("db.yml");
 

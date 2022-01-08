@@ -21,12 +21,17 @@ parameters:
 			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
 
 		-
-			message: "#^Parameter \\#1 \\$class of method SOFe\\\\Capital\\\\TypeMap\\\\TypeMap\\:\\:get\\(\\) expects class\\-string\\<SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\TypeMap\\\\Singleton\\>, string given\\.$#"
+			message: "#^Method SOFe\\\\Capital\\\\Di\\\\Context\\:\\:fetchClass\\(\\) should return \\(T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\)\\|null but returns T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\.$#"
 			count: 1
-			path: src/SOFe/Capital/TypeMap/TypeMap.php
+			path: src/SOFe/Capital/Di/Context.php
 
 		-
-			message: "#^Unable to resolve the template type T in call to method SOFe\\\\Capital\\\\TypeMap\\\\TypeMap\\:\\:get\\(\\)$#"
+			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
 			count: 1
-			path: src/SOFe/Capital/TypeMap/TypeMap.php
+			path: src/SOFe/Capital/MainClass.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/SOFe/Capital/MainClass.php
 

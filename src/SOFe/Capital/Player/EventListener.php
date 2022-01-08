@@ -7,11 +7,11 @@ namespace SOFe\Capital\Player;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use SOFe\Capital\TypeMap\SingletonArgs;
-use SOFe\Capital\TypeMap\SingletonArgsTrait;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\SingletonArgs;
 
-final class EventListener implements Listener, SingletonArgs {
-    use SingletonArgsTrait;
+final class EventListener implements Listener, FromContext {
+    use SingletonArgs;
 
     public function __construct(
         private SessionManager $sessionManager,

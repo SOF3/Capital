@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace SOFe\Capital\Config;
 
 use Generator;
-use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap\ModInterface;
-use SOFe\Capital\TypeMap\TypeMap;
+use SOFe\Capital\Di\Context;
+use SOFe\Capital\Di\ModInterface;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
@@ -15,17 +14,10 @@ final class Mod implements ModInterface {
     /**
      * @return VoidPromise
      */
-    public static function init(TypeMap $typeMap) : Generator {
-        $std = MainClass::getStd($typeMap);
-        yield from $std->sleep(0);
-
-        $config = Config::load($typeMap);
-        $event = new PopulateEvent($config);
-        $event->call();
-
-        $typeMap->store($event->getConfig());
+    public static function init(Context $context) : Generator {
+        false && yield;
     }
 
-    public static function shutdown(TypeMap $typeMap) : void {
+    public static function shutdown(Context $context) : void {
     }
 }

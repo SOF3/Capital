@@ -23,11 +23,13 @@ use SOFe\Capital\AccountLabels;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\CapitalException;
 use SOFe\Capital\Config\Config;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
 use SOFe\Capital\TransactionQueryMetric;
-use SOFe\Capital\TypeMap\Singleton;
-use SOFe\Capital\TypeMap\SingletonTrait;
 use SOFe\RwLock\Mutex;
 use function array_keys;
 use function array_map;
@@ -40,8 +42,8 @@ use function preg_match;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-final class Database implements Singleton {
-    use SingletonTrait;
+final class Database implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
 
     private const SQL_FILES = [
         "init.sql",

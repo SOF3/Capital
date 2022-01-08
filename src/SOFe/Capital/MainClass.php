@@ -8,19 +8,19 @@ use Generator;
 use pocketmine\plugin\PluginBase;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
-use SOFe\Capital\TypeMap\ModInterface;
-use SOFe\Capital\TypeMap\Singleton;
-use SOFe\Capital\TypeMap\SingletonTrait;
-use SOFe\Capital\TypeMap\TypeMap;
+use SOFe\Capital\Di\Context;
+use SOFe\Capital\Di\ModInterface;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonTrait;
 
 use function array_reverse;
 
 final class MainClass extends PluginBase implements Singleton {
     use SingletonTrait;
 
-    public static function getStd(TypeMap $typeMap) : AwaitStd {
+    public static function getStd(Context $context) : AwaitStd {
         /** @var AwaitStd $std */
-        $std = $typeMap->get(AwaitStd::class);
+        $std = $context->fetchClass(AwaitStd::class);
         return $std;
     }
 
@@ -34,27 +34,26 @@ final class MainClass extends PluginBase implements Singleton {
         Analytics\Mod::class,
     ];
 
-    public static TypeMap $typeMap;
+    public static Context $context;
 
     protected function onEnable() : void {
-        $typeMap = new TypeMap;
-        self::$typeMap = $typeMap;
+        $context = new Context;
+        $context->store(AwaitStd::init($this));
+        $context->store($this);
 
-        $typeMap->store($typeMap);
-        $typeMap->store(AwaitStd::init($this));
-        $typeMap->store($this);
+        self::$context = $context;
 
-        Await::f2c(static function() use($typeMap) : Generator {
+        Await::f2c(static function() use($context) : Generator {
             foreach(self::MODULES as $module) {
-                yield from $module::init($typeMap);
+                yield from $module::init($context);
             }
         });
     }
 
     protected function onDisable() : void {
-        $typeMap = self::$typeMap;
+        $context = self::$context;
         foreach(array_reverse(self::MODULES) as $module) {
-            $module::shutdown($typeMap);
+            $module::shutdown($context);
         }
     }
 }

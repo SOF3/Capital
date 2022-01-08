@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace SOFe\Capital\Database;
 
 use Generator;
-use SOFe\Capital\TypeMap\ModInterface;
-use SOFe\Capital\TypeMap\TypeMap;
+use SOFe\Capital\Di\Context;
+use SOFe\Capital\Di\ModInterface;
 
 final class Mod implements ModInterface {
     public const API_VERSION = "0.1.0";
@@ -14,13 +14,13 @@ final class Mod implements ModInterface {
     /**
      * @return VoidPromise
      */
-    public static function init(TypeMap $typeMap) : Generator {
-        $database = Database::get($typeMap);
+    public static function init(Context $context) : Generator {
+        $database = Database::get($context);
         yield from $database->init();
     }
 
-    public static function shutdown(TypeMap $typeMap) : void {
-        $database = Database::get($typeMap);
+    public static function shutdown(Context $context) : void {
+        $database = Database::get($context);
         $database->shutdown();
     }
 }

@@ -8,9 +8,9 @@ use Generator;
 use pocketmine\Server;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
+use SOFe\Capital\Di\Context;
+use SOFe\Capital\Di\ModInterface;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap\ModInterface;
-use SOFe\Capital\TypeMap\TypeMap;
 use SOFe\InfoAPI\CommonInfo;
 use SOFe\InfoAPI\InfoAPI;
 
@@ -20,15 +20,15 @@ final class Mod implements ModInterface {
     /**
      * @return VoidPromise
      */
-    public static function init(TypeMap $typeMap) : Generator {
+    public static function init(Context $context) : Generator {
         false && yield;
 
         InfoAPI::provideFallback(DynamicInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
         InfoAPI::provideFallback(CommandArgsInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
 
-        $config = Config::get($typeMap);
-        $plugin = MainClass::get($typeMap);
-        $db = Database::get($typeMap);
+        $config = Config::get($context);
+        $plugin = MainClass::get($context);
+        $db = Database::get($context);
 
         foreach($config->analytics->singleCommands as $command) {
             $command->register($plugin);
@@ -39,5 +39,5 @@ final class Mod implements ModInterface {
         }
     }
 
-    public static function shutdown(TypeMap $typeMap) : void {}
+    public static function shutdown(Context $context) : void {}
 }

@@ -8,11 +8,13 @@ use pocketmine\player\Player;
 use SOFe\Capital\Cache\Cache;
 use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
-use SOFe\Capital\TypeMap\Singleton;
-use SOFe\Capital\TypeMap\SingletonTrait;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 
-final class SessionManager implements Singleton {
-    use SingletonTrait;
+final class SessionManager implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
 
     /** @var array<int, Session> */
     private $sessions = [];

@@ -11,11 +11,16 @@ use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\MainClass;
-use SOFe\Capital\TypeMap\Singleton;
 
-final class Cache implements Singleton {
+final class Cache implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     private Logger $logger;
 
     /** @var CacheInstance<LabelSelector, list<UuidInterface>> */

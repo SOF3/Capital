@@ -18,7 +18,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, TransactionRef> the transaction ID
      */
     public static function transact(AccountRef $src, AccountRef $dest, int $amount, array $labels) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         $event = new TransactionEvent($src, $dest, $amount, $labels);
         $event->call();
@@ -46,7 +46,7 @@ final class Capital {
         AccountRef $src2, AccountRef $dest2, int $amount2, array $labels2,
         ?UuidInterface $uuid1 = null, ?UuidInterface $uuid2 = null,
     ) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         $event = new TransactionEvent($src1, $dest1, $amount1, $labels1);
         $event->call();
@@ -81,7 +81,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, array<AccountRef>>
      */
     public static function findAccounts(LabelSelector $selector) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         $accounts = yield from $db->findAccounts($selector);
 
@@ -92,7 +92,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, int>
      */
     public static function getBalance(AccountRef $account) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         return yield from $db->getAccountValue($account->getId());
     }
@@ -102,7 +102,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, array<int>>
      */
     public static function getBalances(array $accounts) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         $ids = [];
         foreach($accounts as $key => $account) {
@@ -116,7 +116,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, AccountRef>
      */
     public static function getOracle(string $name) : Generator {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
 
         $labels = [
             AccountLabels::ORACLE => $name,
@@ -138,7 +138,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, array<int|float>>
      */
     public static function getAccountMetrics(LabelSelector $labelSelector, array $metrics) {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
         return yield from $db->aggregateAccounts($labelSelector, $metrics);
     }
 
@@ -147,7 +147,7 @@ final class Capital {
      * @return Generator<mixed, mixed, mixed, array<int|float>>
      */
     public static function getTransactionMetrics(LabelSelector $labelSelector, array $metrics) {
-        $db = Database::get(MainClass::$typeMap);
+        $db = Database::get(MainClass::$context);
         return yield from $db->aggregateTransactions($labelSelector, $metrics);
     }
 }
