@@ -1,4 +1,6 @@
 # Capital
+[![CI](https://github.com/SOF3/Capital/actions/workflows/ci.yml/badge.svg)](https://github.com/SOF3/Capital/actions/workflows/ci.yml)
+
 A simple but very extensible economy plugin for PocketMine-MP.
 
 ## How is Capital different from other economy plugins?
