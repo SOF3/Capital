@@ -16,6 +16,8 @@ use SOFe\Capital\Di\SingletonTrait;
 
 use function array_reverse;
 use function file_put_contents;
+use function substr;
+use function yaml_emit;
 
 final class MainClass extends PluginBase implements Singleton {
     use SingletonTrait;
@@ -46,14 +48,15 @@ final class MainClass extends PluginBase implements Singleton {
 
         self::$context = $context;
 
-        Await::f2c(static function() use($context) : Generator {
+        Await::f2c(function() use($context) : Generator {
             foreach(self::MODULES as $module) {
+                $this->getLogger()->debug("Loading " . substr($module, 0, -4));
                 yield from $module::init($context);
             }
 
             $context->call(function(MainClass $main, Config\Raw $raw) {
                 if($raw->saveConfig !== null) {
-                    file_put_contents($main->getDataFolder() . "config.yml", $raw->saveConfig);
+                    file_put_contents($main->getDataFolder() . "config.yml", yaml_emit($raw->saveConfig));
                 }
             });
         });

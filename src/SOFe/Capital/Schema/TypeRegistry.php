@@ -33,6 +33,6 @@ final class TypeRegistry implements Singleton, FromContext {
         if(!isset($this->types[$type])) {
             throw new RuntimeException("Unknown schema type $type");
         }
-        return new ($this->types[$type])($config);
+        return ($this->types[$type])::build($config);
     }
 }

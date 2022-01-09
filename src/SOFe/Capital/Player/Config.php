@@ -11,6 +11,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\Schema;
 
 /**
  * Settings related to players as account owners.
@@ -27,7 +28,7 @@ final class Config implements Singleton, FromContext {
         public array $infoNames,
     ) {}
 
-    public static function fromSingletonArgs() : self {
+    public static function fromSingletonArgs(Schema\Config $schema) : self {
         return new self(
             initialAccounts: [
                 new InitialAccount(

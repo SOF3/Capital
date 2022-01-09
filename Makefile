@@ -71,6 +71,7 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	$(eval CONTAINER_PREFIX := capital-suite-$(shell basename $@))
 	docker network create $(CONTAINER_PREFIX)-network || true
 	$(eval SKIP_MYSQL := $(REUSE_MYSQL) || test -f $@/options/skip-mysql)
+
 	$(SKIP_MYSQL) || docker kill $(CONTAINER_PREFIX)-mysql $(CONTAINER_PREFIX)-pocketmine || true
 	$(SKIP_MYSQL) || docker run --rm -d \
 		--name $(CONTAINER_PREFIX)-mysql \
@@ -80,6 +81,7 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 		-e MYSQL_PASSWORD=password \
 		-e MYSQL_DATABASE=capital_test \
 		mysql:8.0
+
 	docker rm $(CONTAINER_PREFIX)-pocketmine || true
 	docker create --name $(CONTAINER_PREFIX)-pocketmine \
 		--network $(CONTAINER_PREFIX)-network \
@@ -88,19 +90,28 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 		pmmp/pocketmine-mp:4 \
 		start-pocketmine --debug.level=2
 		# bash -c 'chown -R 1000:1000 /data /plugins && su - pocketmine bash -c "start-pocketmine --debug.level=2"'
+		#
 	docker cp dev/FakePlayer.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/FakePlayer.phar
 	docker cp dev/InfoAPI.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/InfoAPI.phar
 	docker cp dev/SuiteTester.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/SuiteTester.phar
 	docker cp dev/Capital.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/Capital.phar
 	docker cp $@/data $(CONTAINER_PREFIX)-pocketmine:/
 	docker cp suitetest/shared/data $(CONTAINER_PREFIX)-pocketmine:/
+
 	$(SKIP_MYSQL) || echo Waiting for MySQL to start...
 	$(SKIP_MYSQL) || docker exec $(CONTAINER_PREFIX)-mysql bash -c 'while ! mysqladmin ping -u $$MYSQL_USER -p$$MYSQL_PASSWORD --silent 2>/dev/null; do sleep 1; done'
 	$(SKIP_MYSQL) || sleep 5
+
 	docker start -ia $(CONTAINER_PREFIX)-pocketmine
-	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/output.json $@/output.json
-	$(PHP) -r '$$file = $$argv[1]; $$contents = file_get_contents($$file); $$data = json_decode($$contents); $$ok = $$data->ok; if($$ok !== true) exit(1);' $@/output.json \
-		|| (cat $@/output.json && exit 1)
+
+	test -d $@/output || mkdir $@/output/
+
+	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/output.json $@/output/output.json
+	$(PHP) -r '$$file = $$argv[1]; $$contents = file_get_contents($$file); $$data = json_decode($$contents); $$ok = $$data->ok; if($$ok !== true) exit(1);' $@/output/output.json \
+		|| (cat $@/output/output.json && exit 1)
+
+	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/config.yml $@/output/actual-config.yml
+	diff $@/expect-config.yml $@/output/actual-config.yml
 
 debug/suite-mysql:
 	docker exec -it capital-suite-mysql-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'
