@@ -22,7 +22,6 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\CapitalException;
-use SOFe\Capital\Config\Config;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -60,31 +59,29 @@ final class Database implements Singleton, FromContext {
     private Mutex $sqliteMutex;
 
     public function __construct(MainClass $plugin, Config $config) {
-        $dbConfig = $config->database;
-
-        $this->dialect = match($dbConfig->libasynql["type"]) {
+        $this->dialect = match($config->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
-            default => throw new RuntimeException("Unsupported SQL dialect " . $dbConfig->libasynql["type"]),
+            default => throw new RuntimeException("Unsupported SQL dialect " . $config->libasynql["type"]),
         };
 
         $this->logger = new PrefixedLogger($plugin->getLogger(), "Database");
 
-        if($this->dialect === SqlDialect::SQLITE && $dbConfig->libasynql["worker-limit"] !== 1) {
+        if($this->dialect === SqlDialect::SQLITE && $config->libasynql["worker-limit"] !== 1) {
             $this->logger->warning("Multi-worker is not supported for SQLite databases. Force setting worker-limit to 1.");
-            $dbConfig->libasynql["worker-limit"] = 1;
+            $config->libasynql["worker-limit"] = 1;
         }
 
         if($this->dialect === SqlDialect::SQLITE) {
             $this->sqliteMutex = new Mutex;
         }
 
-        $this->conn = libasynql::create($plugin, $dbConfig->libasynql, [
+        $this->conn = libasynql::create($plugin, $config->libasynql, [
             "sqlite" => array_map(fn($file) => "sqlite/$file", self::SQL_FILES),
             "mysql" => array_map(fn($file) => "mysql/$file", self::SQL_FILES),
         ]);
 
-        if($dbConfig->logQueries) {
+        if($config->logQueries) {
             $this->conn->setLogger($this->logger);
         }
 

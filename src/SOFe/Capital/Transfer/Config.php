@@ -6,11 +6,17 @@ namespace SOFe\Capital\Transfer;
 
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Constants;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
-final class Config {
+final class Config implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     /**
      * @param list<Method> $transferMethods Methods to initiate money transfer between accounts.
      */
@@ -18,7 +24,7 @@ final class Config {
         public array $transferMethods,
     ) {}
 
-    public static function default() : self {
+    public static function fromSingletonArgs() : self {
         return new self(
             transferMethods: [
                 new CommandMethod(

@@ -6,12 +6,18 @@ namespace SOFe\Capital\Player;
 
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Constants;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSelector;
 
 /**
  * Settings related to players as account owners.
  */
-final class Config {
+final class Config implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     /**
      * @param list<InitialAccount> $initialAccounts The initial accounts created for players.
      * @param list<string> $infoNames The names of the info objects to expose.
@@ -21,7 +27,7 @@ final class Config {
         public array $infoNames,
     ) {}
 
-    public static function default() : self {
+    public static function fromSingletonArgs() : self {
         return new self(
             initialAccounts: [
                 new InitialAccount(

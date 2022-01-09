@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace SOFe\Capital\Config;
+
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\MainClass;
+use function yaml_parse_file;
+
+/**
+ * Stores the raw config data. Should not be used directly except for config parsing.
+ */
+final class Raw implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
+    /** @var array<string, mixed>|null if not null, the array is saved to config.yml after startup completes. */
+    public ?array $saveConfig;
+
+    /**
+     * @param null|array<string, mixed> $mainConfig data from config.yml
+     * @param array<string, mixed> $dbConfig data from db.yml
+     */
+    public function __construct(
+        public ?array $mainConfig,
+        public array $dbConfig,
+    ) {
+        if($mainConfig === null) {
+            // need to generate new config
+            $this->saveConfig = [];
+        } else {
+            $this->saveConfig = null;
+        }
+    }
+
+    public static function fromSingletonArgs(MainClass $main) : self {
+        if(file_exists($main->getDataFolder() . "config.yml")) {
+            $mainConfig = yaml_parse_file($main->getDataFolder() . "config.yml");
+        } else {
+            $mainConfig = null;
+        }
+
+        $main->saveResource("db.yml");
+        $dbConfig = yaml_parse_file($main->getDataFolder() . "db.yml");
+
+        return new self(
+            $mainConfig,
+            $dbConfig,
+        );
+    }
+}

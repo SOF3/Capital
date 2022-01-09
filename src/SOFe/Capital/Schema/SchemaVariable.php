@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital;
+namespace SOFe\Capital\Schema;
 
 use Closure;
 use InvalidArgumentException;

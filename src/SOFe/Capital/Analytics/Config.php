@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace SOFe\Capital\Analytics;
 
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\Config\Raw;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSelector;
 
-final class Config {
+final class Config implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     /**
      * @param list<SingleCommandSpec> $singleCommands Commands for analytics.
      * @param list<TopCommandSpec> $topCommands Commands for analytics.
@@ -16,6 +23,16 @@ final class Config {
         public array $singleCommands,
         public array $topCommands,
     ) {}
+
+    public static function fromSingletonArgs(Raw $raw) : self {
+        if($raw->mainConfig !== null) {
+            // TODO load config
+        } else {
+            // TODO generate config
+        }
+
+        return self::default();
+    }
 
     public static function default() : self {
         return new self(

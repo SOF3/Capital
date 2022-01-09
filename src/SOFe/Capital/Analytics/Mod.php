@@ -6,7 +6,6 @@ namespace SOFe\Capital\Analytics;
 
 use Generator;
 use pocketmine\Server;
-use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\ModInterface;
@@ -30,11 +29,11 @@ final class Mod implements ModInterface {
         $plugin = MainClass::get($context);
         $db = Database::get($context);
 
-        foreach($config->analytics->singleCommands as $command) {
+        foreach($config->singleCommands as $command) {
             $command->register($plugin);
         }
 
-        foreach($config->analytics->topCommands as $command) {
+        foreach($config->topCommands as $command) {
             $command->register($plugin, $db);
         }
     }

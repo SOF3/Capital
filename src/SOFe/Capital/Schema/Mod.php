@@ -16,8 +16,6 @@ final class Mod implements ModInterface {
      */
     public static function init(Context $context) : Generator {
         false && yield;
-
-
     }
 
     public static function shutdown(Context $context) : void {

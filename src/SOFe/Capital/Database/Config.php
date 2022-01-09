@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Database;
 
+use SOFe\Capital\Config\Raw;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
+
 /**
  * Settings related to players as account owners.
  */
-final class Config {
+final class Config implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     /**
      * @param array<string, mixed> $libasynql libasynql config.
      * @param bool $logQueries Whether to log queries to the console.
@@ -20,9 +28,9 @@ final class Config {
     /**
      * @param array<string, mixed> $config
      */
-    public static function load(array $config) : self {
+    public static function fromSingletonArgs(Raw $raw) : self {
         return new self(
-            libasynql: $config,
+            libasynql: $raw->dbConfig,
             logQueries: true,
         );
     }

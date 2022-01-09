@@ -27,6 +27,7 @@ final class MainClass extends PluginBase implements Singleton {
     /** @var list<class-string<ModInterface>> */
     public const MODULES = [
         Config\Mod::class,
+        Schema\Mod::class,
         Database\Mod::class,
         Cache\Mod::class,
         Player\Mod::class,

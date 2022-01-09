@@ -7,6 +7,7 @@ namespace SOFe\Capital\Di;
 use Closure;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use ReflectionNamedType;
 use RuntimeException;
 use SOFe\AwaitStd\AwaitStd;
@@ -71,18 +72,23 @@ final class Context implements Singleton {
     /**
      * @return list<mixed>
      */
-    public function resolveArgs(ReflectionFunctionAbstract $method) : array {
+    public function resolveArgs(ReflectionFunctionAbstract $fn) : array {
         $args = [];
 
-        foreach($method->getParameters() as $param) {
+        $fnName = $fn->getName();
+        if($fn instanceof ReflectionMethod) {
+            $fnName = $fn->getDeclaringClass()->getName() . "::" . $fnName;
+        }
+
+        foreach($fn->getParameters() as $param) {
             $paramType = $param->getType();
             if(!($paramType instanceof ReflectionNamedType)) {
-                throw new RuntimeException("Constructor parameter $paramType is not a named type");
+                throw new RuntimeException("$fnName parameter $paramType is not a named type");
             }
 
             $paramClass = $paramType->getName();
             if(!is_subclass_of($paramClass, Singleton::class) && $paramClass !== AwaitStd::class) {
-                throw new RuntimeException("Constructor parameter $paramClass is not a singleton");
+                throw new RuntimeException("$fnName parameter $paramClass is not a singleton");
             }
 
             if($paramClass === AwaitStd::class) {

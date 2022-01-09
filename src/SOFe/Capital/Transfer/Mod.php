@@ -7,7 +7,6 @@ namespace SOFe\Capital\Transfer;
 use Generator;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
-use SOFe\Capital\Config\Config;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\ModInterface;
 use SOFe\Capital\MainClass;
@@ -26,7 +25,7 @@ final class Mod implements ModInterface {
         SuccessContextInfo::init();
 
         $context->call(function(Config $config, MainClass $plugin) {
-            foreach($config->transfer->transferMethods as $method) {
+            foreach($config->transferMethods as $method) {
                 $method->register($plugin);
             }
         });

@@ -10,7 +10,6 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Cache\Cache;
 use SOFe\Capital\Cache\CacheHandle;
-use SOFe\Capital\Config\Config;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 use SOFe\InfoAPI\PlayerInfo;
@@ -48,7 +47,7 @@ final class Session {
      * @return VoidPromise
      */
     private function initAccounts() : Generator {
-        $config = $this->config->player->initialAccounts;
+        $config = $this->config->initialAccounts;
 
         $player = new PlayerInfo($this->player);
         $context = new InitialAccountLabelContextInfo("capital", [

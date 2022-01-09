@@ -6,7 +6,6 @@ namespace SOFe\Capital\Player;
 
 use Generator;
 use pocketmine\Server;
-use SOFe\Capital\Config\Config;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\ModInterface;
 use SOFe\Capital\MainClass;
@@ -27,7 +26,7 @@ final class Mod implements ModInterface {
             $listener = EventListener::instantiateFromContext($context);
             Server::getInstance()->getPluginManager()->registerEvents($listener, $plugin);
 
-            foreach($config->player->infoNames as $name) {
+            foreach($config->infoNames as $name) {
                 InfoAPI::provideInfo(
                     PlayerInfo::class, NumberInfo::class,
                     "capital.player.$name",
