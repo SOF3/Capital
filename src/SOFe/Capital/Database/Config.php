@@ -25,9 +25,6 @@ final class Config implements Singleton, FromContext {
         public bool $logQueries,
     ) {}
 
-    /**
-     * @param array<string, mixed> $config
-     */
     public static function fromSingletonArgs(Raw $raw) : self {
         return new self(
             libasynql: $raw->dbConfig,

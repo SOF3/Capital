@@ -9,6 +9,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\MainClass;
+use function file_exists;
 use function yaml_parse_file;
 
 /**
