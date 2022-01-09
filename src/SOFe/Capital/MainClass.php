@@ -6,6 +6,7 @@ namespace SOFe\Capital;
 
 use Generator;
 use pocketmine\plugin\PluginBase;
+use PrefixedLogger;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Di\Context;
@@ -14,6 +15,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonTrait;
 
 use function array_reverse;
+use function file_put_contents;
 
 final class MainClass extends PluginBase implements Singleton {
     use SingletonTrait;
@@ -38,7 +40,7 @@ final class MainClass extends PluginBase implements Singleton {
     public static Context $context;
 
     protected function onEnable() : void {
-        $context = new Context;
+        $context = new Context(new PrefixedLogger($this->getLogger(), "Di"));
         $context->store(AwaitStd::init($this));
         $context->store($this);
 
@@ -48,6 +50,12 @@ final class MainClass extends PluginBase implements Singleton {
             foreach(self::MODULES as $module) {
                 yield from $module::init($context);
             }
+
+            $context->call(function(MainClass $main, Config\Raw $raw) {
+                if($raw->saveConfig !== null) {
+                    file_put_contents($main->getDataFolder() . "config.yml", $raw->saveConfig);
+                }
+            });
         });
     }
 

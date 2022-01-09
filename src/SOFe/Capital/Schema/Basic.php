@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
-use InvalidArgumentException;
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\Config\ConfigException;
+
 use function count;
 
 /**
@@ -14,9 +15,13 @@ use function count;
  * @implements Schema<BasicVars>
  */
 final class Basic implements Schema {
-    public function cloneWithConfig(array $config) : self {
-        if(count($config) > 0) {
-            throw new InvalidArgumentException("The basis schema does not support configuration");
+    public static function build(array $globalConfig) : self {
+        return new self;
+    }
+
+    public function cloneWithConfig(array $specificConfig) : self {
+        if(count($specificConfig) > 0) {
+            throw new ConfigException("The basis schema does not support configuration");
         }
 
         return clone $this;

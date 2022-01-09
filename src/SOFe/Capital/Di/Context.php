@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Di;
 
 use Closure;
+use Logger;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
@@ -23,7 +24,7 @@ final class Context implements Singleton {
     /** @var array<class-string<Singleton|AwaitStd>, Singleton|AwaitStd> */
     private array $storage = [];
 
-    public function __construct() {
+    public function __construct(private Logger $logger) {
         $this->store($this);
     }
 
@@ -36,6 +37,8 @@ final class Context implements Singleton {
         if($object instanceof Singleton) {
             $event = new StoreEvent($this, $object);
             $event->call();
+
+            $this->logger->debug("Initialized " . get_class($object));
         }
     }
 

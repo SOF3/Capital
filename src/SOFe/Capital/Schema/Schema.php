@@ -16,13 +16,21 @@ use InvalidArgumentException;
  */
 interface Schema {
     /**
+     * Constructs the schema from config.
+     *
+     * @param array<string, mixed> $globalConfig
+     * @return Schema<V>
+     */
+    public static function build(array $globalConfig) : self;
+
+    /**
      * Clones this schema with specific config values.
      *
-     * @param array<string, mixed> $config
+     * @param array<string, mixed> $specificConfig
      * @return Schema<V> A new object that is **not** `$this` (must be a different object even if config is empty)
      * @throws InvalidArgumentException if the config is invalid.
      */
-    public function cloneWithConfig(array $config) : self;
+    public function cloneWithConfig(array $specificConfig) : self;
 
     /**
      * Returns the required variables used in this label set.

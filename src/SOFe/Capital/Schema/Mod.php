@@ -16,6 +16,11 @@ final class Mod implements ModInterface {
      */
     public static function init(Context $context) : Generator {
         false && yield;
+
+        $context->call(function(TypeRegistry $registry) {
+            $registry->register("basic", Basic::class);
+            $registry->register("currency", Currency::class);
+        });
     }
 
     public static function shutdown(Context $context) : void {

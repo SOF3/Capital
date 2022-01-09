@@ -6,6 +6,7 @@ namespace SOFe\Capital\Schema;
 
 use InvalidArgumentException;
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\Config\ConfigException;
 
 /**
  * A schema where each player has one account for each currency.
@@ -16,6 +17,14 @@ final class Currency implements Schema {
     public const LABEL_CURRENCY = "capital/currencySchema/currency";
 
     private ?string $defaultCurrency = null;
+
+    public static function build(array $globalConfig) : self {
+        if(!isset($globalConfig["currencies"])) {
+            throw new ConfigException("schema.currencies missing");
+        }
+
+        return new self($globalConfig["currencies"], $globalConfig["term"] ?? "Currency");
+    }
 
     /**
      * @param list<string> $currencies
