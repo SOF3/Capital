@@ -5,9 +5,13 @@ projects:
     libs:
       - src: poggit/libasynql/libasynql
         version: ^4.0.1
+        epitope: .random
       - src: sof3/await-generator/await-generator
         version: ^3.1.0
+        epitope: .random
       - src: sof3/await-std/await-std
         version: ^0.2.0
+        epitope: .random
       - src: sof3/rwlock.php/rwlock.php
         version: ^0.1.0
+        epitope: .random
