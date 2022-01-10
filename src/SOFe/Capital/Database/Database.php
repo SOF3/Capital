@@ -14,7 +14,6 @@ use poggit\libasynql\result\SqlSelectResult;
 use poggit\libasynql\SqlDialect;
 use poggit\libasynql\SqlError;
 use poggit\libasynql\SqlThread;
-use PrefixedLogger;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;

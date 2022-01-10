@@ -36,13 +36,20 @@ final class Config implements Singleton, FromContext {
         if($mainConfig !== null) {
             try {
                 $schema = $registry->build($mainConfig["schema"]);
+                $schemaType = $mainConfig["schema"]["type"];
             } catch(ConfigException $ex) {
                 $logger->warning("Invalid schema definition! {$ex->getMessage()}");
                 $logger->notice("Regenerating config to adapt to new schema");
 
                 $raw->requestRegenerate();
 
-                $schema = $registry->defaultSchema($mainConfig["schema"]);
+                if(isset($mainConfig["schema"]["type"])) {
+                    $schema = $registry->defaultSchema($mainConfig["schema"]);
+                    $schemaType = $mainConfig["schema"]["type"];
+                } else {
+                    $schema = $registry->defaultSchema(["type" => "basic"]);
+                    $schemaType = "basic";
+                }
             }
         } else {
             $logger->notice("Default config not found, generating new config with basic schema");
@@ -50,6 +57,7 @@ final class Config implements Singleton, FromContext {
             $raw->requestRegenerate();
 
             $schema = $registry->defaultSchema(["type" => "basic"]);
+            $schemaType = "basic";
         }
 
         if($raw->saveConfig !== null) {
@@ -60,8 +68,8 @@ final class Config implements Singleton, FromContext {
                     while the "currency" schema lets you define multiple currencies and sets up one account for each currency for each player.
                     EOT,
                 "#type" => "The type of schema. Possible values are \"" . implode("\", \"", array_keys($registry->getTypes())) . "\".",
-                "type" => "basic",
-            ];
+                "type" => $schemaType,
+            ] + $schema->getConfig();
         }
 
         return new self(

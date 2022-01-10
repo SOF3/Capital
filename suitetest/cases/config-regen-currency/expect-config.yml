@@ -1,0 +1,25 @@
+---
+schema:
+  '#': |-
+    A "schema" tells Capital how to manage accounts for each player.
+    For example, the "basic" schema only sets up one account for each player,
+    while the "currency" schema lets you define multiple currencies and sets up one account for each currency for each player.
+  '#type': The type of schema. Possible values are "basic", "currency".
+  type: currency
+  '##': In the currency schema, each player has one account for each currency.
+  '#currencies': The list of currencies to use
+  currencies:
+  - money
+  '#migrate-unassigned': |-
+    If the player previously had an account from the basic schema or migrated from a plugin without currencies,
+    the original account will be assigned to the currency specified here.
+    If you do not want to migrate the original account, set this to ~.
+  migrate-unassigned: money
+  '#term': The name for the currency argument in commands usage message
+  term: Currency
+  '#default-currency': |-
+    The default currency to use in commands if the user does not specify one.
+    If this is set to ~, the user is required to specify the currency for every command.
+    This option can be overridden in the config for individual commands.
+  default-currency: ~
+...
