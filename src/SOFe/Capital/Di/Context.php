@@ -6,12 +6,15 @@ namespace SOFe\Capital\Di;
 
 use Closure;
 use Logger;
+use PrefixedLogger;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionNamedType;
 use RuntimeException;
 use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\MainClass;
+
 use function get_class;
 use function is_subclass_of;
 
@@ -68,14 +71,14 @@ final class Context implements Singleton {
     //@phpstan-ignore-next-line
     public function call(callable $fn) {
         $reflect = new ReflectionFunction(Closure::fromCallable($fn));
-        $args = $this->resolveArgs($reflect);
+        $args = $this->resolveArgs($reflect, null);
         $fn(...$args);
     }
 
     /**
      * @return list<mixed>
      */
-    public function resolveArgs(ReflectionFunctionAbstract $fn) : array {
+    public function resolveArgs(ReflectionFunctionAbstract $fn, ?string $loggerPrefix) : array {
         $args = [];
 
         $fnName = $fn->getName();
@@ -90,12 +93,24 @@ final class Context implements Singleton {
             }
 
             $paramClass = $paramType->getName();
-            if(!is_subclass_of($paramClass, Singleton::class) && $paramClass !== AwaitStd::class) {
+            if(!is_subclass_of($paramClass, Singleton::class) && $paramClass !== AwaitStd::class && $paramClass !== Logger::class) {
                 throw new RuntimeException("$fnName parameter $paramClass is not a singleton");
             }
 
             if($paramClass === AwaitStd::class) {
                 $args[] = $this->fetchClass(AwaitStd::class);
+            } elseif($paramClass === Logger::class) {
+                // TODO generalize this with factory pattern
+
+                /** @var MainClass $main */
+                $main = $this->storage[MainClass::class];
+
+                $logger = $main->getLogger();
+                if($loggerPrefix !== null) {
+                    $logger = new PrefixedLogger($logger, $loggerPrefix);
+                }
+
+                $args[] = $logger;
             } else {
                 /** @var class-string<Singleton> $paramClass */
                 $args[] = $paramClass::get($this);

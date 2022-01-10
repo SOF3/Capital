@@ -26,6 +26,12 @@ final class Currency implements Schema {
         return new self($globalConfig["currencies"], $globalConfig["term"] ?? "Currency");
     }
 
+    public static function infer(array $inferConfig) : self {
+        return new self(
+            $inferConfig["currencies"] ?? ["money"]
+        );
+    }
+
     /**
      * @param list<string> $currencies
      */
@@ -33,6 +39,17 @@ final class Currency implements Schema {
         private array $currencies,
         private string $currencyTerm = "Currency",
     ) {}
+
+    public function getConfig() : array {
+        $config = [
+            "currencies" => $this->currencies,
+            "term" => $this->currencyTerm,
+        ];
+        if($this->defaultCurrency !== null) {
+            $config["defaultCurrency"] = $this->defaultCurrency;
+        }
+        return $config;
+    }
 
     public function cloneWithConfig(array $config) : self {
         $self = clone $this;

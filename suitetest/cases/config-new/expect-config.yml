@@ -1,0 +1,15 @@
+---
+'#': |-
+  This is the main config file of Capital.
+  You can change the values in this file to configure Capital.
+  If you change some main settings that change the structure (e.g. schema), Capital will try its best
+  to migrate your previous settings to the new structure and overwrite this file.
+  The previous file will be stored in config.yml.old.
+schema:
+  '#': |-
+    A "schema" tells Capital how to manage accounts for each player.
+    For example, the "basic" schema only sets up one account for each player,
+    while the "currency" schema lets you define multiple currencies and sets up one account for each currency for each player.
+  '#type': The type of schema. Possible values are "basic", "currency".
+  type: basic
+...

@@ -2,7 +2,7 @@ PHP = $(shell which php) -dphar.readonly=0
 
 REUSE_MYSQL = false
 
-SUITE_TESTS = suitetest/cases/sqlite suitetest/cases/mysql
+SUITE_TESTS = $(shell echo suitetest/cases/*)
 
 CAPITAL_SOURCE_FILES = plugin.yml $(shell find src resources -type f)
 CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar dev/rwlock.phar
@@ -110,8 +110,8 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	$(PHP) -r '$$file = $$argv[1]; $$contents = file_get_contents($$file); $$data = json_decode($$contents); $$ok = $$data->ok; if($$ok !== true) exit(1);' $@/output/output.json \
 		|| (cat $@/output/output.json && exit 1)
 
-	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/config.yml $@/output/actual-config.yml
-	diff $@/expect-config.yml $@/output/actual-config.yml
+	test ! -f $@/expect-config.yml || docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/config.yml $@/output/actual-config.yml
+	test ! -f $@/expect-config.yml || diff $@/expect-config.yml $@/output/actual-config.yml
 
 debug/suite-mysql:
 	docker exec -it capital-suite-mysql-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'

@@ -42,7 +42,7 @@ final class MainClass extends PluginBase implements Singleton {
     public static Context $context;
 
     protected function onEnable() : void {
-        $context = new Context(new PrefixedLogger($this->getLogger(), "Di"));
+        $context = new Context(new PrefixedLogger($this->getLogger(), Context::class));
         $context->store(AwaitStd::init($this));
         $context->store($this);
 

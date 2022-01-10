@@ -34,7 +34,7 @@ trait SingletonArgs {
             $constructor = fn($args) => $reflect->newInstanceArgs($args);
         }
 
-        $args = $context->resolveArgs($func);
+        $args = $context->resolveArgs($func, static::class);
 
         return $constructor($args);
     }

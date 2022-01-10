@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Schema;
 
 use RuntimeException;
+use SOFe\Capital\Config\ConfigException;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -25,14 +26,34 @@ final class TypeRegistry implements Singleton, FromContext {
     }
 
     /**
+     * @return array<string, class-string<Schema<object>>>
+     */
+    public function getTypes() : array {
+        return $this->types;
+    }
+
+    /**
      * @param array<string, mixed> $config
      * @return Schema<object>
      */
     public function build(array $config) : Schema {
         $type = $config["type"];
         if(!isset($this->types[$type])) {
-            throw new RuntimeException("Unknown schema type $type");
+            throw new ConfigException("Unknown schema type $type");
         }
         return ($this->types[$type])::build($config);
+    }
+
+    /**
+     * @param array<string, mixed> $config The probably invalid config to infer default schema from.
+     * @return Schema<object>
+     */
+    public function defaultSchema(array $config) : Schema {
+        $type = $config["type"];
+        if(!isset($this->types[$type])) {
+            throw new RuntimeException("Unknown schema type $type");
+        }
+
+        return ($this->types[$type])::infer($config);
     }
 }

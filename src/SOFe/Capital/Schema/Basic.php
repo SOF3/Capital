@@ -19,6 +19,14 @@ final class Basic implements Schema {
         return new self;
     }
 
+    public static function infer(array $inferConfig) : self {
+        return new self;
+    }
+
+    public function getConfig() : array {
+        return [];
+    }
+
     public function cloneWithConfig(array $specificConfig) : self {
         if(count($specificConfig) > 0) {
             throw new ConfigException("The basis schema does not support configuration");

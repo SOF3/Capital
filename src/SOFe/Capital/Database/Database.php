@@ -52,20 +52,17 @@ final class Database implements Singleton, FromContext {
 
     /** @var SqlDialect::SQLITE|SqlDialect::MYSQL */
     private string $dialect;
-    private Logger $logger;
     private DataConnector $conn;
     private RawQueries $raw;
 
     private Mutex $sqliteMutex;
 
-    public function __construct(MainClass $plugin, Config $config) {
+    public function __construct(private Logger $logger, MainClass $plugin, Config $config) {
         $this->dialect = match($config->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
             default => throw new RuntimeException("Unsupported SQL dialect " . $config->libasynql["type"]),
         };
-
-        $this->logger = new PrefixedLogger($plugin->getLogger(), "Database");
 
         if($this->dialect === SqlDialect::SQLITE && $config->libasynql["worker-limit"] !== 1) {
             $this->logger->warning("Multi-worker is not supported for SQLite databases. Force setting worker-limit to 1.");

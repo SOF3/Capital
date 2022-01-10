@@ -24,6 +24,21 @@ interface Schema {
     public static function build(array $globalConfig) : self;
 
     /**
+     * Constructs the schema from config.
+     *
+     * @param array<string, mixed> $inferConfig The malformed config to build on.
+     * @return Schema<V>
+     */
+    public static function infer(array $inferConfig) : self;
+
+    /**
+     * Generates the config for this instance.
+     *
+     * @return array<string, mixed>
+     */
+    public function getConfig() : array;
+
+    /**
      * Clones this schema with specific config values.
      *
      * @param array<string, mixed> $specificConfig
