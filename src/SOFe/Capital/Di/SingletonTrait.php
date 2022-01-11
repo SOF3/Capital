@@ -19,8 +19,7 @@ trait SingletonTrait {
                 throw new RuntimeException("$class must implement FromContext or be manually stored into Context");
             }
 
-            $self = yield from $class::instantiateFromContext($context);
-            $context->store($self);
+            $self = yield from $context->loadOrStoreAsync($class, $class::instantiateFromContext($context));
         }
 
         return $self;

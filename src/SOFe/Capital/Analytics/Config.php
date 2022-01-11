@@ -11,6 +11,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\Schema;
 
 final class Config implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
@@ -24,7 +25,7 @@ final class Config implements Singleton, FromContext {
         public array $topCommands,
     ) {}
 
-    public static function fromSingletonArgs(Raw $raw) : self {
+    public static function fromSingletonArgs(Raw $raw, Schema\Config $config) : self {
         if($raw->mainConfig !== null) {
             // TODO load config
         } else {

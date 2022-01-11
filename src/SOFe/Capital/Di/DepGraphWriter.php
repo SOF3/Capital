@@ -65,7 +65,7 @@ final class DepGraphWriter {
 
         try {
             fwrite($f, "digraph G {\n");
-            fwrite($f, "graph [ranksep=0.6, nodesep=0.3]\n");
+            fwrite($f, "graph [ranksep=0.8, nodesep=0.3]\n");
 
             $i = 0;
             foreach($this->clusters as $ns => $nodes) {

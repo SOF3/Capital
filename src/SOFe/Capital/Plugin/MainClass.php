@@ -42,6 +42,8 @@ final class MainClass extends PluginBase implements Singleton {
         self::$context = $context;
 
         Await::f2c(function() use($context) : Generator {
+            yield from self::getStd($context)->sleep(0);
+
             yield from Loader::get($context);
 
             yield from $context->call(function(MainClass $main, Raw $raw) {

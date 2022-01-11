@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
-use Generator;
 use RuntimeException;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Config\ConfigException;
@@ -19,13 +18,13 @@ final class TypeRegistry implements Singleton, FromContext {
     /** @var array<string, class-string<Schema<object>>> */
     private array $types = [];
 
-    /**
-     * @return Generator<mixed, mixed, mixed, self>
-     */
-    public static function fromSingletonArgs(AwaitStd $std) : Generator {
-        yield from $std->sleep(0);
+    public static function fromSingletonArgs(AwaitStd $std) : self {
+        $self = new self;
 
-        return new self;
+        $self->register("basic", Basic::class);
+        $self->register("currency", Currency::class);
+
+        return $self;
     }
 
     /**

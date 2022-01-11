@@ -15,9 +15,6 @@ final class Mod implements Singleton, FromContext {
     public const API_VERSION = "0.1.0";
 
     public static function fromSingletonArgs(TypeRegistry $registry) : self {
-        $registry->register("basic", Basic::class);
-        $registry->register("currency", Currency::class);
-
         return new self;
     }
 }
