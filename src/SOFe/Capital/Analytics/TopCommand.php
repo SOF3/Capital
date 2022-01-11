@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Plugin\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
 use SOFe\InfoAPI\StringInfo;

@@ -16,7 +16,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\LabelSelector;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Plugin\MainClass;
 
 final class Cache implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;

@@ -26,7 +26,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\LabelSelector;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Plugin\MainClass;
 use SOFe\Capital\TransactionQueryMetric;
 use SOFe\RwLock\Mutex;
 use function array_keys;
@@ -56,7 +56,7 @@ final class Database implements Singleton, FromContext {
 
     private Mutex $sqliteMutex;
 
-    public function __construct(private Logger $logger, MainClass $plugin, Config $config) {
+    private function __construct(private Logger $logger, MainClass $plugin, Config $config) {
         $this->dialect = match($config->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
@@ -85,13 +85,17 @@ final class Database implements Singleton, FromContext {
     }
 
     /**
-     * @return VoidPromise
+     * @return Generator<mixed, mixed, mixed, self>
      */
-    public function init() : Generator {
-        yield from match($this->dialect) {
-            SqlDialect::SQLITE => $this->sqliteInit(),
-            SqlDialect::MYSQL => $this->mysqlInit(),
+    public static function fromSingletonArgs(Logger $logger, MainClass $plugin, Config $config) : Generator {
+        $db = new self($logger, $plugin, $config);
+
+        yield from match($db->dialect) {
+            SqlDialect::SQLITE => $db->sqliteInit(),
+            SqlDialect::MYSQL => $db->mysqlInit(),
         };
+
+        return $db;
     }
 
     /**

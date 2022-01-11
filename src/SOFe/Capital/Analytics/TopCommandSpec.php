@@ -6,8 +6,8 @@ namespace SOFe\Capital\Analytics;
 
 use pocketmine\Server;
 use SOFe\Capital\Database\Database;
-use SOFe\Capital\MainClass;
 use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\Plugin\MainClass;
 
 /**
  * View top groups by running a command.

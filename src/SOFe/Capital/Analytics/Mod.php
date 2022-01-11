@@ -4,39 +4,34 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics;
 
-use Generator;
 use pocketmine\Server;
+use SOFe\Capital\Capital;
 use SOFe\Capital\Database\Database;
-use SOFe\Capital\Di\Context;
-use SOFe\Capital\Di\ModInterface;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Di\FromContext;
+use SOFe\Capital\Di\Singleton;
+use SOFe\Capital\Di\SingletonArgs;
+use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\Plugin\MainClass;
 use SOFe\InfoAPI\CommonInfo;
 use SOFe\InfoAPI\InfoAPI;
 
-final class Mod implements ModInterface {
+final class Mod implements Singleton, FromContext {
+    use SingletonArgs, SingletonTrait;
+
     public const API_VERSION = "0.1.0";
 
-    /**
-     * @return VoidPromise
-     */
-    public static function init(Context $context) : Generator {
-        false && yield;
-
+    public static function fromSingletonArgs(Config $config, MainClass $plugin, Capital $api, Database $db) : self {
         InfoAPI::provideFallback(DynamicInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
         InfoAPI::provideFallback(CommandArgsInfo::class, CommonInfo::class, fn($_) => new CommonInfo(Server::getInstance()));
 
-        $config = Config::get($context);
-        $plugin = MainClass::get($context);
-        $db = Database::get($context);
-
         foreach($config->singleCommands as $command) {
-            $command->register($plugin);
+            $command->register($plugin, $api);
         }
 
         foreach($config->topCommands as $command) {
             $command->register($plugin, $db);
         }
-    }
 
-    public static function shutdown(Context $context) : void {}
+        return new self;
+    }
 }

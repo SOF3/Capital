@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SOFe\Capital\Analytics;
 
 use pocketmine\Server;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Capital;
+use SOFe\Capital\Plugin\MainClass;
 
 /**
  * View metrics by running a command.
@@ -34,8 +35,8 @@ final class SingleCommandSpec {
         public SingleMessages $messages,
     ) {}
 
-    public function register(MainClass $plugin) : void {
-        $command = new SingleCommand($plugin, $this);
+    public function register(MainClass $plugin, Capital $api) : void {
+        $command = new SingleCommand($plugin, $api, $this);
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 }

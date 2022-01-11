@@ -1,7 +1,7 @@
 name: Capital
 version: 0.1.0
 api: 4.0.0
-main: SOFe\Capital\MainClass
+main: SOFe\Capital\Plugin\MainClass
 author: SOFe
 load: STARTUP
 depend:

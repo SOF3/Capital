@@ -6,6 +6,7 @@ namespace SOFe\Capital\Transfer;
 
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Constants;
+use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -24,7 +25,7 @@ final class Config implements Singleton, FromContext {
         public array $transferMethods,
     ) {}
 
-    public static function fromSingletonArgs() : self {
+    public static function fromSingletonArgs(Raw $raw) : self {
         return new self(
             transferMethods: [
                 new CommandMethod(

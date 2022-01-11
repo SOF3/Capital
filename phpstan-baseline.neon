@@ -26,12 +26,12 @@ parameters:
 			path: src/SOFe/Capital/Di/Context.php
 
 		-
-			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
+			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\Plugin\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
 			count: 1
-			path: src/SOFe/Capital/MainClass.php
+			path: src/SOFe/Capital/Plugin/MainClass.php
 
 		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
-			path: src/SOFe/Capital/MainClass.php
+			path: src/SOFe/Capital/Plugin/MainClass.php
 

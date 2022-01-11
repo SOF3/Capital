@@ -4,31 +4,37 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Di;
 
+use Generator;
 use RuntimeException;
 use function is_subclass_of;
 
 trait SingletonTrait {
-    /**
-     * Returns the instance of this class in the context.
-     */
-    public static function get(Context $context) : static {
+    public static function get(Context $context) : Generator {
         $class = static::class;
 
-        if(!is_subclass_of($class, Singleton::class)) {
-            throw new RuntimeException("$class must implement Singleton to use SingletonTrait");
-        }
-
-        $self = $context->fetchClass(static::class);
+        $self = self::getOrNull($context);
 
         if($self === null) {
             if(!is_subclass_of($class, FromContext::class)) {
                 throw new RuntimeException("$class must implement FromContext or be manually stored into Context");
             }
 
-            $self = $class::instantiateFromContext($context);
+            $self = yield from $class::instantiateFromContext($context);
             $context->store($self);
         }
 
         return $self;
     }
+
+    public static function getOrNull(Context $context) : ?static {
+        $class = static::class;
+
+        if(!is_subclass_of($class, Singleton::class)) {
+            throw new RuntimeException("$class must implement Singleton to use SingletonTrait");
+        }
+
+        return $context->fetchClass(static::class);
+    }
+
+    public function close() : void {}
 }

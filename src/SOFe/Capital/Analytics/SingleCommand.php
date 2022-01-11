@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Plugin\MainClass;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
 use SOFe\InfoAPI\StringInfo;
@@ -30,7 +30,7 @@ use function assert;
 final class SingleCommand extends Command implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(MainClass $plugin, private SingleCommandSpec $spec) {
+    public function __construct(MainClass $plugin, private Capital $api, private SingleCommandSpec $spec) {
         parent::__construct($spec->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -80,8 +80,8 @@ final class SingleCommand extends Command implements PluginOwned {
                 // TODO merge metrics with the same selector to improve performance.
                 $promise = function() use($info, $selector) {
                     [$metric] = yield from match($info->target) {
-                        Query::TARGET_ACCOUNT => Capital::getAccountMetrics($selector, [$info->getAccountMetric()]),
-                        Query::TARGET_TRANSACTION => Capital::getTransactionMetrics($selector, [$info->getTransactionMetric()]),
+                        Query::TARGET_ACCOUNT => $this->api->getAccountMetrics($selector, [$info->getAccountMetric()]),
+                        Query::TARGET_TRANSACTION => $this->api->getTransactionMetrics($selector, [$info->getTransactionMetric()]),
                     };
 
                     return $metric;

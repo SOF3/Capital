@@ -6,6 +6,7 @@ namespace SOFe\Capital\Player;
 
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Constants;
+use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -28,7 +29,7 @@ final class Config implements Singleton, FromContext {
         public array $infoNames,
     ) {}
 
-    public static function fromSingletonArgs(Schema\Config $schema) : self {
+    public static function fromSingletonArgs(Raw $raw, Schema\Config $schema) : self {
         return new self(
             initialAccounts: [
                 new InitialAccount(

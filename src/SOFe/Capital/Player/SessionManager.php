@@ -44,7 +44,7 @@ final class SessionManager implements Singleton, FromContext {
         $session->close();
     }
 
-    public function shutdown() : void {
+    public function close() : void {
         foreach($this->sessions as $session) {
             $session->close();
         }

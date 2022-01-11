@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital;
+namespace SOFe\Capital\Plugin;
 
 use Generator;
 use pocketmine\plugin\PluginBase;
 use PrefixedLogger;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\Context;
-use SOFe\Capital\Di\ModInterface;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\Loader\Loader;
 
-use function array_reverse;
 use function file_put_contents;
-use function substr;
+use function getenv;
 use function yaml_emit;
 
 final class MainClass extends PluginBase implements Singleton {
@@ -28,20 +28,13 @@ final class MainClass extends PluginBase implements Singleton {
         return $std;
     }
 
-    /** @var list<class-string<ModInterface>> */
-    public const MODULES = [
-        Config\Mod::class,
-        Schema\Mod::class,
-        Database\Mod::class,
-        Cache\Mod::class,
-        Player\Mod::class,
-        Transfer\Mod::class,
-        Analytics\Mod::class,
-    ];
-
     public static Context $context;
 
+    private bool $debug;
+
     protected function onEnable() : void {
+        $this->debug = getenv("CAPITAL_DEBUG") === "1";
+
         $context = new Context(new PrefixedLogger($this->getLogger(), Context::class));
         $context->store(AwaitStd::init($this));
         $context->store($this);
@@ -49,23 +42,24 @@ final class MainClass extends PluginBase implements Singleton {
         self::$context = $context;
 
         Await::f2c(function() use($context) : Generator {
-            foreach(self::MODULES as $module) {
-                $this->getLogger()->debug("Loading " . substr($module, 0, -4));
-                yield from $module::init($context);
-            }
+            yield from Loader::get($context);
 
-            $context->call(function(MainClass $main, Config\Raw $raw) {
+            yield from $context->call(function(MainClass $main, Raw $raw) {
+                false && yield;
+
                 if($raw->saveConfig !== null) {
                     file_put_contents($main->getDataFolder() . "config.yml", yaml_emit($raw->saveConfig));
                 }
             });
+
+            if($this->debug) {
+                $context->getDepGraph()->write($this->getDataFolder() . "depgraph.dot");
+            }
         });
     }
 
     protected function onDisable() : void {
         $context = self::$context;
-        foreach(array_reverse(self::MODULES) as $module) {
-            $module::shutdown($context);
-        }
+        $context->shutdown();
     }
 }

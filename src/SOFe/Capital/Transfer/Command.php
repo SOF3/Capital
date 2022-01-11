@@ -21,8 +21,8 @@ use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Capital;
 use SOFe\Capital\CapitalException;
-use SOFe\Capital\MainClass;
 use SOFe\Capital\OracleNames;
+use SOFe\Capital\Plugin\MainClass;
 use SOFe\Capital\TransactionLabels;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
@@ -36,7 +36,7 @@ use function round;
 final class Command extends PmCommand implements PluginOwned {
     use PluginOwnedTrait;
 
-    public function __construct(MainClass $plugin, private CommandMethod $method) {
+    public function __construct(MainClass $plugin, private Capital $api, private CommandMethod $method) {
         parent::__construct($method->command, "TODO", "TODO");
 
         $permManager = PermissionManager::getInstance();
@@ -103,8 +103,8 @@ final class Command extends PmCommand implements PluginOwned {
             $destLabels = $this->method->dest->transform($info);
             $transactionLabels = $this->method->transactionLabels->transform($info);
 
-            $srcAccounts = yield from Capital::findAccounts($srcLabels);
-            $destAccounts = yield from Capital::findAccounts($destLabels);
+            $srcAccounts = yield from $this->api->findAccounts($srcLabels);
+            $destAccounts = yield from $this->api->findAccounts($destLabels);
 
             if(count($srcAccounts) === 0) {
                 $sender->sendMessage(InfoAPI::resolve($this->method->messages->noSourceAccounts, $info));
@@ -120,7 +120,7 @@ final class Command extends PmCommand implements PluginOwned {
             if($sourceAmount > 0 || $sinkAmount > 0) {
                 $transactionId = Uuid::uuid4();
 
-                $oracle = yield from Capital::getOracle(OracleNames::TRANSFER);
+                $oracle = yield from $this->api->getOracle(OracleNames::TRANSFER);
                 $labels2 = [
                     TransactionLabels::TRANSFER_ORACLE => $transactionId->toString(),
                 ];
@@ -136,13 +136,13 @@ final class Command extends PmCommand implements PluginOwned {
                     $amount2 = $sinkAmount;
                 }
 
-                $promise = Capital::transact2(
+                $promise = $this->api->transact2(
                     $srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels,
                     $src2, $dest2, $amount2, $labels2,
                     $transactionId, null, // we don't need to specify the oracle transaction ID
                 );
             } else {
-                $promise = Capital::transact($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
+                $promise = $this->api->transact($srcAccounts[0], $destAccounts[0], $transferAmount, $transactionLabels);
             }
 
             try {
@@ -158,8 +158,8 @@ final class Command extends PmCommand implements PluginOwned {
             }
 
             [$srcValues, $destValues] = yield from Await::all([
-                Capital::getBalances($srcAccounts),
-                Capital::getBalances($destAccounts),
+                $this->api->getBalances($srcAccounts),
+                $this->api->getBalances($destAccounts),
             ]);
 
             $successInfo = new SuccessContextInfo(

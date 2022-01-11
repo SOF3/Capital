@@ -24,7 +24,7 @@ fmt: $(shell find src -type f) .php-cs-fixer.php
 dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRIONS)
 	$(PHP) dev/ConsoleScript.php --make plugin.yml,src,resources --out $@
 
-	for file in $(CAPITAL_VIRIONS); do $(PHP) $$file $@ SOFe\\Capital\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 16)\\ ; done
+	for file in $(CAPITAL_VIRIONS); do $(PHP) $$file $@ SOFe\\Capital\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 8)\\ ; done
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
 	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capital
@@ -54,8 +54,8 @@ dev/SuiteTester.phar: suitetest/plugin/plugin.yml \
 	dev/ConsoleScript.php \
 	dev/await-generator.phar dev/await-std.phar
 	$(PHP) dev/ConsoleScript.php --make plugin.yml,src --relative suitetest/plugin/ --out $@
-	$(PHP) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
-	$(PHP) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 16)\\
+	$(PHP) dev/await-generator.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 8)\\
+	$(PHP) dev/await-std.phar $@ SOFe\\SuiteTester\\Virions\\$(shell tr -dc A-Za-z </dev/urandom | head -c 8)\\
 
 dev/InfoAPI.phar: Makefile
 	wget -O $@ https://poggit.pmmp.io/get/InfoAPI
@@ -86,6 +86,7 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	docker create --name $(CONTAINER_PREFIX)-pocketmine \
 		--network $(CONTAINER_PREFIX)-network \
 		-e SUITE_TESTER_OUTPUT=/data/output.json \
+		-e CAPITAL_DEBUG=1 \
 		-u root \
 		pmmp/pocketmine-mp:4 \
 		start-pocketmine --debug.level=2
@@ -112,6 +113,9 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 
 	test ! -f $@/expect-config.yml || docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/config.yml $@/output/actual-config.yml
 	test ! -f $@/expect-config.yml || diff $@/expect-config.yml $@/output/actual-config.yml
+
+	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/depgraph.dot $@/output/depgraph.dot
+	command -v dot && dot -T svg -o $@/output/depgraph.svg $@/output/depgraph.dot || true
 
 debug/suite-mysql:
 	docker exec -it capital-suite-mysql-mysql bash -c 'mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE'

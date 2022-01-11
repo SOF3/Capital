@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Di;
 
+use Generator;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
@@ -13,10 +14,7 @@ use RuntimeException;
  * passing singleton arguments into the constructor or the `fromSingletonArgs` static factory.
  */
 trait SingletonArgs {
-    /**
-     * Returns the instance of this class in the context.
-     */
-    public static function instantiateFromContext(Context $context) : static {
+    public static function instantiateFromContext(Context $context) : Generator {
         $reflect = new ReflectionClass(static::class);
 
         try {
@@ -34,8 +32,14 @@ trait SingletonArgs {
             $constructor = fn($args) => $reflect->newInstanceArgs($args);
         }
 
-        $args = $context->resolveArgs($func, static::class);
+        $args = yield from $context->resolveArgs($func, static::class);
 
-        return $constructor($args);
+        $ret = $constructor($args);
+
+        if($ret instanceof Generator) {
+            $ret = yield from $ret;
+        }
+
+        return $ret;
     }
 }

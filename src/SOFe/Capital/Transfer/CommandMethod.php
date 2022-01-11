@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use pocketmine\Server;
-use SOFe\Capital\MainClass;
+use SOFe\Capital\Capital;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\Plugin\MainClass;
 
 /**
  * Transfer money by running a command.
@@ -38,8 +39,8 @@ final class CommandMethod implements Method {
         public Messages $messages,
     ) {}
 
-    public function register(MainClass $plugin) : void {
-        $command = new Command($plugin, $this);
+    public function register(MainClass $plugin, Capital $api) : void {
+        $command = new Command($plugin, $api, $this);
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 }
