@@ -23,7 +23,6 @@ final class SessionManager implements Singleton, FromContext {
 
     public function __construct(
         private Cache $cache,
-        private Database $database,
         private Logger $logger,
     ) {}
 
@@ -33,7 +32,7 @@ final class SessionManager implements Singleton, FromContext {
 
     public function createSession(Player $player) : Session {
         $logger = new PrefixedLogger($this->logger, "Session {$player->getName()}");
-        $session = new Session($this->cache, $this->database, $logger, $player);
+        $session = new Session($this->cache, $player);
         Await::g2c($session->initCache());
         $this->sessions[$player->getId()] = $session;
         return $session;

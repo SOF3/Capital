@@ -21,6 +21,11 @@ parameters:
 			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
 
 		-
+			message: "#^Unable to resolve the template type U in call to method static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:all\\(\\)$#"
+			count: 1
+			path: src/SOFe/Capital/Config/Raw.php
+
+		-
 			message: "#^Method SOFe\\\\Capital\\\\Di\\\\Context\\:\\:fetchClass\\(\\) should return \\(T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\)\\|null but returns T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Di/Context.php

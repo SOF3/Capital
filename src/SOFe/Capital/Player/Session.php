@@ -22,8 +22,6 @@ final class Session {
 
     public function __construct(
         private Cache $cache,
-        private Database $db,
-        private Logger $logger,
         private Player $player,
     ) {}
 
