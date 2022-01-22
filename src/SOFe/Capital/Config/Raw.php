@@ -20,6 +20,7 @@ use function count;
 use function file_exists;
 use function file_put_contents;
 use function gettype;
+use function yaml_emit;
 use function yaml_parse_file;
 
 /**
