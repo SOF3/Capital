@@ -6,10 +6,8 @@ namespace SOFe\Capital\Player;
 
 use Logger;
 use pocketmine\player\Player;
-use PrefixedLogger;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Cache\Cache;
-use SOFe\Capital\Database\Database;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -31,7 +29,6 @@ final class SessionManager implements Singleton, FromContext {
     }
 
     public function createSession(Player $player) : Session {
-        $logger = new PrefixedLogger($this->logger, "Session {$player->getName()}");
         $session = new Session($this->cache, $player);
         Await::g2c($session->initCache());
         $this->sessions[$player->getId()] = $session;

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace SOFe\Capital\Player;
 
 use Generator;
-use Logger;
 use pocketmine\player\Player;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Cache\Cache;
 use SOFe\Capital\Cache\CacheHandle;
-use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
 
 use function assert;
