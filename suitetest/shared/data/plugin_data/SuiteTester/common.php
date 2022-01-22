@@ -4,13 +4,15 @@ use muqsit\fakeplayer\network\listener\ClosureFakePlayerPacketListener;
 use pocketmine\Server;
 use pocketmine\event\Event;
 use pocketmine\event\EventPriority;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
-use SOFe\Capital\Player\CacheReadyEvent;
+use SOFe\Capital\Di\StoreEvent;
+use SOFe\Capital\Loader\Loader;
 use SOFe\SuiteTester\Await;
 use SOFe\SuiteTester\Main;
 
@@ -28,11 +30,11 @@ return function() {
     $server = Server::getInstance();
 
     return [
-        "wait for players to join" => function() use($std) {
-            yield from Await::all([
-                $std->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Alice", false, EventPriority::MONITOR, false),
-                $std->awaitEvent(CacheReadyEvent::class, fn($event) => $event->getPlayer()->getName() === "Bob", false, EventPriority::MONITOR, false),
-            ]);
+        "wait for Capital to initialize" => function() use($std) {
+            yield from $std->awaitEvent(StoreEvent::class, fn($event) => $event->getObject() instanceof Loader, false, EventPriority::MONITOR, false);
+        },
+        "wait for two players to join" => function() use($server, $std) {
+            yield from $std->awaitEvent(PlayerJoinEvent::class, fn($_) => count($server->getOnlinePlayers()) === 2, false, EventPriority::MONITOR, false);
         },
         "setup chat listeners" => function() use($server) {
             false && yield;

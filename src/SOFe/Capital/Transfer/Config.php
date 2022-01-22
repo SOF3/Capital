@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+use Generator;
 use SOFe\Capital\AccountLabels;
+use SOFe\Capital\Config\ConfigInterface;
+use SOFe\Capital\Config\ConfigTrait;
 use SOFe\Capital\Config\Constants;
-use SOFe\Capital\Config\Raw;
+use SOFe\Capital\Config\Parser;
+use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -15,8 +19,8 @@ use SOFe\Capital\OracleNames;
 use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
-final class Config implements Singleton, FromContext {
-    use SingletonArgs, SingletonTrait;
+final class Config implements Singleton, FromContext, ConfigInterface {
+    use SingletonArgs, SingletonTrait, ConfigTrait;
 
     /**
      * @param list<Method> $transferMethods Methods to initiate money transfer between accounts.
@@ -25,7 +29,9 @@ final class Config implements Singleton, FromContext {
         public array $transferMethods,
     ) {}
 
-    public static function fromSingletonArgs(Raw $raw) : self {
+    public static function parse(Parser $config, Context $di) : Generator {
+        false && yield;
+
         return new self(
             transferMethods: [
                 new CommandMethod(

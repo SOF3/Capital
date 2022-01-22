@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics;
 
+use Generator;
 use SOFe\Capital\AccountLabels;
-use SOFe\Capital\Config\Raw;
+use SOFe\Capital\Config\ConfigInterface;
+use SOFe\Capital\Config\ConfigTrait;
+use SOFe\Capital\Config\Parser;
+use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\Schema;
 
-final class Config implements Singleton, FromContext {
-    use SingletonArgs, SingletonTrait;
+final class Config implements Singleton, FromContext, ConfigInterface {
+    use SingletonArgs, SingletonTrait, ConfigTrait;
 
     /**
      * @param list<SingleCommandSpec> $singleCommands Commands for analytics.
@@ -25,7 +28,9 @@ final class Config implements Singleton, FromContext {
         public array $topCommands,
     ) {}
 
-    public static function fromSingletonArgs(Raw $raw, Schema\Config $config) : self {
+    public static function parse(Parser $config, Context $di) : Generator{
+        false && yield;
+
         // TODO
 
         return self::default();

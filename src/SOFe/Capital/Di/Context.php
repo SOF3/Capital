@@ -22,6 +22,7 @@ use SOFe\RwLock\Mutex;
 use function array_reverse;
 use function assert;
 use function get_class;
+use function implode;
 use function is_subclass_of;
 use function microtime;
 
@@ -63,8 +64,23 @@ final class Context implements Singleton {
         $mutex = new Mutex;
         $this->storage[$class] = $mutex;
         yield from $mutex->runClosure(function() use($class, $promise) : Generator {
-            $object = yield from $promise;
-            assert(get_class($object) === $class); // deny subclasses
+            $this->logger->debug("Loading $class");
+
+            $object = yield from MainClass::getStd($this)->timeout($promise, 100);
+            if($object === null) {
+                $blocking = [];
+                foreach($this->storage as $otherClass => $otherMutex) {
+                    if($otherMutex instanceof Mutex && !$otherMutex->isIdle()) {
+                        $blocking[] = $otherClass;
+                    }
+                }
+
+                throw new RuntimeException("$class took more than 5 seconds to initialize (blocking classes: " . implode(", ", $blocking) . ")");
+            }
+
+            if(get_class($object) !== $class) {
+                throw new RuntimeException("$class must not initialize with a subclass");
+            }
 
             $this->store($object);
         });

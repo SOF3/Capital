@@ -20,7 +20,7 @@ trait SingletonArgs {
         try {
             $func = $reflect->getMethod("fromSingletonArgs");
             if(!$func->isStatic()) {
-                throw new RuntimeException("fromSingletonArgs() must be static");
+                throw new RuntimeException("{$reflect->getName()}::{$func->getName()}() must be static");
             }
             $constructor = fn($args) => $func->invokeArgs(null, $args);
         } catch(ReflectionException $_) {

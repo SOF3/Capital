@@ -7,6 +7,7 @@ namespace SOFe\Capital\Config;
 use Closure;
 use Generator;
 use Logger;
+use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital as C;
 use SOFe\Capital\Di\Context;
@@ -18,7 +19,7 @@ use SOFe\Capital\Plugin\MainClass;
 use function count;
 use function file_exists;
 use function file_put_contents;
-use function yaml_emit;
+use function gettype;
 use function yaml_parse_file;
 
 /**
@@ -30,15 +31,15 @@ final class Raw implements Singleton, FromContext {
     private const ALL_CONFIGS = [
         C\Database\Config::class => true,
         C\Schema\Config::class => true,
-        C\Player\Config::class => true,
         C\Analytics\Config::class => true,
         C\Transfer\Config::class => true,
     ];
 
-    /** @var array<class-string, true> */
-    private array $semaphore = self::ALL_CONFIGS;
-    /** @var list<Closure(bool): void> */
-    private array $onSemaphoreEmpty = [];
+    /** @var list<Closure() : void> resolve functions called when all configs are loaded */
+    private array $onConfigLoaded = [];
+
+    /** @var array<class-string<ConfigInterface>, object> Loaded config files are stored here. */
+    private array $loadedConfigs = [];
 
     public Parser $parser;
 
@@ -48,6 +49,7 @@ final class Raw implements Singleton, FromContext {
      */
     public function __construct(
         private Logger $logger,
+        private Context $di,
         private string $dataFolder,
         ?array $mainConfig,
         public array $dbConfig,
@@ -61,88 +63,75 @@ final class Raw implements Singleton, FromContext {
     }
 
     /**
-     * @template T
+     * @template T of ConfigInterface
      * @param class-string<T> $class
-     * @param Closure(Parser): Generator<mixed, mixed, mixed, T> $loader
      * @return Generator<mixed, mixed, mixed, T>
      */
-    public function loadConfig(string $class, Closure $loader) : Generator {
-        $parser = $this->parser;
-
-        try {
-            $ret = yield from $loader($parser);
-
-            unset($this->semaphore[$class]);
-            if(count($this->semaphore) === 0) {
-                $closures = $this->onSemaphoreEmpty;
-                $this->onSemaphoreEmpty = [];
-                foreach($closures as $closure) {
-                    $closure(true);
-                }
-            } else {
-                $this->onSemaphoreEmpty[] = yield Await::RESOLVE;
-                $ok = yield Await::ONCE;
-                if($ok) {
-                    return;
-                }
-            }
-        } catch(ConfigException $e) {
-            // Check if $this->parser changaed, i.e. another config loader threw an exception.
-            if($this->parser === $parser) {
-                $this->logger->error("Error loading config.yml: " . $e->getMessage());
-
-                $backupPath = $this->dataFolder . "config.yml.old";
-                $i = 1;
-                while(file_exists($backupPath)) {
-                    $i += 1;
-                    $backupPath = $this->dataFolder . "config.yml.old.$i";
-                }
-
-                $this->logger->notice("Regenerating new config file. The old file is saved to $backupPath.");
-
-                $this->parser = self::createFailSafeParser($this->parser->getFullConfig());
-
-                $this->semaphore = self::ALL_CONFIGS;
-                $closures = $this->onSemaphoreEmpty;
-                $this->onSemaphoreEmpty = [];
-                foreach($closures as $closure) {
-                    $closure(false);
-                }
-            }
+    public function loadConfig(string $class) : Generator {
+        if(!isset(self::ALL_CONFIGS[$class])) {
+            throw new RuntimeException("Config $class not in " . self::class . "::ALL_CONFIGS");
         }
 
-        yield from $loader($this->parser);
-
-        unset($this->semaphore[$class]);
-        if(count($this->semaphore) === 0) {
-            $closures = $this->onSemaphoreEmpty;
-            $this->onSemaphoreEmpty = [];
-            foreach($closures as $closure) {
-                $closure(true);
-            }
-
-            file_put_contents($this->dataFolder . "config.yml", yaml_emit($this->parser->getFullConfig()));
+        if(count($this->onConfigLoaded) === 0) {
+            yield from $this->loadAll();
         } else {
-            $this->onSemaphoreEmpty[] = yield Await::RESOLVE;
-            $ok = yield Await::ONCE;
+            $this->onConfigLoaded[] = yield Await::RESOLVE;
+            yield Await::ONCE;
         }
+
+        $config = $this->loadedConfigs[$class];
+        if(!($config instanceof $class)) {
+            throw new RuntimeException("$class::parse() returned " . gettype($config));
+        }
+
+        return $config;
     }
 
     /**
      * @return VoidPromise
      */
-    public function loadAll(Context $context) : Generator {
-        /** @var list<Generator<mixed, mixed, mixed, object>> $gens */
-        $gens = [];
+    private function loadAll() : Generator {
+        $this->logger->debug("Start loading configs");
 
+        $promises = [];
+        /** @var class-string<ConfigInterface> $class */
         foreach(self::ALL_CONFIGS as $class => $_) {
-            $gens[] = $class::get($context);
+            $promises[$class] = (function() use($class){
+                $this->loadedConfigs[$class] = yield from $class::parse($this->parser, $this->di);
+            })();
         }
 
-        yield from Await::all($gens);
+        try {
+            yield from Await::all($promises);
+        } catch(ConfigException $e) {
+            $this->logger->error("Error loading config.yml: " . $e->getMessage());
+
+            $backupPath = $this->dataFolder . "config.yml.old";
+            $i = 1;
+            while(file_exists($backupPath)) {
+                $i += 1;
+                $backupPath = $this->dataFolder . "config.yml.old.$i";
+            }
+
+            $this->logger->notice("Regenerating new config file. The old file is saved to $backupPath.");
+
+            $this->parser = self::createFailSafeParser($this->parser->getFullConfig());
+
+            $promises = [];
+            /** @var class-string<ConfigInterface> $class */
+            foreach(self::ALL_CONFIGS as $class => $_) {
+                $promises[$class] = (function() use($class){
+                    $this->loadedConfigs[$class] = yield from $class::parse($this->parser, $this->di);
+                })();
+            }
+
+            yield from Await::all($promises);
+
+            file_put_contents($this->dataFolder . "config.yml", $this->parser->getFullConfig());
+        }
     }
 
-    public static function fromSingletonArgs(MainClass $main, Logger $logger) : self {
+    public static function fromSingletonArgs(MainClass $main, Context $di, Logger $logger) : self {
         if(file_exists($main->getDataFolder() . "config.yml")) {
             $mainConfig = yaml_parse_file($main->getDataFolder() . "config.yml");
         } else {
@@ -152,7 +141,7 @@ final class Raw implements Singleton, FromContext {
         $main->saveResource("db.yml");
         $dbConfig = yaml_parse_file($main->getDataFolder() . "db.yml");
 
-        return new self($logger, $main->getDataFolder(), $mainConfig, $dbConfig);
+        return new self($logger, $di, $main->getDataFolder(), $mainConfig, $dbConfig);
     }
 
     /**

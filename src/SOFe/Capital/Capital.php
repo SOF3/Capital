@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital;
 
 use Generator;
+use Logger;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
@@ -22,6 +23,7 @@ final class Capital implements Singleton, FromContext {
     public const VERSION = "0.1.0";
 
     public function __construct(
+        private Logger $logger,
         private Database $database,
     ) {}
 
@@ -126,6 +128,8 @@ final class Capital implements Singleton, FromContext {
         if(count($accounts) > 0) {
             return $accounts[0];
         }
+
+        $this->logger->debug("Initialized oracle $name");
 
         // Do not apply valueMin and valueMax on this account,
         // otherwise we will get failing transactions and it's no longer an oracle.
