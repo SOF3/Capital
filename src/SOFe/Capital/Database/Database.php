@@ -138,6 +138,10 @@ final class Database implements Singleton, FromContext {
         $this->conn->close();
     }
 
+    public function getDataConnector() : DataConnector {
+        return $this->conn;
+    }
+
 
     // Accounts
 
