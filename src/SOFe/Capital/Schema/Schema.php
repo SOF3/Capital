@@ -5,80 +5,105 @@ declare(strict_types=1);
 namespace SOFe\Capital\Schema;
 
 use InvalidArgumentException;
+use SOFe\Capital\Config\Parser;
+use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\InfoAPI\Info;
 
 /**
  * `Schema` defines the common player account labels and how to generate them.
  *
  * This provides a simpler abstraction for other plugins to handle configuration
  * without exposing the raw concept of labels to users directly.
- *
- * @template V of object The class storing variables.
  */
 interface Schema {
     /**
      * Constructs the schema from config.
-     *
-     * @param array<string, mixed> $globalConfig
-     * @return Schema<V>
      */
-    public static function build(array $globalConfig) : self;
+    public static function build(Parser $globalConfig) : self;
 
     /**
-     * Constructs the schema from config.
-     *
-     * @param array<string, mixed> $inferConfig The malformed config to build on.
-     * @return Schema<V>
+     * Returns the config description of the schema type.
      */
-    public static function infer(array $inferConfig) : self;
-
-    /**
-     * Generates the config for this instance.
-     *
-     * @return array<string, mixed>
-     */
-    public function getConfig() : array;
+    public static function describe() : string;
 
     /**
      * Clones this schema with specific config values.
      *
-     * @param array<string, mixed> $specificConfig
-     * @return Schema<V> A new object that is **not** `$this` (must be a different object even if config is empty)
+     * @return Schema A new object that is **not** `$this` (must be a different object even if config is empty)
      * @throws InvalidArgumentException if the config is invalid.
      */
-    public function cloneWithConfig(array $specificConfig) : self;
+    public function cloneWithConfig(?Parser $specificConfig) : self;
+
+    /**
+     * Returns whether all required variables have been populated.
+     */
+    public function isComplete() : bool;
 
     /**
      * Returns the required variables used in this label set.
      *
-     * The list of values may depend on the config values,
-     * e.g. if config did not specify some value, it can be added to the list of required variables.
+     * The list of values depends on the config values.
+     * Variables are required only if they are not already set.
      *
-     * @return iterable<SchemaVariable<V, mixed>>
+     * `isComplete` returns true if and only if this method returns an empty iterator.
+     *
+     * After all variables returned by this method
+     * have been called [`Variable::processValue`] without throwing exceptions,
+     * this schema object is mutated such that `isComplete` must return true.
+     *
+     * @return iterable<Variable<static, mixed>>
      */
     public function getRequiredVariables() : iterable;
 
     /**
      * Returns the optional variables used in this label set.
      *
-     * @return iterable<SchemaVariable<V, mixed>>
+     * The list of values depends on the config values.
+     * Variables are moved from required to optional after they have been set.
+     *
+     * @return iterable<Variable<static, mixed>>
      */
     public function getOptionalVariables() : iterable;
 
     /**
-     * Creates a new instance of `V`, with default values set.
+     * Returns the parameterized label selector with the given settings,
+     * or null if the required variables have not all been set.
      *
-     * It is allowed that some required fields remain uninitialized,
-     * as long as they are initialized in populators in `getRequiredVariables`.
+     * This method returns null if and only if `isComplete()` returns false.
      *
-     * @return V
+     * @param string $playerPath The path to parameterize the player info.
+     * @return ParameterizedLabelSelector<Info>
      */
-    public function newV() : object;
+    public function getSelector(string $playerPath) : ?ParameterizedLabelSelector;
 
     /**
-     * Returns the (parameterized) label set/selector, including global labels set by the config.
+     * Returns the labels to be overwritten every time an account is loaded.
+     * Reteurns null if and only if `isComplete()` is false.
      *
-     * @param V $v
-     * @return array<string, string>
+     * This is used for modifying existing configuration,
+     * e.g. setting minimum and maximum values of accounts.
+     *
+     * @return ParameterizedLabelSet<Info>
      */
-    public function vToLabels($v, string $playerPath) : array;
+    public function getOverwriteLabels(string $playerPath) : ?ParameterizedLabelSet;
+
+    /**
+     * Returns the account migration settings.
+     * Returns null if `isComplete()` is false OR
+     * if the schema is configured such that migration is not supported.
+     *
+     * @param string $playerPath The path to parameterize the player info.
+     * @return MigrationSetup<Info>
+     */
+    public function getMigrationSetup(string $playerPath) : ?MigrationSetup;
+
+    /**
+     * Returns the initial accounts to create for this schema.
+     * Returns null if and only if `isComplete()` is false.
+     *
+     * @param string $playerPath The path to parameterize the player info.
+     * @return InitialSetup<Info>
+     */
+    public function getInitialSetup(string $playerPath) : ?InitialSetup;
 }

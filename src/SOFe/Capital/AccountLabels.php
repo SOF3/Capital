@@ -25,4 +25,7 @@ final class AccountLabels {
 
     /** Expose the account as an InfoAPI subinfo for a player. The value is the info name prefixed by `capital.player.`. */
     public const PLAYER_INFO_NAME = "capital/playerInfoName";
+
+    /** Indicates that the account was migrated from the source specified in the value. */
+    public const MIGRATION_SOURCE = "capital/migrationSource";
 }

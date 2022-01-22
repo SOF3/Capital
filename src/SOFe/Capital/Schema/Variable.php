@@ -14,10 +14,10 @@ use function in_array;
  * A schema variable is a scalar specified by users when interacting with Capital
  * to select user accounts.
  *
- * @template V of object the variable part of the schema
+ * @template S of Schema The schema to populate.
  * @template T The type that the variable actually uses.
  */
-final class SchemaVariable {
+final class Variable {
     /** A string variable */
     public const TYPE_STRING = "string";
     /** An integer variable */
@@ -28,13 +28,13 @@ final class SchemaVariable {
     public const TYPE_BOOL = "bool";
 
     /**
-     * @param SchemaVariable::TYPE_* $type The type of the variable.
+     * @param Variable::TYPE_* $type The type of the variable.
      * @param string $name A short, human-readable description of the variable, used in command usage and CustomForm component names.
-     * @param Closure(V, T): void $populate A function that populates the schema variable object with the given value.
+     * @param Closure(S, T): void $populate A function that populates the schema with the given value.
      * @param null|Closure(mixed): T $transform A function to transform the raw response into the type that the variable uses. The input may be command argument string or form response entry. The output is used in `$populate` and `$validate`. Throws an `InvalidArgumentException` if the input is invalid. The exception message will be sent to the player.
      * @param null|Closure(T): void $validate A function to validate the transformed response. The input is the transformed response. Throws an `InvalidArgumentException` if the input is invalid. The exception message will be sent to the player.
-     * @param null|list<string> $enumValues A list of possible string values. Only allowed if `$type` is `SchemaVariable::TYPE_STRING`. This is executed before `$validate`.
-     * @param null|array{int, int}|array{float, float} $range The range of the variable. Only allowed if `$type` is `SchemaVariable::TYPE_INT` or `SchemaVariable::TYPE_FLOAT`. This is executed before `$validate`.
+     * @param null|list<string> $enumValues A list of possible string values. Only allowed if `$type` is `Variable::TYPE_STRING`. This is executed before `$validate`.
+     * @param null|array{int, int}|array{float, float} $range The range of the variable. Only allowed if `$type` is `Variable::TYPE_INT` or `Variable::TYPE_FLOAT`. This is executed before `$validate`.
      * @param null|T $default The default value of the variable.
      */
     public function __construct(
@@ -56,10 +56,10 @@ final class SchemaVariable {
     }
 
     /**
-     * @param V $v
+     * @param S $schema
      * @throws InvalidArgumentException
      */
-    public function processValue(mixed $value, object $v) : void {
+    public function processValue(mixed $value, Schema $schema) : void {
         if($this->transform !== null) {
             $value = ($this->transform)($value);
         }
@@ -84,6 +84,6 @@ final class SchemaVariable {
             ($this->validate)($value);
         }
 
-        ($this->populate)($v, $value);
+        ($this->populate)($schema, $value);
     }
 }

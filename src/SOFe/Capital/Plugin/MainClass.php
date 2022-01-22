@@ -9,15 +9,12 @@ use pocketmine\plugin\PluginBase;
 use PrefixedLogger;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
-use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\Loader\Loader;
 
-use function file_put_contents;
 use function getenv;
-use function yaml_emit;
 
 final class MainClass extends PluginBase implements Singleton {
     use SingletonTrait;
@@ -45,14 +42,6 @@ final class MainClass extends PluginBase implements Singleton {
             yield from self::getStd($context)->sleep(0);
 
             yield from Loader::get($context);
-
-            yield from $context->call(function(MainClass $main, Raw $raw) {
-                false && yield;
-
-                if($raw->saveConfig !== null) {
-                    file_put_contents($main->getDataFolder() . "config.yml", yaml_emit($raw->saveConfig));
-                }
-            });
 
             if($this->debug) {
                 $context->getDepGraph()->write($this->getDataFolder() . "depgraph.dot");

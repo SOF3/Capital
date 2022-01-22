@@ -26,11 +26,7 @@ final class Config implements Singleton, FromContext {
     ) {}
 
     public static function fromSingletonArgs(Raw $raw, Schema\Config $config) : self {
-        if($raw->mainConfig !== null) {
-            // TODO load config
-        } else {
-            // TODO generate config
-        }
+        // TODO
 
         return self::default();
     }

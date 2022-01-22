@@ -6,6 +6,7 @@ namespace SOFe\Capital\Schema;
 
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
+
 use function array_merge;
 use function array_shift;
 use function count;
@@ -14,12 +15,9 @@ final class SchemaUtils {
     /**
      * Parses command arguments (and removes them) and returns the label set for the schema.
      *
-     * @template V of object
-     * @param Schema<V> $schema
      * @param list<string> $args
-     * @return null|array<string, string>
      */
-    public static function fromCommand(Schema $schema, array &$args, CommandSender $sender, string $playerPath) : ?array {
+    public static function fromCommand(Schema $schema, array &$args, CommandSender $sender, string $playerPath) : Schema {
         $required = [];
         foreach($schema->getRequiredVariables() as $var) {
             $required[] = $var;
@@ -36,7 +34,7 @@ final class SchemaUtils {
             throw new InvalidArgumentException("Usage: " . self::getUsage($schema));
         }
 
-        $v = $schema->newV();
+        $clone = $schema->cloneWithConfig(null);
 
         foreach(array_merge($required, $optional) as $variable) {
             if(count($args) === 0) {
@@ -46,20 +44,17 @@ final class SchemaUtils {
             $value = array_shift($args);
 
             try {
-                $variable->processValue($value, $v);
+                $variable->processValue($value, $clone);
             } catch(InvalidArgumentException $ex) {
                 throw new InvalidArgumentException("Invalid value for {$variable->name}: {$ex->getMessage()}");
             }
         }
 
-        return $schema->vToLabels($v, $playerPath);
+        return $schema;
     }
 
     /**
      * Generates a command usage string for the given schema.
-     *
-     * @template V of object
-     * @param Schema<V> $schema
      */
     public static function getUsage(Schema $schema) : string {
         $required = $schema->getRequiredVariables();

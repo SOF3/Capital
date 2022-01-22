@@ -5,34 +5,35 @@ declare(strict_types=1);
 namespace SOFe\Capital\Schema;
 
 use SOFe\Capital\AccountLabels;
-use SOFe\Capital\Config\ConfigException;
-
-use function count;
+use SOFe\Capital\Config\Parser;
+use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\ParameterizedLabelSet;
 
 /**
  * The basic schema where each player only has one account.
- *
- * @implements Schema<BasicVars>
  */
 final class Basic implements Schema {
-    public static function build(array $globalConfig) : self {
-        return new self;
+    public static function build(Parser $globalConfig) : self {
+        $initialAccount = AccountConfig::parse($globalConfig->enter("account", <<<'EOT'
+            The initial account setup.
+            EOT));
+        return new self($initialAccount);
     }
 
-    public static function infer(array $inferConfig) : self {
-        return new self;
+    public function __construct(
+        private AccountConfig $initialAccount,
+    ) {}
+
+    public static function describe() : string {
+        return "Each player only has one account.";
     }
 
-    public function getConfig() : array {
-        return [];
-    }
-
-    public function cloneWithConfig(array $specificConfig) : self {
-        if(count($specificConfig) > 0) {
-            throw new ConfigException("The basis schema does not support configuration");
-        }
-
+    public function cloneWithConfig(?Parser $specificConfig) : self {
         return clone $this;
+    }
+
+    public function isComplete() : bool {
+        return true;
     }
 
     public function getRequiredVariables() : iterable {
@@ -43,13 +44,21 @@ final class Basic implements Schema {
         return [];
     }
 
-    public function newV() : BasicVars {
-        return new BasicVars;
+    public function getSelector(string $playerPath) : ?ParameterizedLabelSelector {
+        return new ParameterizedLabelSelector([
+            AccountLabels::PLAYER_UUID => "{{$playerPath} uuid}",
+        ]);
     }
 
-    public function vToLabels($v, string $playerPath) : array {
-        return [
-            AccountLabels::PLAYER_UUID => "{{$playerPath} uuid}",
-        ];
+    public function getOverwriteLabels(string $playerPath) : ?ParameterizedLabelSet {
+        return $this->initialAccount->getOverwriteLabels($playerPath);
+    }
+
+    public function getMigrationSetup(string $playerPath) : ?MigrationSetup {
+        return $this->initialAccount->getMigrationSetup($playerPath);
+    }
+
+    public function getInitialSetup(string $playerPath) : ?InitialSetup {
+        return $this->initialAccount->getInitialSetup($playerPath);
     }
 }

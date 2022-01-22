@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
-use RuntimeException;
-use SOFe\AwaitStd\AwaitStd;
-use SOFe\Capital\Config\ConfigException;
+use SOFe\Capital\Config\Parser;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -15,10 +13,10 @@ use SOFe\Capital\Di\SingletonTrait;
 final class TypeRegistry implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
-    /** @var array<string, class-string<Schema<object>>> */
+    /** @var array<string, class-string<Schema>> */
     private array $types = [];
 
-    public static function fromSingletonArgs(AwaitStd $std) : self {
+    public static function fromSingletonArgs() : self {
         $self = new self;
 
         $self->register("basic", Basic::class);
@@ -28,42 +26,31 @@ final class TypeRegistry implements Singleton, FromContext {
     }
 
     /**
-     * @template V of object
-     * @param class-string<Schema<V>> $class
+     * @param class-string<Schema> $class
      */
     public function register(string $name, string $class) : void {
         $this->types[$name] = $class;
     }
 
     /**
-     * @return array<string, class-string<Schema<object>>>
+     * @return array<string, class-string<Schema>>
      */
     public function getTypes() : array {
         return $this->types;
     }
 
-    /**
-     * @param array<string, mixed> $config
-     * @return Schema<object>
-     */
-    public function build(array $config) : Schema {
-        $type = $config["type"];
-        if(!isset($this->types[$type])) {
-            throw new ConfigException("Unknown schema type $type");
+    public function build(Parser $config) : Schema {
+        $doc = "The type of the schema. Possible values include:\n";
+        foreach($this->types as $typeName => $class) {
+            $doc .= "\n$typeName: " . $class::describe();
         }
+
+        $type = $config->expectString("type", "basic", $doc);
+
+        if(!isset($this->types[$type])) {
+            $type = $config->failSafe("basic", "Unknown schema type $type");
+        }
+
         return ($this->types[$type])::build($config);
-    }
-
-    /**
-     * @param array<string, mixed> $config The probably invalid config to infer default schema from.
-     * @return Schema<object>
-     */
-    public function defaultSchema(array $config) : Schema {
-        $type = $config["type"];
-        if(!isset($this->types[$type])) {
-            throw new RuntimeException("Unknown schema type $type");
-        }
-
-        return ($this->types[$type])::infer($config);
     }
 }
