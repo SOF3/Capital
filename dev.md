@@ -133,7 +133,35 @@ which provides more user-friendly and type-safe APIs than the `Database` class.
 
 ## Labels
 
-<!-- TODO -->
+The Capital database is gameplay-agnostic.
+This means the database design is independent of how accounts are created.
+The database module does not know anything about players or currencies or worlds.
+Instead, each account is attached with *labels* (a string-to-string map),
+which provide information about the account and enable account searching.
+
+Each player may have zero or more accounts,
+determined by the [schema](#schema) configured.
+Generally speaking, player accounts are identified by the `capital/playerUuid` label
+(or `capital/playerName` if username display is required);
+analytics modules can use this label to identify accounts associated to a player.
+
+Capital aims to provide reproducible transactions.
+All account balance changes other than initial account creation
+should be performed through a transaction.
+In the case of balance change as initiated by an operator
+or automatic reward provided by certain gameplay (e.g. kill reward),
+a system account (known as an "oracle") should be used as the payer/payee.
+Oracles do not have player identification labels like `capital/playerUuid`,
+but they use the `capital/oracle` to identify themselves.
+
+Other modules/plugins can also define other account types.
+As long as they have their own labels that do not collide with existing labels,
+they are expected to work smoothly along with other components.
+
+Transactions can also have their own labels.
+At the current state, the exact usage of transaction labels is not confirmed yet.
+It is expected that transaction labels can be used to analyze economic activity,
+such as the amount of capital flow in certain industries.
 
 ## Schema
 
@@ -148,6 +176,14 @@ which provides more user-friendly and type-safe APIs than the `Database` class.
 <!-- TODO -->
 
 ## Transfer
+
+<!-- TODO -->
+
+## Migration
+
+<!-- TODO -->
+
+## Archiving
 
 <!-- TODO -->
 
