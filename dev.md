@@ -163,9 +163,74 @@ At the current state, the exact usage of transaction labels is not confirmed yet
 It is expected that transaction labels can be used to analyze economic activity,
 such as the amount of capital flow in certain industries.
 
+The database can search accounts and transactions matching a "label selector",
+which is an array of label names to values.
+Accounts/transactions are matched by a selector if
+they have all the labels specified in the selector.
+An empty value in a label selector matches all accounts/transactions
+with that label name regardless of the value.
+
 ## Schema
 
-<!-- TODO -->
+A schema abstracts the concept of labels
+by expressing them in more user-friendly terminology.
+A schema is responsible for defining the accounts for a player
+and parsing config into a specific account selector.
+
+There are currently two builtin schema types:
+
+- `basic`: Each player uses the same account for everything.
+- `currency`: Currencies are defined in schema config,
+  where each player has one account for each currency.
+
+There are other planned schema types, which impose speical challenges:
+
+- `world`: Each player has one account for each world.
+  This means accounts must be created lazily and dynamically,
+  because new worlds may be loaded over time.
+- `wallet`: Accounts are bound to inventory items instead of players.
+  Players can spend money in an account
+  when the item associated with the account is in the player's inventory.
+  This means the player label is mutable and require real-time updating.
+
+Let's explain how schemas work with a payment command and a currency schema.
+The default schema is configured as:
+
+```yaml
+schema:
+  type: currency
+  currencies:
+    coins: {...}
+    gems: {...}
+    tokens: {...}
+```
+
+The payment command is configured with a section like this:
+
+```yaml
+accounts:
+  allowed-currencies: [coins, tokens]
+```
+
+This config section is passed to the default schema,
+which returns a new `Schema` object that
+only contains the currency subset `[coins, tokens]`.
+
+When a player runs the payment command (e.g. `/pay SOFe 100 coins`),
+the remaining command arguments (`["coins"]`)
+are passed to the subset schema,
+which decides to parse the first argument as the currency name.
+Since we only use the subset schema,
+only coins and tokens are accepted.
+The subset schema returns a final `Schema` object
+that knows `coins` have been selected.
+The sender and recipient are passed to the final `Schema`,
+which returns a label selector for the sender and recipient accounts.
+If no eligible accounts are found,
+the plugin tries to migrate the accounts
+from imported sources as specified by the schema.
+If no migration is eligible,
+it creates new accounts based on initial setup specified by the schema.
 
 ## Cache
 
@@ -190,3 +255,4 @@ such as the amount of capital flow in certain industries.
 ## Integration testing
 
 <!-- TODO -->
+
