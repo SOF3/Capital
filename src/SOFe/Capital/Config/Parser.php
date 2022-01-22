@@ -30,6 +30,10 @@ final class Parser {
         private bool $failSafe,
     ) {}
 
+    public function isFailSafe() : bool {
+        return $this->failSafe;
+    }
+
     /**
      * Returns the full config array (not just this parser).
      *

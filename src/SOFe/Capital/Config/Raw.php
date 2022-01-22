@@ -126,8 +126,10 @@ final class Raw implements Singleton, FromContext {
             }
 
             yield from Await::all($promises);
+        }
 
-            file_put_contents($this->dataFolder . "config.yml", $this->parser->getFullConfig());
+        if($this->parser->isFailSafe()) {
+            file_put_contents($this->dataFolder . "config.yml", yaml_emit($this->parser->getFullConfig()));
         }
     }
 
