@@ -13,6 +13,7 @@ use function gettype;
 use function implode;
 use function is_array;
 use function is_bool;
+use function is_float;
 use function is_int;
 use function is_string;
 use function range;
@@ -86,6 +87,20 @@ final class Parser {
         }
 
         return $value;
+    }
+
+    /**
+     * @throws ConfigException
+     */
+    public function expectNumber(string $key, float $default, string $doc, bool $required = true) : float {
+        $value = $this->expectAny($key, $default, $doc, $required, $path);
+
+        if(!is_int($value) && !is_float($value)) {
+            $value = $this->failSafe((float) $value, "Expected number for $key, got " . gettype($value));
+            $this->data->set($path, $value);
+        }
+
+        return (float) $value;
     }
 
     /**

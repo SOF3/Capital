@@ -17,8 +17,8 @@ use function json_encode;
  * @template K
  * @template V
  */
-final class CacheInstance {
-    /** @var array<string, CacheEntry<V>> */
+final class Instance {
+    /** @var array<string, Entry<V>> */
     private array $entries = [];
 
     /**
@@ -46,7 +46,7 @@ final class CacheInstance {
         }
 
         $value = yield from $this->type->fetchEntry($this->db, $key);
-        $entry = new CacheEntry($value);
+        $entry = new Entry($value);
         $this->entries[$string] = $entry;
     }
 

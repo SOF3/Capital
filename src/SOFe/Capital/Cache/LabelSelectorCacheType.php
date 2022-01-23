@@ -17,12 +17,12 @@ use function count;
  */
 final class LabelSelectorCacheType implements CacheType {
     /**
-     * @param CacheInstance<UuidInterface, int> $accountCache
-     * @param CacheInstance<UuidInterface, array<string, string>> $accountLabelCache
+     * @param Instance<UuidInterface, int> $accountCache
+     * @param Instance<UuidInterface, array<string, string>> $accountLabelCache
      */
     public function __construct(
-        private CacheInstance $accountCache,
-        private CacheInstance $accountLabelCache,
+        private Instance $accountCache,
+        private Instance $accountLabelCache,
     ) {}
 
     public function keyToString($key) : string {

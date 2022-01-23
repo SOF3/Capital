@@ -7,7 +7,7 @@ namespace SOFe\Capital\Cache;
 /**
  * @template V
  */
-final class CacheEntry {
+final class Entry {
     private int $refCount = 1;
 
     /**

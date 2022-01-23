@@ -6,7 +6,6 @@ namespace SOFe\Capital\Cache;
 
 use Generator;
 use Logger;
-use PrefixedLogger;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
@@ -16,34 +15,34 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\LabelSelector;
-use SOFe\Capital\Plugin\MainClass;
 
 final class Cache implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
-    private Logger $logger;
+    /** @var Instance<LabelSelector, list<UuidInterface>> */
+    private Instance $labelSelectorCache;
+    /** @var Instance<UuidInterface, int> */
+    private Instance $accountCache;
+    /** @var Instance<UuidInterface, array<string, string>> */
+    private Instance $accountLabelCache;
 
-    /** @var CacheInstance<LabelSelector, list<UuidInterface>> */
-    private CacheInstance $labelSelectorCache;
-    /** @var CacheInstance<UuidInterface, int> */
-    private CacheInstance $accountCache;
-    /** @var CacheInstance<UuidInterface, array<string, string>> */
-    private CacheInstance $accountLabelCache;
-
-    public function __construct(MainClass $plugin, Database $db, AwaitStd $std) {
-        $this->logger = new PrefixedLogger($plugin->getLogger(), "Cache");
-
-        $accountCache = new CacheInstance($db, $std, new AccountCacheType);
+    public function __construct(
+        private Logger $logger,
+        Database $db,
+        AwaitStd $std,
+        Config $config,
+    ) {
+        $accountCache = new Instance($db, $std, new AccountCacheType);
         $this->accountCache = $accountCache;
 
-        $accountLabelCache = new CacheInstance($db, $std, new AccountLabelCacheType);
+        $accountLabelCache = new Instance($db, $std, new AccountLabelCacheType);
         $this->accountLabelCache = $accountLabelCache;
 
-        $this->labelSelectorCache = new CacheInstance($db, $std, new LabelSelectorCacheType($accountCache, $accountLabelCache));
+        $this->labelSelectorCache = new Instance($db, $std, new LabelSelectorCacheType($accountCache, $accountLabelCache));
 
-        Await::g2c($this->accountCache->refreshLoop(100));
-        Await::g2c($this->accountLabelCache->refreshLoop(1200));
-        Await::g2c($this->labelSelectorCache->refreshLoop(1200));
+        Await::g2c($this->accountCache->refreshLoop($config->accountBalanceRefreshInterval));
+        Await::g2c($this->accountLabelCache->refreshLoop($config->labelSetRefreshInterval));
+        Await::g2c($this->labelSelectorCache->refreshLoop($config->selectorMatchRefreshInterval));
     }
 
     public function getLogger() : Logger {
@@ -51,31 +50,31 @@ final class Cache implements Singleton, FromContext {
     }
 
     /**
-     * @return Generator<mixed, mixed, mixed, CacheHandle>
+     * @return Generator<mixed, mixed, mixed, Handle>
      */
     public function query(LabelSelector $labelSelector) : Generator {
         yield from $this->labelSelectorCache->fetch($labelSelector);
-        return new CacheHandle($this, $labelSelector);
+        return new Handle($this, $labelSelector);
     }
 
     /**
-     * @return CacheInstance<LabelSelector, list<UuidInterface>>
+     * @return Instance<LabelSelector, list<UuidInterface>>
      */
-    public function getLabelSelectorCache() : CacheInstance {
+    public function getLabelSelectorCache() : Instance {
         return $this->labelSelectorCache;
     }
 
     /**
-     * @return CacheInstance<UuidInterface, int>
+     * @return Instance<UuidInterface, int>
      */
-    public function getAccountCache() : CacheInstance {
+    public function getAccountCache() : Instance {
         return $this->accountCache;
     }
 
     /**
-     * @return CacheInstance<UuidInterface, array<string, string>>
+     * @return Instance<UuidInterface, array<string, string>>
      */
-    public function getAccountLabelCache() : CacheInstance {
+    public function getAccountLabelCache() : Instance {
         return $this->accountLabelCache;
     }
 }

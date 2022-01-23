@@ -7,7 +7,7 @@ namespace SOFe\Capital\Cache;
 use RuntimeException;
 use SOFe\Capital\LabelSelector;
 
-final class CacheHandle {
+final class Handle {
     private bool $released = false;
 
     public function __construct(
@@ -33,7 +33,7 @@ final class CacheHandle {
 
     public function release() : void {
         if($this->released) {
-            throw new RuntimeException("Attempt to release the same CacheHandle twice");
+            throw new RuntimeException("Attempt to release the same Handle twice");
         }
 
         $this->cache->getLabelSelectorCache()->free($this->labelSelector);
@@ -42,7 +42,7 @@ final class CacheHandle {
 
     public function __destruct() {
         if(!$this->released) {
-            $this->cache->getLogger()->warning("CacheHandle ({$this->labelSelector->debugDisplay()}) leak detected");
+            $this->cache->getLogger()->warning("Handle ({$this->labelSelector->debugDisplay()}) leak detected");
         }
     }
 }
