@@ -10,7 +10,7 @@ use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\LabelSet;
-use SOFe\InfoAPI\Info;
+use function mb_strtolower;
 
 /**
  * The configuration in a schema that describes a single account.

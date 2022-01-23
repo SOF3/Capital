@@ -1,4 +1,5 @@
 PHP = $(shell which php) -dphar.readonly=0
+COMPOSER = dev/composer.phar
 
 REUSE_MYSQL = false
 
@@ -11,14 +12,14 @@ CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
 
 default: phpstan dev/Capital.phar
 
-phpstan: src/SOFe/Capital/Database/RawQueries.php
+phpstan: src/SOFe/Capital/Database/RawQueries.php vendor
 	$(PHP) vendor/bin/phpstan analyze
 phpstan-baseline.neon/clear:
 	echo > phpstan-baseline.neon
-phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php
+phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php vendor
 	$(PHP) vendor/bin/phpstan analyze --generate-baseline
 
-fmt: $(shell find src -type f) .php-cs-fixer.php
+fmt: $(shell find src -type f) .php-cs-fixer.php vendor
 	$(PHP) vendor/bin/php-cs-fixer fix $$EXTRA_FLAGS
 
 dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRIONS)
@@ -28,6 +29,13 @@ dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRION
 
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
 	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capital
+
+dev/composer.phar: Makefile
+	cd dev && wget -O - https://getcomposer.org/installer | $(PHP)
+
+vendor: $(COMPOSER) composer.json composer.lock
+	$(PHP) $(COMPOSER) install --optimize-autoloader --ignore-platform-reqs
+	touch $@
 
 dev/ConsoleScript.php: Makefile
 	wget -O $@ https://github.com/pmmp/DevTools/raw/master/src/ConsoleScript.php

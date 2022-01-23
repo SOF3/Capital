@@ -15,8 +15,6 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{matrix.php-version}}
-          tools: composer
-      - run: composer install --optimize-autoloader --ignore-platform-reqs
       - name: phpstan analyze
         run: make phpstan
   suites:
@@ -37,6 +35,4 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{matrix.php-version}}
-          tools: composer
-      - run: composer install --optimize-autoloader --ignore-platform-reqs
       - run: make fmt EXTRA_FLAGS="--dry-run --diff"

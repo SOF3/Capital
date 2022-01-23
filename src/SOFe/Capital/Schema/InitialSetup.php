@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
-use Closure;
 use SOFe\Capital\LabelSet;
 
 /**
