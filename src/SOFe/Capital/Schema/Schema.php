@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace SOFe\Capital\Schema;
 
 use InvalidArgumentException;
+use pocketmine\player\Player;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\ParameterizedLabelSet;
-use SOFe\InfoAPI\Info;
+use SOFe\Capital\LabelSelector;
+use SOFe\Capital\LabelSet;
 
 /**
  * `Schema` defines the common player account labels and how to generate them.
@@ -71,11 +71,8 @@ interface Schema {
      * or null if the required variables have not all been set.
      *
      * This method returns null if and only if `isComplete()` returns false.
-     *
-     * @param string $playerPath The path to parameterize the player info.
-     * @return ParameterizedLabelSelector<Info>
      */
-    public function getSelector(string $playerPath) : ?ParameterizedLabelSelector;
+    public function getSelector(Player $player) : ?LabelSelector;
 
     /**
      * Returns the labels to be overwritten every time an account is loaded.
@@ -83,27 +80,19 @@ interface Schema {
      *
      * This is used for modifying existing configuration,
      * e.g. setting minimum and maximum values of accounts.
-     *
-     * @return ParameterizedLabelSet<Info>
      */
-    public function getOverwriteLabels(string $playerPath) : ?ParameterizedLabelSet;
+    public function getOverwriteLabels(Player $player) : ?LabelSet;
 
     /**
      * Returns the account migration settings.
      * Returns null if `isComplete()` is false OR
      * if the schema is configured such that migration is not supported.
-     *
-     * @param string $playerPath The path to parameterize the player info.
-     * @return MigrationSetup<Info>
      */
-    public function getMigrationSetup(string $playerPath) : ?MigrationSetup;
+    public function getMigrationSetup(Player $player) : ?MigrationSetup;
 
     /**
      * Returns the initial accounts to create for this schema.
      * Returns null if and only if `isComplete()` is false.
-     *
-     * @param string $playerPath The path to parameterize the player info.
-     * @return InitialSetup<Info>
      */
-    public function getInitialSetup(string $playerPath) : ?InitialSetup;
+    public function getInitialSetup(Player $player) : ?InitialSetup;
 }

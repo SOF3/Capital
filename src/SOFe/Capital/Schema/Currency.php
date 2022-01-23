@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
+use pocketmine\player\Player;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\LabelSelector;
+use SOFe\Capital\LabelSet;
 
 use function array_filter;
 use function array_keys;
@@ -18,7 +19,7 @@ use function implode;
  * A schema where each player has one account for each currency.
  */
 final class Currency implements Schema {
-    public const LABEL_CURRENCY = "capital/currencySchema/currency";
+    public const LABEL_CURRENCY = "capital/currency";
 
 
     public static function build(Parser $globalConfig) : self {
@@ -138,28 +139,36 @@ final class Currency implements Schema {
         return $this->currencies[$this->defaultCurrency];
     }
 
-    public function getSelector(string $playerPath) : ?ParameterizedLabelSelector {
+    public function getSelector(Player $player) : ?LabelSelector {
         $defaultCurrency = $this->defaultCurrency;
-
         if($defaultCurrency === null) {
             return null;
         }
 
-        return new ParameterizedLabelSelector([
-            AccountLabels::PLAYER_UUID => "{{$playerPath} uuid}",
+        return new LabelSelector([
+            AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
             self::LABEL_CURRENCY => $defaultCurrency,
         ]);
     }
 
-    public function getOverwriteLabels(string $playerPath) : ?ParameterizedLabelSet {
-        return $this->getSelectedAccountConfig()?->getOverwriteLabels($playerPath);
+    public function getOverwriteLabels(Player $player) : ?LabelSet {
+        return $this->getSelectedAccountConfig()?->getOverwriteLabels($player);
     }
 
-    public function getMigrationSetup(string $playerPath) : ?MigrationSetup {
-        return $this->getSelectedAccountConfig()?->getMigrationSetup($playerPath);
+    public function getMigrationSetup(Player $player) : ?MigrationSetup {
+        return $this->getSelectedAccountConfig()?->getMigrationSetup($player);
     }
 
-    public function getInitialSetup(string $playerPath) : ?InitialSetup {
-        return $this->getSelectedAccountConfig()?->getInitialSetup($playerPath);
+    public function getInitialSetup(Player $player) : ?InitialSetup {
+        $defaultCurrency = $this->defaultCurrency;
+        if($defaultCurrency === null) {
+            return null;
+        }
+
+        return $this->getSelectedAccountConfig()
+            ?->getInitialSetup($player)
+            ?->andInitialLabel(new LabelSet([
+                self::LABEL_CURRENCY => $defaultCurrency,
+            ]));
     }
 }

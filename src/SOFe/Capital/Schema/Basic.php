@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
+use pocketmine\player\Player;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\LabelSelector;
+use SOFe\Capital\LabelSet;
 
 /**
  * The basic schema where each player only has one account.
@@ -44,21 +45,21 @@ final class Basic implements Schema {
         return [];
     }
 
-    public function getSelector(string $playerPath) : ?ParameterizedLabelSelector {
-        return new ParameterizedLabelSelector([
-            AccountLabels::PLAYER_UUID => "{{$playerPath} uuid}",
+    public function getSelector(Player $player) : ?LabelSelector {
+        return new LabelSelector([
+            AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
         ]);
     }
 
-    public function getOverwriteLabels(string $playerPath) : ?ParameterizedLabelSet {
-        return $this->initialAccount->getOverwriteLabels($playerPath);
+    public function getOverwriteLabels(Player $player) : ?LabelSet {
+        return $this->initialAccount->getOverwriteLabels($player);
     }
 
-    public function getMigrationSetup(string $playerPath) : ?MigrationSetup {
-        return $this->initialAccount->getMigrationSetup($playerPath);
+    public function getMigrationSetup(Player $player) : ?MigrationSetup {
+        return $this->initialAccount->getMigrationSetup($player);
     }
 
-    public function getInitialSetup(string $playerPath) : ?InitialSetup {
-        return $this->initialAccount->getInitialSetup($playerPath);
+    public function getInitialSetup(Player $player) : ?InitialSetup {
+        return $this->initialAccount->getInitialSetup($player);
     }
 }

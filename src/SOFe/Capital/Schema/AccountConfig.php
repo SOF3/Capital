@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace SOFe\Capital\Schema;
 
 use Closure;
+use pocketmine\player\Player;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\LabelSelector;
+use SOFe\Capital\LabelSet;
 use SOFe\InfoAPI\Info;
 
 /**
@@ -49,12 +50,12 @@ final class AccountConfig {
 
         $migration = null;
         if($importFrom !== null) {
-            $migration = function(string $playerPath) use($importFrom) : MigrationSetup {
-                $migrationSelector = new ParameterizedLabelSelector([
-                    AccountLabels::PLAYER_NAME => "\{$playerPath name}",
+            $migration = function(Player $player) use($importFrom) : MigrationSetup {
+                $migrationSelector = new LabelSelector([
+                    AccountLabels::PLAYER_NAME => mb_strtolower($player->getName()),
                     AccountLabels::MIGRATION_SOURCE => $importFrom,
                 ]);
-                $postMigrateLabels = new ParameterizedLabelSet([]);
+                $postMigrateLabels = new LabelSet([]);
                 $migrationLimit = 1;
 
                 return new MigrationSetup($migrationSelector, $postMigrateLabels, $migrationLimit);
@@ -62,11 +63,12 @@ final class AccountConfig {
         }
 
         return new self(
-            overwriteLabels: fn(string $playerPath) => new ParameterizedLabelSet([
-                AccountLabels::PLAYER_NAME => "{{$playerPath} name}",
+            overwriteLabels: fn(Player $player) => new LabelSet([
+                AccountLabels::PLAYER_NAME => mb_strtolower($player->getName()),
             ]),
             migrationSetup: $migration,
-            initialLabels: fn(string $playerPath) => new ParameterizedLabelSet([
+            initialLabels: fn(Player $player) => new LabelSet([
+                AccountLabels::PLAYER_UUID => mb_strtolower($player->getName()),
                 AccountLabels::VALUE_MIN => (string) $min,
                 AccountLabels::VALUE_MAX => (string) $max,
             ]),
@@ -75,9 +77,9 @@ final class AccountConfig {
     }
 
     /**
-     * @param Closure(string): ParameterizedLabelSet<Info> $overwriteLabels A function that returns the overwrite label set parameterized by the given player path.
-     * @param null|Closure(string): MigrationSetup<Info> $migrationSetup A function that returns the migration setup parameterized by the given player path.
-     * @param Closure(string): ParameterizedLabelSet<Info> $initialLabels A function that returns the initial label set parameterized by the given player path.
+     * @param Closure(Player): LabelSet $overwriteLabels A function that returns the overwrite label set parameterized by the given player path.
+     * @param null|Closure(Player): MigrationSetup $migrationSetup A function that returns the migration setup parameterized by the given player path.
+     * @param Closure(Player): LabelSet $initialLabels A function that returns the initial label set parameterized by the given player path.
      * @param int $initialBalance The initial balance.
      */
     public function __construct(
@@ -87,26 +89,17 @@ final class AccountConfig {
         private int $initialBalance,
     ) {}
 
-    /**
-     * @return ParameterizedLabelSet<Info>
-     */
-    public function getOverwriteLabels(string $playerPath) : ParameterizedLabelSet {
-        return ($this->overwriteLabels)($playerPath);
+    public function getOverwriteLabels(Player $player) : LabelSet {
+        return ($this->overwriteLabels)($player);
     }
 
-    /**
-     * @return ?MigrationSetup<Info>
-     */
-    public function getMigrationSetup(string $playerPath) : ?MigrationSetup {
-        return $this->migrationSetup !== null ? ($this->migrationSetup)($playerPath) : null;
+    public function getMigrationSetup(Player $player) : ?MigrationSetup {
+        return $this->migrationSetup !== null ? ($this->migrationSetup)($player) : null;
     }
 
-    /**
-     * @return InitialSetup<Info>
-     */
-    public function getInitialSetup(string $playerPath) : InitialSetup {
+    public function getInitialSetup(Player $player) : InitialSetup {
         return new InitialSetup(
-            ($this->initialLabels)($playerPath),
+            ($this->initialLabels)($player),
             $this->initialBalance,
         );
     }
