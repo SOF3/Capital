@@ -1,9 +1,10 @@
 # Developer notes
 
 This document is for developers who want to contribute to this project.
-It explains the project structure and some code style requirements.
 
-## Async functions
+## Project structure and patterns
+
+### Async functions
 
 Capital uses [await-generator](https://github.com/SOF3/await-generator),
 which enables asynchronous programming using generators.
@@ -20,7 +21,7 @@ even though `return delegate_function();` and
 This is to ensure consistent behavior where
 async functions only start executing when passed to the await-generator runtime.
 
-## Module system and dependency injection
+### Module system and dependency injection
 
 Capital is module-based.
 Every module containing a `Mod` class is a module.
@@ -92,7 +93,7 @@ then the DI framework will create a new logger for the class.
 (This logger is derived from the plugin logger,
 but is not equal to the plugin logger itself)
 
-## Config
+### Config
 
 Capital implements a self-healing config manager.
 Each module has its own `Config` class to manage module-specific configuration.
@@ -120,7 +121,7 @@ like the [schema](#schema), which cascades changes to many other parts in the co
 Due to difficulties with cyclic dependencies,
 all `Config` classes must be separated listed in the `Config\Raw::ALL_CONFIG` constant.
 
-## Database
+### Database
 
 Capital uses [libasynql](https://github.com/poggit/libasynql) for database connection.
 Note that the libasynql DataConnector is exposed in the Database API,
@@ -131,7 +132,14 @@ The `Database` class also provides some low-level
 Other modules should consider using the APIs in the `SOFe\Capital\Capital` singleton,
 which provides more user-friendly and type-safe APIs than the `Database` class.
 
-## Labels
+Raw queries are written in [resources/mysql](resources/mysql)
+and [resources/sqlite](resources/sqlite).
+There is a slight diversion in MySQL and SQLite queries due to different requirements;
+SQLite does not require any synchronization and assumes FIFO query execution.
+MySQL assumes there may be multiple servers using the database,
+plus external services (such as web servers) that may modify the data arbitrarily.
+
+### Labels
 
 The Capital database is gameplay-agnostic.
 This means the database design is independent of how accounts are created.
@@ -170,7 +178,7 @@ they have all the labels specified in the selector.
 An empty value in a label selector matches all accounts/transactions
 with that label name regardless of the value.
 
-## Schema
+### Schema
 
 A schema abstracts the concept of labels
 by expressing them in more user-friendly terminology.
@@ -232,7 +240,7 @@ from imported sources as specified by the schema.
 If no migration is eligible,
 it creates new accounts based on initial setup specified by the schema.
 
-## Cache
+### Cache
 
 Capital maintains three types of cache:
 
@@ -254,23 +262,128 @@ which returns the local cache matching the selector.
 The cache user must explicitly call `Cache\Handle::release()`
 when the cache entry is no longer used.
 
-## Analytics
+### Analytics
 
 <!-- TODO -->
 
-## Transfer
+### Transfer
 
 <!-- TODO -->
 
-## Migration
+### Migration
 
 <!-- TODO -->
 
-## Archiving
+### Archiving
 
 <!-- TODO -->
 
-## Integration testing
+## Tooling
 
-<!-- TODO -->
+Capital is developed on Linux.
+All development pipelines are stored in the [Makefile](Makefile).
 
+### Building the plugin
+
+The phar output and intermediate files (such as libraries)
+are stored in the `dev/` directory (which is git-ignored).
+
+To build the plugin, run
+
+```shell
+make dev/Capital.phar
+```
+
+### Static analysis
+
+The project is strictly phpstan-compliant.
+To analyze the project with phpstan, run
+
+```shell
+make phpstan
+```
+
+Please `make phpstan` before every commit.
+If all outstanding phpstan errors should be ignored,
+regenerate the baseline file with
+
+```shell
+make phpstan-baseline.neon/regenerate
+```
+
+### Formatting
+
+Please reformat the code and reorganize imports before every commit with the command
+
+```shell
+make fmt
+```
+
+### Integration testing
+
+An integration testing starts a clean PocketMine server with Capital installed
+and interacts with Capital to check if it behaves as expected.
+Integration tests are managed in the [`suitetest/`](suitetest/) directory.
+
+Integration testing is performed using Docker.
+Please [install Docker](https://docs.docker.com/get-docker/) first.
+
+Each integration test case (a "test suite")
+is declared by a new directory under [`suitetest/cases/`](suitetest/cases/)
+with the following structure:
+
+```text
+suitetest/cases/*
+├── data
+│   └── plugin_data
+│       ├── Capital
+│       │   └── (Capital config files...)
+│       └── SuiteTester
+│           └── config.php
+├── expect-config.yml (optional)
+├── options
+│   └── skip-mysql (optional)
+└── output (generated)
+    ├── actual-config.yml
+    ├── depgraph.dot
+    ├── depgraph.svg
+    └── output.json
+```
+
+`data` contains files to be mounted onto `/data`
+inside the test container running `pmmp/pocketmine-mp`.
+The files are merged with [`suitetest/shared/data/`](suitetest/shared/data/)
+to share common configuration.
+
+If `expect-config.yml` is present,
+the suite test fails if it is not identical to
+the actual config.yml generated by the plugin during the test.
+
+If `options/skip-mysql` is absent,
+the script will spawn a new MySQL container and wait for it to be ready
+before starting the PocketMine container.
+
+The `output` directory is generated by the script after the suite test completes.
+`output/output.json` contains a JSON file reporting how many test steps passed.
+`depgraph.dot` (and `depgraph.svg` if the GraphViz `dot` command is found)
+renders a dependency graph for the singleton objects
+and displays their initialization timestamp.
+`actual-config.yml` is the config file generated after the server stops.
+
+To run all test suites, run
+
+```shell
+make suitetest
+```
+
+To run a single test suite, run
+
+```shell
+make suitetest/cases/${TEST_SUITE_NAME}
+```
+
+To open MySQL queries on the `mysql` test case, run
+
+```shell
+make debug/suite-mysql
+```
