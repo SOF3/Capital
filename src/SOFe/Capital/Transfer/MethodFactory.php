@@ -8,7 +8,7 @@ use SOFe\Capital\Config\Parser;
 
 class MethodFactory
 {
-    public static function build(Parser $parser, string $methodName): Method
+    public static function build(Parser $parser, string $methodName) : Method
     {
         $type = $parser->expectString("type", "command", <<<'EOT'
         The type of the method. Must be "command"
@@ -57,7 +57,7 @@ class MethodFactory
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
 
-    public static function writeDefaults(Parser $parser): void
+    public static function writeDefaults(Parser $parser) : void
     {
         $payMethod = $parser->enter("pay", "This is an example /pay method");
 

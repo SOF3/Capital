@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use Generator;
-use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
-use SOFe\Capital\Config\Constants;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\Context;
@@ -16,9 +14,8 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
-use SOFe\Capital\OracleNames;
-use SOFe\Capital\ParameterizedLabelSelector;
-use SOFe\Capital\ParameterizedLabelSet;
+use function array_filter;
+use function count;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
