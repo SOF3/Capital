@@ -37,7 +37,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             "transfer" tells Capital what methods admins and players can send money through.
             A method can require that one is OP before using it.
             EOT);
-        
+
         $methodNames = array_filter($transferParser->getKeys(), fn($currency) => $currency[0] !== "#");
 
         if (count($methodNames) === 0) {

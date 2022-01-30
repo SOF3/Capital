@@ -62,12 +62,11 @@ class MethodFactory
     public static function writeDefaults(Parser $parser): void
     {
         $payMethod = $parser->enter("pay", "This is an example /pay method");
-        
+
         $payMethod->expectString("command", "pay", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
 
-        // TODO: validate $permission
         $payMethod->expectString("permission", "capital.transfer.pay", <<<'EOT'
             This is the permission players must have.
             It will be created for you.
@@ -99,7 +98,7 @@ class MethodFactory
         $messages = null; // TODO
 
         $takemoneyMethod = $parser->enter("takemoney", "This is an example /takemoney method");
-        
+
         $takemoneyMethod->expectString("command", "takemoney", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
@@ -135,12 +134,12 @@ class MethodFactory
         $messages = null; // TODO
 
         $addmoneyMethod = $parser->enter("addmoney", "This is an example /addmoney method");
-        
+
         $addmoneyMethod->expectString("command", "addmoney", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
 
-        // TODO: validate $permission
+
         $addmoneyMethod->expectString("permission", "capital.transfer.addmoney", <<<'EOT'
             This is the permission players must have.
             It will be created for you.
