@@ -52,7 +52,10 @@ class MethodFactory
 
         $transactionLabels = null; // TODO
 
-        $messages = null; // TODO
+        $messages = Messages::parse($parser->enter("messages", <<<'EOT'
+            These responses are sent depending on if an error occurred or
+            if the transaction completed successfully.
+            EOT));
 
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
