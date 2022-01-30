@@ -50,9 +50,7 @@ class MethodFactory
             The largest amount of currency that can be transferred.
             EOT);
 
-        $transactionLabels = $parser->expectInt("maximum-amount", 0, <<<'EOT'
-            The largest amount of currency that can be transferred.
-            EOT);
+        $transactionLabels = null; // TODO
 
         $messages = null; // TODO
 
