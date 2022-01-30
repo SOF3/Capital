@@ -15,7 +15,7 @@ class MethodFactory
         EOT);
 
         if ($type !== "command") {
-            $parser->failSafe("command", "Expected \"command\" for type got \"$type\"");
+            $type = $parser->failSafe("command", "Expected \"command\" for key \"type\" got \"$type\"");
         }
 
         // TODO: validate $command
