@@ -49,7 +49,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $methods = [];
         foreach ($methodNames as $method) {
             $methodParser = $transferParser->enter($method, "");
-            $method[] = MethodFactory::build($methodParser, $method);
+            $methods[] = MethodFactory::build($methodParser, $method);
         }
 
         return new self($methods);
