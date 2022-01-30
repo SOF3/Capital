@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
-use Closure;
 use Generator;
 use Logger;
 use RuntimeException;
@@ -41,6 +40,9 @@ final class Raw implements Singleton, FromContext {
 
     /** @var array<class-string<ConfigInterface>, object> Loaded config files are stored here. */
     private array $loadedConfigs = [];
+
+    /** @var array<class-string<ConfigInterface>, list<Closure(ConfigInterface): void}>>> Callbacks for internal awaits between config loaders */
+    private array $configInternalAwaits = [];
 
     public Parser $parser;
 
@@ -89,6 +91,37 @@ final class Raw implements Singleton, FromContext {
     }
 
     /**
+     * @param class-string<ConfigInterface> $class
+     * @return Generator<mixed, mixed, mixed, void>
+     */
+    private function loadConfigOnce(string $class) : Generator {
+        $instance = yield from $class::parse($this->parser, $this->di, $this);
+        $this->loadedConfigs[$class] = $instance;
+        if(isset($this->configInternalAwaits[$class])) {
+            foreach($this->configInternalAwaits[$class] as $resolve) {
+                $resolve($instance);
+            }
+
+            $this->configInternalAwaits[$class] = [];
+        }
+    }
+
+    /**
+     * @template T of ConfigInterface
+     * @param class-string<T> $class
+     * @return Generator<mixed, mixed, mixed, T>
+     */
+    public function awaitConfigInternal(string $class) : Generator {
+        if(!isset($this->configInternalAwaits[$class])) {
+            $this->configInternalAwaits[$class] = [];
+        }
+
+        $this->configInternalAwaits[$class][] = yield Await::RESOLVE;
+
+        return yield Await::ONCE;
+    }
+
+    /**
      * @return VoidPromise
      */
     private function loadAll() : Generator {
@@ -97,12 +130,11 @@ final class Raw implements Singleton, FromContext {
         $promises = [];
         /** @var class-string<ConfigInterface> $class */
         foreach(self::ALL_CONFIGS as $class => $_) {
-            $promises[$class] = (function() use($class){
-                $this->loadedConfigs[$class] = yield from $class::parse($this->parser, $this->di);
-            })();
+            $promises[$class] = $this->loadConfigOnce($class);
         }
 
         try {
+            $this->configInternalAwaits = [];
             yield from Await::all($promises);
         } catch(ConfigException $e) {
             $this->logger->error("Error loading config.yml: " . $e->getMessage());
@@ -121,11 +153,10 @@ final class Raw implements Singleton, FromContext {
             $promises = [];
             /** @var class-string<ConfigInterface> $class */
             foreach(self::ALL_CONFIGS as $class => $_) {
-                $promises[$class] = (function() use($class){
-                    $this->loadedConfigs[$class] = yield from $class::parse($this->parser, $this->di);
-                })();
+                $promises[$class] = $this->loadConfigOnce($class);
             }
 
+            $this->configInternalAwaits = [];
             yield from Await::all($promises);
         }
 

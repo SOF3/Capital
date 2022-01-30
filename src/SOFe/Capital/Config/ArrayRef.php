@@ -20,7 +20,7 @@ final class ArrayRef {
     ) {}
 
     /**
-     * @param list<string> $path
+     * @param list<int|string> $path
      */
     public function get(array $path) : mixed {
         $current = $this->array;
@@ -36,7 +36,7 @@ final class ArrayRef {
     }
 
     /**
-     * @param list<string> $path
+     * @param list<int|string> $path
      */
     public function set(array $path, mixed $value) : void {
         if(count($path) === 0) {

@@ -8,6 +8,7 @@ use Generator;
 use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
 use SOFe\Capital\Config\Parser;
+use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
@@ -26,7 +27,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         public int $selectorMatchRefreshInterval,
     ) {}
 
-    public static function parse(Parser $config, Context $di) : Generator {
+    public static function parse(Parser $config, Context $di, Raw $raw) : Generator {
         false && yield;
 
         $config = $config->enter("cache", <<<'EOT'

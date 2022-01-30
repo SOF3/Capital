@@ -26,7 +26,7 @@ final class Currency implements Schema {
         $currenciesParser = $globalConfig->enter("currencies", <<<'EOT'
             All currencies used on your server.
             EOT);
-        $currencyNames = array_filter($currenciesParser->getKeys(), fn($currency) => $currency[0] !== "#",);
+        $currencyNames = $currenciesParser->getKeys();
         if(count($currencyNames) === 0) {
             $currenciesParser->failSafe(null, "There must be at least one currency");
             $currencyNames[] = "money";
@@ -70,32 +70,44 @@ final class Currency implements Schema {
         private ?string $defaultCurrency = null,
     ) {}
 
-    public function cloneWithConfig(?Parser $config) : self {
+    public function cloneWithConfig(?Parser $config, bool $expectComplete) : self {
         $clone = clone $this;
 
         if($config !== null) {
-            $defaultCurrency = $config->expectNullableString("default-currency", null, <<<'EOT'
-                The default currency to use in commands if the user does not specify one.
-                If this is set to ~, the user is required to specify the currency for every command.
-                This option can be overridden in the config for individual commands.
-                EOT, false);
-            if(!isset($clone->currencies[$defaultCurrency])) {
-                $defaultCurrency = $config->failSafe(null, "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
-            }
-            $clone->defaultCurrency = $defaultCurrency;
+            if($expectComplete) {
+                $currency = $config->expectString("currency", array_keys($clone->currencies)[0], <<<'EOT'
+                    The currency to use.
+                    EOT);
+                if(!isset($clone->currencies[$currency])) {
+                    $defaultCurrency = $config->failSafe(array_keys($clone->currencies)[0], "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
+                }
 
-            $allowedCurrencies = $config->expectNullableStringList("allowed-currencies", null, <<<'EOT'
-                The list of currencies the user can select from.
-                EOT, false);
-            if($allowedCurrencies !== null) {
-                $clone->currencies = [];
+                $clone->defaultCurrency = $currency;
+                $clone->currencies = [$currency => $this->currencies[$currency]];
+            } else {
+                $defaultCurrency = $config->expectNullableString("default-currency", null, <<<'EOT'
+                    The default currency to use in commands if the user does not specify one.
+                    If this is set to ~, the user is required to specify the currency for every command.
+                    This option can be overridden in the config for individual commands.
+                    EOT, false);
+                if(!isset($clone->currencies[$defaultCurrency])) {
+                    $defaultCurrency = $config->failSafe(null, "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
+                }
+                $clone->defaultCurrency = $defaultCurrency;
 
-                foreach($allowedCurrencies as $i => $currency) {
-                    if(!isset($this->currencies[$currency])) {
-                        $config->failSafe(null, "Item #" . ($i + 1) . " in allowed-currencies is not one of " . implode(", ", array_keys($this->currencies)));
+                $allowedCurrencies = $config->expectNullableStringList("allowed-currencies", null, <<<'EOT'
+                    The list of currencies the user can select from.
+                    EOT, false);
+                if($allowedCurrencies !== null) {
+                    $clone->currencies = [];
+
+                    foreach($allowedCurrencies as $i => $currency) {
+                        if(!isset($this->currencies[$currency])) {
+                            $config->failSafe(null, "Item #" . ($i + 1) . " in allowed-currencies is not one of " . implode(", ", array_keys($this->currencies)));
+                        }
+
+                        $clone->currencies[$currency] = $this->currencies[$currency];
                     }
-
-                    $clone->currencies[$currency] = $this->currencies[$currency];
                 }
             }
         }

@@ -33,7 +33,7 @@ interface Schema {
      * @return Schema A new object that is **not** `$this` (must be a different object even if config is empty)
      * @throws InvalidArgumentException if the config is invalid.
      */
-    public function cloneWithConfig(?Parser $specificConfig) : self;
+    public function cloneWithConfig(?Parser $specificConfig, bool $expectComplete) : self;
 
     /**
      * Returns whether all required variables have been populated.

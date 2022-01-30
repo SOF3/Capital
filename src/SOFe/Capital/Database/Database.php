@@ -351,7 +351,15 @@ final class Database implements Singleton, FromContext {
      * @param array<AccountQueryMetric> $otherMetrics
      * @return Generator<mixed, mixed, mixed, array<AggregateTopEntry>>
      */
-    public function aggregateTopAccounts(LabelSelector $selector, array $groupBy, AccountQueryMetric $orderingMetric, bool $descending, string $orderingMetricName, array $otherMetrics, int $limit) : Generator {
+    public function aggregateTopAccounts(
+        LabelSelector $selector,
+        array $groupBy,
+        AccountQueryMetric $orderingMetric,
+        bool $descending,
+        string $orderingMetricName,
+        array $otherMetrics,
+        int $limit,
+    ) : Generator {
         $columns = $orderingMetric->getExpr() . " AS metric_ordering";
 
         $i = 0;
@@ -910,7 +918,14 @@ final class Database implements Singleton, FromContext {
      * @param array<TransactionQueryMetric> $otherMetrics
      * @return Generator<mixed, mixed, mixed, array<AggregateTopEntry>>
      */
-    public function aggregateTopTransactions(LabelSelector $selector, array $groupBy, TransactionQueryMetric $orderingMetric, bool $descending, string $orderingMetricName, array $otherMetrics, int $limit) : Generator {
+    public function aggregateTopTransactions(LabelSelector $selector,
+        array $groupBy,
+        TransactionQueryMetric $orderingMetric,
+        bool $descending,
+        string $orderingMetricName,
+        array $otherMetrics,
+        int $limit,
+    ) : Generator {
         $columns = $orderingMetric->getExpr() . " AS metric_ordering";
 
         $i = 0;

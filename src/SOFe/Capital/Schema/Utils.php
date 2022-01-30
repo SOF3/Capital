@@ -34,7 +34,7 @@ final class SchemaUtils {
             throw new InvalidArgumentException("Usage: " . self::getUsage($schema));
         }
 
-        $clone = $schema->cloneWithConfig(null);
+        $clone = $schema->cloneWithConfig(null, false);
 
         foreach(array_merge($required, $optional) as $variable) {
             if(count($args) === 0) {

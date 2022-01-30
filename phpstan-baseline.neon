@@ -1,16 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#6 \\$otherMetrics of method SOFe\\\\Capital\\\\Database\\\\Database\\:\\:aggregateTopAccounts\\(\\) expects array\\<SOFe\\\\Capital\\\\AccountQueryMetric\\>, array\\<string, SOFe\\\\Capital\\\\AccountQueryMetric\\|SOFe\\\\Capital\\\\TransactionQueryMetric\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Analytics/TopCommand.php
-
-		-
-			message: "#^Parameter \\#6 \\$otherMetrics of method SOFe\\\\Capital\\\\Database\\\\Database\\:\\:aggregateTopTransactions\\(\\) expects array\\<SOFe\\\\Capital\\\\TransactionQueryMetric\\>, array\\<string, SOFe\\\\Capital\\\\AccountQueryMetric\\|SOFe\\\\Capital\\\\TransactionQueryMetric\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Analytics/TopCommand.php
-
-		-
 			message: "#^While loop condition is always true\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Cache/Instance.php
