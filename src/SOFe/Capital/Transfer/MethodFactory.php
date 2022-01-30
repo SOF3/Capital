@@ -24,7 +24,7 @@ class MethodFactory
             EOT);
 
         // TODO: validate $permission
-        $permission = $parser->expectString("permission", "", <<<'EOT'
+        $permission = $parser->expectString("permission", "capital.transfer.unspecified", <<<'EOT'
             This is the permission players must have.
             It will be created for you.
             EOT);
