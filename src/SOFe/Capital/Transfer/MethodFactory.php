@@ -29,7 +29,7 @@ class MethodFactory
             It will be created for you.
             EOT);
 
-        $defaultOpOnly = $parser->expectBool("default-op", $methodName, <<<'EOT'
+        $defaultOpOnly = $parser->expectBool("default-op", true, <<<'EOT'
             This requires the user of the command to have op permissions.
             EOT);
 
