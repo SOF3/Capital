@@ -33,91 +33,25 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     public static function parse(Parser $config, Context $di, Raw $raw) : Generator {
         false && yield;
 
-        return new self(
-            transferMethods: [
-                new CommandMethod(
-                    command: "pay",
-                    permission: "capital.transfer.pay",
-                    defaultOpOnly: false,
-                    src: new ParameterizedLabelSelector([
-                        AccountLabels::PLAYER_UUID => "{sender uuid}",
-                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                    ]),
-                    dest: new ParameterizedLabelSelector([
-                        AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                    ]),
-                    rate: 1.0,
-                    minimumAmount: 0,
-                    maximumAmount: 10000,
-                    transactionLabels: new ParameterizedLabelSet([
-                        Constants::LABEL_PAYMENT => "",
-                    ]),
-                    messages: new Messages(
-                        notifySenderSuccess: '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.',
-                        notifyRecipientSuccess: '{green}You have received ${receivedAmount} from ${sender}. You now have ${destBalance} left.',
-                        noSourceAccounts: '{red}There are no accounts to send money from.',
-                        noDestinationAccounts: '{red}There are no accounts to send money to.',
-                        underflow: '{red}You do not have ${sentAmount}.',
-                        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.',
-                        internalError: '{red}An internal error occurred. Please try again.',
-                    ),
-                ),
-                new CommandMethod(
-                    command: "takemoney",
-                    permission: "capital.transfer.takemoney",
-                    defaultOpOnly: true,
-                    src: new ParameterizedLabelSelector([
-                        AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                    ]),
-                    dest: new ParameterizedLabelSelector([
-                        AccountLabels::ORACLE => OracleNames::TRANSFER,
-                    ]),
-                    rate: 1.0,
-                    minimumAmount: 0,
-                    maximumAmount: 1000000,
-                    transactionLabels: new ParameterizedLabelSet([
-                        Constants::LABEL_OPERATOR => "",
-                    ]),
-                    messages: new Messages(
-                        notifySenderSuccess: '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.',
-                        notifyRecipientSuccess: '{green}An admin took ${sentAmount} from you. You now have ${destBalance} left.',
-                        noSourceAccounts: '{red}There are no accounts to send money from.',
-                        noDestinationAccounts: '{red}An internal error occurred.',
-                        underflow: '{red}{recipient} does not have ${sentAmount} to be taken.',
-                        overflow: '{red}An internal error occurred.',
-                        internalError: '{red}An internal error occurred. Please try again.',
-                    ),
-                ),
-                new CommandMethod(
-                    command: "addmoney",
-                    permission: "capital.transfer.addmoney",
-                    defaultOpOnly: true,
-                    src: new ParameterizedLabelSelector([
-                        AccountLabels::ORACLE => OracleNames::TRANSFER,
-                    ]),
-                    dest: new ParameterizedLabelSelector([
-                        AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                        Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                    ]),
-                    rate: 1.0,
-                    minimumAmount: 0,
-                    maximumAmount: 1000000,
-                    transactionLabels: new ParameterizedLabelSet([
-                        Constants::LABEL_OPERATOR => "",
-                    ]),
-                    messages: new Messages(
-                        notifySenderSuccess: '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.',
-                        notifyRecipientSuccess: '{green}You have received ${receivedAmount}. You now have ${destBalance} left.',
-                        noSourceAccounts: '{red}An internal error occurred.',
-                        noDestinationAccounts: '{red}There are no accounts to send money to.',
-                        underflow: '{red}An internal error occurred.',
-                        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.',
-                        internalError: '{red}An internal error occurred. Please try again.',
-                    ),
-                ),
-            ],
-        );
+        $transferParser = $config->enter("transfer", <<<'EOT'
+            "transfer" tells Capital what methods admins and players can send money through.
+            A method can require that one is OP before using it.
+            EOT);
+        
+        $methodNames = array_filter($transferParser->getKeys(), fn($currency) => $currency[0] !== "#");
+
+        if (count($methodNames) === 0) {
+            $transferParser->failSafe(null, "There must be at least one method");
+            MethodFactory::writeDefaults($transferParser);
+            $methodNames = array_filter($transferParser->getKeys(), fn($currency) => $currency[0] !== "#");
+        }
+
+        $methods = [];
+        foreach ($methodNames as $method) {
+            $methodParser = $transferParser->enter($method, "");
+            $method[] = MethodFactory::build($methodParser, $method);
+        }
+
+        return new self($methods);
     }
 }
