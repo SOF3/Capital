@@ -96,7 +96,18 @@ class MethodFactory
 
         $transactionLabels = null; // TODO
 
-        $messages = null; // TODO
+        $messages = $payMethod->enter("messages", <<<'EOT'
+            These responses are sent depending on if an error occurred or
+            if the transaction completed successfully.
+            EOT);
+
+        $messages->expectString("notify-sender-success", '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.', "Sent to command sender on success.");
+        $messages->expectString("notify-recipient-success", '{green}You have received ${receivedAmount} from ${sender}. You now have ${destBalance} left.', "Sent to recipient on success.");
+        $messages->expectString("no-source-accounts", '{red}There are no accounts to send money from.', "Sent when no source accounts are found.");
+        $messages->expectString("no-destination-accounts", '{red}There are no accounts to send money to.', "Sent when no destination accounts are found.");
+        $messages->expectString("underflow", '{red}You do not have ${sentAmount}.', "Sent when too much money is withdrawn.");
+        $messages->expectString("overflow", '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.', "Sent when too much money is given.");
+        $messages->expectString("internal-error", '{red}An internal error occurred. Please try again.', "Sent when an unexpected error occurs.");
 
         $takemoneyMethod = $parser->enter("takemoney", "This is an example /takemoney method");
 
@@ -132,7 +143,18 @@ class MethodFactory
 
         $transactionLabels = null; //TODO
 
-        $messages = null; // TODO
+        $messages = $takemoneyMethod->enter("messages", <<<'EOT'
+            These responses are sent depending on if an error occurred or
+            if the transaction completed successfully.
+            EOT);
+
+        $messages->expectString("notify-sender-success", '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.', "Sent to command sender on success.");
+        $messages->expectString("notify-recipient-success", '{green}An admin took ${sentAmount} from you. You now have ${destBalance} left.', "Sent to recipient on success.");
+        $messages->expectString("no-source-accounts", '{red}There are no accounts to send money from.', "Sent when no source accounts are found.");
+        $messages->expectString("no-destination-accounts", '{red}An internal error occurred.', "Sent when no destination accounts are found.");
+        $messages->expectString("underflow", '{red}{recipient} does not have ${sentAmount} to be taken.', "Sent when too much money is withdrawn.");
+        $messages->expectString("overflow", '{red}An internal error occurred.', "Sent when too much money is given.");
+        $messages->expectString("internal-error", '{red}An internal error occurred. Please try again.', "Sent when an unexpected error occurs.");
 
         $addmoneyMethod = $parser->enter("addmoney", "This is an example /addmoney method");
 
@@ -169,6 +191,17 @@ class MethodFactory
 
         $transactionLabels = null; // TODO
 
-        $messages = null; // TODO
+        $messages = $addmoneyMethod->enter("messages", <<<'EOT'
+            These responses are sent depending on if an error occurred or
+            if the transaction completed successfully.
+            EOT);
+
+        $messages->expectString("notify-sender-success", '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.', "Sent to command sender on success.");
+        $messages->expectString("notify-recipient-success", '{green}You have received ${receivedAmount}. You now have ${destBalance} left.', "Sent to recipient on success.");
+        $messages->expectString("no-source-accounts", '{red}An internal error occurred.', "Sent when no source accounts are found.");
+        $messages->expectString("no-destination-accounts", '{red}There are no accounts to send money to.', "Sent when no destination accounts are found.");
+        $messages->expectString("underflow", '{red}An internal error occurred.', "Sent when too much money is withdrawn.");
+        $messages->expectString("overflow", '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.', "Sent when too much money is given.");
+        $messages->expectString("internal-error", '{red}An internal error occurred. Please try again.', "Sent when an unexpected error occurs.");
     }
 }
