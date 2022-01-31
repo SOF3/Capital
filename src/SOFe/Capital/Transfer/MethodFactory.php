@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+use SOFe\Capital\AccountLabels;
+use SOFe\Capital\Config\Constants;
 use SOFe\Capital\Config\Parser;
+use SOFe\Capital\OracleNames;
+use SOFe\Capital\ParameterizedLabelSelector;
+use function array_filter;
+use function count;
 
 class MethodFactory
 {
@@ -33,9 +39,13 @@ class MethodFactory
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = null; // TODO
+        $src = self::parseLabelSelector($parser->enter("src", <<<'EOT'
+            Selectors here identify the "source" account in the transfer.
+            EOT));
 
-        $dest = null; // TODO
+        $dest = self::parseLabelSelector($parser->enter("dest", <<<'EOT'
+            Selectors here identify the "destination" account in the transfer.
+            EOT));
 
         // TODO: Better Doc
         $rate = $parser->expectNumber("rate", 1, <<<'EOT'
@@ -77,9 +87,19 @@ class MethodFactory
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = null; // TODO
+        self::parseLabelSelector($payMethod->enter("src", <<<'EOT'
+            Selectors here identify the "source" account in the transfer.
+            EOT), [
+            AccountLabels::PLAYER_UUID => "{sender uuid}",
+            Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
+        ]);
 
-        $dest = null; // TODO
+        self::parseLabelSelector($payMethod->enter("dest", <<<'EOT'
+            Selectors here identify the "destination" account in the transfer.
+            EOT), [
+            AccountLabels::PLAYER_UUID => "{recipient uuid}",
+            Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
+        ]);
 
         // TODO: Better Doc
         $payMethod->expectNumber("rate", 1, <<<'EOT'
@@ -124,9 +144,18 @@ class MethodFactory
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = null; // TODO
+        self::parseLabelSelector($takemoneyMethod->enter("src", <<<'EOT'
+            Selectors here identify the "source" account in the transfer.
+            EOT), [
+            AccountLabels::PLAYER_UUID => "{recipient uuid}",
+            Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
+        ]);
 
-        $dest = null; // TODO
+        self::parseLabelSelector($takemoneyMethod->enter("dest", <<<'EOT'
+            Selectors here identify the "destination" account in the transfer.
+            EOT), [
+            AccountLabels::ORACLE => OracleNames::TRANSFER,
+        ]);
 
         // TODO: Better Doc
         $takemoneyMethod->expectNumber("rate", 1, <<<'EOT'
@@ -172,9 +201,18 @@ class MethodFactory
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = null; // TODO
+        self::parseLabelSelector($addmoneyMethod->enter("src", <<<'EOT'
+            Selectors here identify the "source" account in the transfer.
+            EOT), [
+            AccountLabels::ORACLE => OracleNames::TRANSFER,
+        ]);
 
-        $dest = null; // TODO
+        self::parseLabelSelector($addmoneyMethod->enter("dest", <<<'EOT'
+            Selectors here identify the "destination" account in the transfer.
+            EOT), [
+            AccountLabels::PLAYER_UUID => "{recipient uuid}",
+            Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
+        ]);
 
         // TODO: Better Doc
         $addmoneyMethod->expectNumber("rate", 1, <<<'EOT'
@@ -203,5 +241,30 @@ class MethodFactory
         $messages->expectString("underflow", '{red}An internal error occurred.', "Sent when too much money is withdrawn.");
         $messages->expectString("overflow", '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.', "Sent when too much money is given.");
         $messages->expectString("internal-error", '{red}An internal error occurred. Please try again.', "Sent when an unexpected error occurs.");
+    }
+
+    /**
+     * @param array<string, string> $defaultEntries
+     * @return ParameterizedLabelSelector<ContextInfo>
+     */
+    private static function parseLabelSelector(Parser $parser, $defaultEntries = []) : ParameterizedLabelSelector
+    {
+        $names = array_filter($parser->getKeys(), fn($currency) => $currency[0] !== "#");
+        if (count($names) === 0) {
+            $parser->failSafe(null, "There must be at least one selector entry.");
+            $entries = $defaultEntries;
+            foreach ($defaultEntries as $name => $value) {
+                $parser->expectString($name, $value, "");
+            }
+        } else {
+            $entries = [];
+            foreach ($parser->getKeys() as $name) {
+                $entries[$name] = $parser->expectString($name, "", "");
+            }
+        }
+
+        /** @var ParameterizedLabelSelector<ContextInfo> $labelSelector */
+        $labelSelector = new ParameterizedLabelSelector($entries);
+        return $labelSelector;
     }
 }
