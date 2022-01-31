@@ -43,11 +43,11 @@ class MethodFactory
 
         $src = self::parseLabelSelector($parser->enter("src", <<<'EOT'
             Selectors here identify the "source" account in the transfer.
-            EOT));
+            EOT), [ AccountLabels::PLAYER_UUID => "{sender uuid}" ]);
 
         $dest = self::parseLabelSelector($parser->enter("dest", <<<'EOT'
             Selectors here identify the "destination" account in the transfer.
-            EOT));
+            EOT), [ AccountLabels::PLAYER_UUID => "{recipient uuid}" ]);
 
         // TODO: Better Doc
         $rate = $parser->expectNumber("rate", 1, <<<'EOT'
