@@ -54,7 +54,7 @@ class MethodFactory {
         $transactionLabels = self::parseLabelSet($parser->enter("transaction-labels", <<<'EOT'
             These are labels to add to the transaction.
             You can match by these labels to identify what
-            methods players use to move capital.
+            how players earn and lose money.
             EOT));
 
         $messages = Messages::parse($parser->enter("messages", <<<'EOT'
