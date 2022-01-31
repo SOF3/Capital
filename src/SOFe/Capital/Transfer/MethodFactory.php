@@ -9,6 +9,8 @@ use SOFe\Capital\Config\Constants;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\ParameterizedLabelSelector;
+use SOFe\Capital\ParameterizedLabelSet;
+
 use function array_filter;
 use function count;
 
@@ -60,7 +62,11 @@ class MethodFactory
             The largest amount of currency that can be transferred.
             EOT);
 
-        $transactionLabels = null; // TODO
+        $transactionLabels = self::parseLabelSet($parser->enter("transaction-labels", <<<'EOT'
+            These are labels to add to the transaction.
+            You can match by these labels to identify what
+            methods players use to move capital.
+            EOT));
 
         $messages = Messages::parse($parser->enter("messages", <<<'EOT'
             These responses are sent depending on if an error occurred or
@@ -114,7 +120,13 @@ class MethodFactory
             The largest amount of currency that can be transferred.
             EOT);
 
-        $transactionLabels = null; // TODO
+        self::parseLabelSet($payMethod->enter("transaction-labels", <<<'EOT'
+            These are labels to add to the transaction.
+            You can match by these labels to identify what
+            methods players use to move capital.
+            EOT), [
+            Constants::LABEL_PAYMENT => "",
+        ]);
 
         $messages = $payMethod->enter("messages", <<<'EOT'
             These responses are sent depending on if an error occurred or
@@ -170,7 +182,13 @@ class MethodFactory
             The largest amount of currency that can be transferred.
             EOT);
 
-        $transactionLabels = null; //TODO
+        self::parseLabelSet($takemoneyMethod->enter("transaction-labels", <<<'EOT'
+            These are labels to add to the transaction.
+            You can match by these labels to identify what
+            methods players use to move capital.
+            EOT), [
+            Constants::LABEL_OPERATOR => "",
+        ]);
 
         $messages = $takemoneyMethod->enter("messages", <<<'EOT'
             These responses are sent depending on if an error occurred or
@@ -227,7 +245,13 @@ class MethodFactory
             The largest amount of currency that can be transferred.
             EOT);
 
-        $transactionLabels = null; // TODO
+        self::parseLabelSet($parser->enter("transaction-labels", <<<'EOT'
+            These are labels to add to the transaction.
+            You can match by these labels to identify what
+            methods players use to move capital.
+            EOT), [
+            Constants::LABEL_OPERATOR => "",
+        ]);
 
         $messages = $addmoneyMethod->enter("messages", <<<'EOT'
             These responses are sent depending on if an error occurred or
@@ -266,5 +290,29 @@ class MethodFactory
         /** @var ParameterizedLabelSelector<ContextInfo> $labelSelector */
         $labelSelector = new ParameterizedLabelSelector($entries);
         return $labelSelector;
+    }
+
+    /**
+     * @param array<string, string> $defaultEntries
+     * @return ParameterizedLabelSet<ContextInfo>
+     */
+    private static function parseLabelSet(Parser $parser, $defaultEntries = []) : ParameterizedLabelSet
+    {
+        $names = array_filter($parser->getKeys(), fn($currency) => $currency[0] !== "#");
+        if (count($names) === 0) {
+            $entries = $defaultEntries;
+            foreach ($defaultEntries as $name => $value) {
+                $parser->expectString($name, $value, "");
+            }
+        } else {
+            $entries = [];
+            foreach ($parser->getKeys() as $name) {
+                $entries[$name] = $parser->expectString($name, "", "");
+            }
+        }
+
+        /** @var ParameterizedLabelSet<ContextInfo> $labelSet */
+        $labelSet = new ParameterizedLabelSet($entries);
+        return $labelSet;
     }
 }
