@@ -14,8 +14,7 @@ use SOFe\Capital\ParameterizedLabelSet;
 use function array_filter;
 use function count;
 
-class MethodFactory
-{
+class MethodFactory {
     public static function build(Parser $parser, string $methodName) : Method
     {
         $type = $parser->expectString("type", "command", <<<'EOT'
