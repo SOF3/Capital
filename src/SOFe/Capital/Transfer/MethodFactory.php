@@ -14,16 +14,26 @@ use function count;
 
 class MethodFactory {
     public static function buildCommand(Parser $parser, ?CommandMethod $default = null) : CommandMethod {
-        // TODO: validate $command
         $command = $parser->expectString("command", $default->command ?? "transfer-command", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
+        if ($command === "") {
+            $command = $parser->setValue("command", "transfer-command", "The command's name (key \"command\") must not be empty.");
+        } elseif (($i = strpos($command, " ")) !== false) {
+            $command = substr($command, 0, $i);
+            $command = $parser->setValue("command", $command === "" ? "transfer-command" : $command, "The command's name (key \"command\") must not have spaces.");
+        }
 
-        // TODO: validate $permission
         $permission = $parser->expectString("permission", $default->permission ?? "capital.transfer.unspecified", <<<'EOT'
             This is the permission players must have.
             It will be created for you.
             EOT);
+        if ($permission === "") {
+            $permission = $parser->setValue("permission", "capital.transfer.unspecified", "The command's permission (key \"permission\") must not be empty.");
+        } elseif (($i = strpos($permission, " ")) !== false) {
+            $permission = substr($permission, 0, $i);
+            $permission = $parser->setValue("permission", $permission === "" ? "capital.transfer.unspecified" : $permission, "The command's permission (key \"permission\") must not have spaces.");
+        }
 
         $defaultOpOnly = $parser->expectBool("default-op", $default->defaultOpOnly ?? true, <<<'EOT'
             This requires the user of the command to have op permissions.
