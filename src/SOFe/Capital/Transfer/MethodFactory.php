@@ -271,7 +271,7 @@ class MethodFactory
      * @param array<string, string> $defaultEntries
      * @return ParameterizedLabelSelector<ContextInfo>
      */
-    private static function parseLabelSelector(Parser $parser, $defaultEntries = []) : ParameterizedLabelSelector
+    private static function parseLabelSelector(Parser $parser, $defaultEntries) : ParameterizedLabelSelector
     {
         $names = array_filter($parser->getKeys(), fn($currency) => $currency[0] !== "#");
         if (count($names) === 0) {
