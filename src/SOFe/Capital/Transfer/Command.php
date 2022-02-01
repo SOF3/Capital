@@ -19,10 +19,13 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
+use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Capital;
 use SOFe\Capital\CapitalException;
+use SOFe\Capital\LabelSelector;
 use SOFe\Capital\OracleNames;
 use SOFe\Capital\Plugin\MainClass;
+use SOFe\Capital\Schema\Config as SchemaConfig;
 use SOFe\Capital\TransactionLabels;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
@@ -99,11 +102,39 @@ final class Command extends PmCommand implements PluginOwned {
                 receivedAmount: new NumberInfo((float) $transferAmount + $sourceAmount),
             );
 
-            // TODO: This should use schema apis to get labels
+            /** @var SchemaConfig $schemaConfig */
+            $schemaConfig = yield from SchemaConfig::get(MainClass::$context);
+            $schema = $schemaConfig->schema;
+
             $srcLabels = match ($this->method->src) {
+                CommandMethod::TARGET_SYSTEM => new LabelSelector([ AccountLabels::ORACLE => OracleNames::TRANSFER ]),
+                CommandMethod::TARGET_SENDER => null,
+                CommandMethod::TARGET_RECIPIENT => $schema->getSelector($recipient)
             };
+
+            if ($srcLabels === null) {
+                if ($sender instanceof Player) {
+                    $srcLabels = $schema->getSelector($sender);
+                } else {
+                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
+                    return;
+                }
+            }
+
             $destLabels = match ($this->method->dest) {
+                CommandMethod::TARGET_SYSTEM => new LabelSelector([ AccountLabels::ORACLE => OracleNames::TRANSFER ]),
+                CommandMethod::TARGET_SENDER => null,
+                CommandMethod::TARGET_RECIPIENT => $schema->getSelector($recipient)
             };
+
+            if ($destLabels === null) {
+                if ($sender instanceof Player) {
+                    $destLabels = $schema->getSelector($sender);
+                } else {
+                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
+                    return;
+                }
+            }
 
             $transactionLabels = $this->method->transactionLabels->transform($info);
 

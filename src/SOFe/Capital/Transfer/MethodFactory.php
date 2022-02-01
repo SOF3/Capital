@@ -42,11 +42,15 @@ class MethodFactory {
         $src = self::parseTarget($parser, "src", $default->src ?? CommandMethod::TARGET_SENDER, <<<'EOT'
             The "source" to take money from.
             Can be "system", "sender", or "recipient".
+            If "sender" is used, this command will only be usable by
+            players. (ex. not the console)
             EOT);
 
         $dest = self::parseTarget($parser, "dest", $default->dest ?? CommandMethod::TARGET_RECIPIENT, <<<'EOT'
             The "destination" to take money from.
             Can be "system", "sender", or "recipient".
+            If "sender" is used, this command will only be usable by
+            players. (ex. not the console)
             EOT);
 
         $rate = $parser->expectNumber("rate", $default->rate ?? 1.0, <<<'EOT'

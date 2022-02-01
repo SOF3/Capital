@@ -59,6 +59,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     Constants::LABEL_PAYMENT => "",
                 ]),
                 messages: new Messages(
+                    playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.',
                     notifyRecipientSuccess: '{green}You have received ${receivedAmount} from ${sender}. You now have ${destBalance} left.',
                     noSourceAccounts: '{red}There are no accounts to send money from.',
@@ -81,6 +82,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     Constants::LABEL_OPERATOR => "",
                 ]),
                 messages: new Messages(
+                    playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.',
                     notifyRecipientSuccess: '{green}An admin took ${sentAmount} from you. You now have ${destBalance} left.',
                     noSourceAccounts: '{red}There are no accounts to send money from.',
@@ -103,6 +105,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     Constants::LABEL_OPERATOR => "",
                 ]),
                 messages: new Messages(
+                    playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.',
                     notifyRecipientSuccess: '{green}You have received ${receivedAmount}. You now have ${destBalance} left.',
                     noSourceAccounts: '{red}An internal error occurred.',
