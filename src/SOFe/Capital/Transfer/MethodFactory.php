@@ -73,10 +73,7 @@ class MethodFactory {
             how players earn and lose money.
             EOT));
 
-        $messages = Messages::parse($parser->enter("messages", <<<'EOT'
-            These responses are sent depending on if an error occurred or
-            if the transaction completed successfully.
-            EOT));
+        $messages = Messages::parse($parser->enter("messages", ""));
 
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
