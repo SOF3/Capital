@@ -11,6 +11,8 @@ use SOFe\Capital\ParameterizedLabelSet;
 
 use function array_filter;
 use function count;
+use function strpos;
+use function substr;
 
 class MethodFactory {
     public static function buildCommand(Parser $parser, ?CommandMethod $default = null) : CommandMethod {
