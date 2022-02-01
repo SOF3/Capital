@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use Generator;
-use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
 use SOFe\Capital\Config\Constants;
@@ -16,8 +15,6 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
-use SOFe\Capital\OracleNames;
-use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
 use function array_filter;
@@ -53,14 +50,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 command: "pay",
                 permission: "capital.transfer.pay",
                 defaultOpOnly: false,
-                src: new ParameterizedLabelSelector([
-                    AccountLabels::PLAYER_UUID => "{sender uuid}",
-                    Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                ]),
-                dest: new ParameterizedLabelSelector([
-                    AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                    Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                ]),
+                src: CommandMethod::TARGET_SENDER,
+                dest: CommandMethod::TARGET_RECIPIENT,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 10000,
@@ -81,13 +72,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 command: "takemoney",
                 permission: "capital.transfer.takemoney",
                 defaultOpOnly: true,
-                src: new ParameterizedLabelSelector([
-                    AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                    Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                ]),
-                dest: new ParameterizedLabelSelector([
-                    AccountLabels::ORACLE => OracleNames::TRANSFER,
-                ]),
+                src: CommandMethod::TARGET_RECIPIENT,
+                dest: CommandMethod::TARGET_SYSTEM,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,
@@ -108,13 +94,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 command: "addmoney",
                 permission: "capital.transfer.addmoney",
                 defaultOpOnly: true,
-                src: new ParameterizedLabelSelector([
-                    AccountLabels::ORACLE => OracleNames::TRANSFER,
-                ]),
-                dest: new ParameterizedLabelSelector([
-                    AccountLabels::PLAYER_UUID => "{recipient uuid}",
-                    Constants::LABEL_CURRENCY => Constants::CURRENCY_NAME,
-                ]),
+                src: CommandMethod::TARGET_SYSTEM,
+                dest: CommandMethod::TARGET_RECIPIENT,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,

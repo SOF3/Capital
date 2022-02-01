@@ -99,8 +99,12 @@ final class Command extends PmCommand implements PluginOwned {
                 receivedAmount: new NumberInfo((float) $transferAmount + $sourceAmount),
             );
 
-            $srcLabels = $this->method->src->transform($info);
-            $destLabels = $this->method->dest->transform($info);
+            // TODO: This should use schema apis to get labels
+            $srcLabels = match ($this->method->src) {
+            };
+            $destLabels = match ($this->method->dest) {
+            };
+
             $transactionLabels = $this->method->transactionLabels->transform($info);
 
             $srcAccounts = yield from $this->api->findAccounts($srcLabels);

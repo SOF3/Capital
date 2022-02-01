@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
-use SOFe\Capital\AccountLabels;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\ParameterizedLabelSet;
 
 use function array_filter;
@@ -41,13 +39,15 @@ class MethodFactory {
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = self::parseLabelSelector($parser->enter("src", <<<'EOT'
-            Selectors here identify the "source" account in the transfer.
-            EOT), [ AccountLabels::PLAYER_UUID => "{sender uuid}" ]);
+        $src = self::parseTarget($parser, "src", $default->src ?? CommandMethod::TARGET_SENDER, <<<'EOT'
+            The "source" to take money from.
+            Can be "system", "sender", or "recipient".
+            EOT);
 
-        $dest = self::parseLabelSelector($parser->enter("dest", <<<'EOT'
-            Selectors here identify the "destination" account in the transfer.
-            EOT), [ AccountLabels::PLAYER_UUID => "{recipient uuid}" ]);
+        $dest = self::parseTarget($parser, "dest", $default->dest ?? CommandMethod::TARGET_RECIPIENT, <<<'EOT'
+            The "destination" to take money from.
+            Can be "system", "sender", or "recipient".
+            EOT);
 
         $rate = $parser->expectNumber("rate", $default->rate ?? 1.0, <<<'EOT'
             The exchange rate, or how much of the original money is sent.
@@ -77,29 +77,17 @@ class MethodFactory {
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
 
-    /**
-     * @param array<string, string> $defaultEntries
-     * @return ParameterizedLabelSelector<ContextInfo>
-     */
-    private static function parseLabelSelector(Parser $parser, $defaultEntries) : ParameterizedLabelSelector
-    {
-        $names = array_filter($parser->getKeys(), fn($currency) => $currency[0] !== "#");
-        if (count($names) === 0) {
-            $parser->failSafe(null, "There must be at least one selector entry.");
-            $entries = $defaultEntries;
-            foreach ($defaultEntries as $name => $value) {
-                $parser->expectString($name, $value, "");
-            }
-        } else {
-            $entries = [];
-            foreach ($parser->getKeys() as $name) {
-                $entries[$name] = $parser->expectString($name, "", "");
-            }
-        }
 
-        /** @var ParameterizedLabelSelector<ContextInfo> $labelSelector */
-        $labelSelector = new ParameterizedLabelSelector($entries);
-        return $labelSelector;
+    private static function parseTarget(Parser $parser, string $key, string $default, string $doc) : string
+    {
+        $target = $parser->expectString($key, $default, $doc);
+        $target = match ($target) {
+            "system" => CommandMethod::TARGET_SYSTEM,
+            "sender" => CommandMethod::TARGET_SENDER,
+            "recipient" => CommandMethod::TARGET_RECIPIENT,
+            default => $parser->failSafe($default, "Expected key \"$key\" to be \"system\", \"sender\", or \"recipient\".")
+        };
+        return $target;
     }
 
     /**
