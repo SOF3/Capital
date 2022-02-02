@@ -12,6 +12,9 @@ use function count;
 use function strpos;
 use function substr;
 
+/**
+ * Utilities for building methods that implement Method
+ */
 class MethodFactory {
     public static function buildCommand(Parser $parser, ?CommandMethod $default = null) : CommandMethod {
         $command = $parser->expectString("command", $default->command ?? "transfer-command", <<<'EOT'
