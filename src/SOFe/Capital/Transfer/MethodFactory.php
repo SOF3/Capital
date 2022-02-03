@@ -16,8 +16,7 @@ use function substr;
  * Utilities for building methods that implement Method
  */
 class MethodFactory {
-    public static function buildCommand(Parser $parser, ?CommandMethod $default = null) : CommandMethod {
-        $command = $parser->expectString("command", $default->command ?? "transfer-command", <<<'EOT'
+        $command = $parser->expectString("command", $default?->command ?? "transfer-command", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
         if ($command === "") {
@@ -27,7 +26,7 @@ class MethodFactory {
             $command = $parser->setValue("command", $command === "" ? "transfer-command" : $command, "The command's name (key \"command\") must not have spaces.");
         }
 
-        $permission = $parser->expectString("permission", $default->permission ?? "capital.transfer.unspecified", <<<'EOT'
+        $permission = $parser->expectString("permission", $default?->permission ?? "capital.transfer.unspecified", <<<'EOT'
             This is the permission players must have.
             It will be created for you.
             EOT);
@@ -38,35 +37,35 @@ class MethodFactory {
             $permission = $parser->setValue("permission", $permission === "" ? "capital.transfer.unspecified" : $permission, "The command's permission (key \"permission\") must not have spaces.");
         }
 
-        $defaultOpOnly = $parser->expectBool("default-op", $default->defaultOpOnly ?? true, <<<'EOT'
+        $defaultOpOnly = $parser->expectBool("default-op", $default?->defaultOpOnly ?? true, <<<'EOT'
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = self::parseTarget($parser, "src", $default->src ?? CommandMethod::TARGET_SENDER, <<<'EOT'
+        $src = self::parseTarget($parser, "src", $default?->src ?? CommandMethod::TARGET_SENDER, <<<'EOT'
             The "source" to take money from.
             Can be "system", "sender", or "recipient".
             If "sender" is used, this command will only be usable by
             players. (ex. not the console)
             EOT);
 
-        $dest = self::parseTarget($parser, "dest", $default->dest ?? CommandMethod::TARGET_RECIPIENT, <<<'EOT'
+        $dest = self::parseTarget($parser, "dest", $default?->dest ?? CommandMethod::TARGET_RECIPIENT, <<<'EOT'
             The "destination" to take money from.
             Can be "system", "sender", or "recipient".
             If "sender" is used, this command will only be usable by
             players. (ex. not the console)
             EOT);
 
-        $rate = $parser->expectNumber("rate", $default->rate ?? 1.0, <<<'EOT'
+        $rate = $parser->expectNumber("rate", $default?->rate ?? 1.0, <<<'EOT'
             The exchange rate, or how much of the original money is sent.
             When using "currency" schema, this allows transferring between
             accounts of different currencies.
             EOT);
 
-        $minimumAmount = $parser->expectInt("minimum-amount", $default->minimumAmount ?? 0, <<<'EOT'
+        $minimumAmount = $parser->expectInt("minimum-amount", $default?->minimumAmount ?? 0, <<<'EOT'
             The minimum amount of money that can be transferred each time.
             EOT);
 
-        $maximumAmount = $parser->expectInt("maximum-amount", $default->maximumAmount ?? 0, <<<'EOT'
+        $maximumAmount = $parser->expectInt("maximum-amount", $default?->maximumAmount ?? 0, <<<'EOT'
             The maximum amount of money that can be transferred each time.
             EOT);
 
