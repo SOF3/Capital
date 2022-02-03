@@ -7,6 +7,9 @@ namespace SOFe\Capital\Transfer;
 use SOFe\Capital\ParameterizedLabelSet;
 
 class DefaultCommand {
+    /**
+     * @var array<string, string> $transactionLabels
+     */
     public function __construct(
         public string $command,
         public string $permission,
@@ -16,7 +19,7 @@ class DefaultCommand {
         public float $rate,
         public int $minimumAmount,
         public int $maximumAmount,
-        public ParameterizedLabelSet $transactionLabels,
+        public array $transactionLabels,
         public Messages $messages,
     ) {}
 }

@@ -69,9 +69,9 @@ class MethodFactory {
             These are labels to add to the transaction.
             You can match by these labels to identify
             how players earn and lose money.
-            EOT));
+            EOT), $default?->transactionLabels ?? []);
 
-        $messages = Messages::parse($parser->enter("messages", ""));
+        $messages = Messages::parse($parser->enter("messages", ""), $default->messages);
 
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
