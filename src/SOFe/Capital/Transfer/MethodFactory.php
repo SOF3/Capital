@@ -6,6 +6,7 @@ namespace SOFe\Capital\Transfer;
 
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\Schema\Schema;
 
 use function array_filter;
 use function count;
@@ -16,6 +17,7 @@ use function substr;
  * Utilities for building methods that implement Method
  */
 class MethodFactory {
+    public static function buildCommand(Parser $parser, Schema $schema, ?DefaultCommand $default = null) : CommandMethod {
         $command = $parser->expectString("command", $default?->command ?? "transfer-command", <<<'EOT'
             This is the name of the command that will be run.
             EOT);
@@ -41,19 +43,13 @@ class MethodFactory {
             This requires the user of the command to have op permissions.
             EOT);
 
-        $src = self::parseTarget($parser, "src", $default?->src ?? CommandMethod::TARGET_SENDER, <<<'EOT'
+        $src = AccountTarget::parse($parser->enter("src", <<<'EOT'
             The "source" to take money from.
-            Can be "system", "sender", or "recipient".
-            If "sender" is used, this command will only be usable by
-            players. (ex. not the console)
-            EOT);
+            EOT), $schema, $default?->src ?? AccountTarget::TARGET_SENDER);
 
-        $dest = self::parseTarget($parser, "dest", $default?->dest ?? CommandMethod::TARGET_RECIPIENT, <<<'EOT'
-            The "destination" to take money from.
-            Can be "system", "sender", or "recipient".
-            If "sender" is used, this command will only be usable by
-            players. (ex. not the console)
-            EOT);
+        $dest = AccountTarget::parse($parser->enter("dest", <<<'EOT'
+            The "destination" to give money to.
+            EOT), $schema, $default?->dest ?? AccountTarget::TARGET_RECIPIENT);
 
         $rate = $parser->expectNumber("rate", $default?->rate ?? 1.0, <<<'EOT'
             The exchange rate, or how much of the original money is sent.
@@ -78,19 +74,6 @@ class MethodFactory {
         $messages = Messages::parse($parser->enter("messages", ""));
 
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
-    }
-
-
-    private static function parseTarget(Parser $parser, string $key, string $default, string $doc) : string
-    {
-        $target = $parser->expectString($key, $default, $doc);
-        $target = match ($target) {
-            "system" => CommandMethod::TARGET_SYSTEM,
-            "sender" => CommandMethod::TARGET_SENDER,
-            "recipient" => CommandMethod::TARGET_RECIPIENT,
-            default => $parser->failSafe($default, "Expected key \"$key\" to be \"system\", \"sender\", or \"recipient\".")
-        };
-        return $target;
     }
 
     /**

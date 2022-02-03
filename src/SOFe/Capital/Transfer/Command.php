@@ -102,38 +102,26 @@ final class Command extends PmCommand implements PluginOwned {
                 receivedAmount: new NumberInfo((float) $transferAmount + $sourceAmount),
             );
 
-            /** @var SchemaConfig $schemaConfig */
-            $schemaConfig = yield from SchemaConfig::get(MainClass::$context);
-            $schema = $schemaConfig->schema;
-
-            $srcLabels = match ($this->method->src) {
-                CommandMethod::TARGET_SYSTEM => new LabelSelector([ AccountLabels::ORACLE => OracleNames::TRANSFER ]),
-                CommandMethod::TARGET_SENDER => null,
-                CommandMethod::TARGET_RECIPIENT => $schema->getSelector($recipient)
-            };
-
+            $srcLabels = $this->method->src->getSelector($sender, $recipient);
             if ($srcLabels === null) {
-                if ($sender instanceof Player) {
-                    $srcLabels = $schema->getSelector($sender);
-                } else {
+                if (!$sender instanceof Player) {
                     $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
-                    return;
+                } else {
+                    // This should never happen
+                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->internalError, $info));
                 }
+                return;
             }
 
-            $destLabels = match ($this->method->dest) {
-                CommandMethod::TARGET_SYSTEM => new LabelSelector([ AccountLabels::ORACLE => OracleNames::TRANSFER ]),
-                CommandMethod::TARGET_SENDER => null,
-                CommandMethod::TARGET_RECIPIENT => $schema->getSelector($recipient)
-            };
-
+            $destLabels = $this->method->dest->getSelector($sender, $recipient);
             if ($destLabels === null) {
-                if ($sender instanceof Player) {
-                    $destLabels = $schema->getSelector($sender);
-                } else {
+                if (!$sender instanceof Player) {
                     $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
-                    return;
+                } else {
+                    // This should never happen
+                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->internalError, $info));
                 }
+                return;
             }
 
             $transactionLabels = $this->method->transactionLabels->transform($info);

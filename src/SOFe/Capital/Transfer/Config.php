@@ -16,6 +16,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\ParameterizedLabelSet;
+use SOFe\Capital\Schema\Config as SchemaConfig;
 
 use function array_filter;
 use function count;
@@ -44,14 +45,18 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $commandNames = array_filter($commandsParser->getKeys(), fn($command) => $command[0] !== "#");
 
+        /** @var SchemaConfig $schemaConfig */
+        $schemaConfig = yield from $raw->awaitConfigInternal(SchemaConfig::class);
+        $schema = $schemaConfig->schema;
+
         if (count($commandNames) === 0) {
             $commandsParser->failSafe(null, "There must be at least one method");
-            MethodFactory::buildCommand($commandsParser, new CommandMethod(
+            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
                 command: "pay",
                 permission: "capital.transfer.pay",
                 defaultOpOnly: false,
-                src: CommandMethod::TARGET_SENDER,
-                dest: CommandMethod::TARGET_RECIPIENT,
+                src: AccountTarget::TARGET_SENDER,
+                dest: AccountTarget::TARGET_RECIPIENT,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 10000,
@@ -69,12 +74,12 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            MethodFactory::buildCommand($commandsParser, new CommandMethod(
+            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
                 command: "takemoney",
                 permission: "capital.transfer.takemoney",
                 defaultOpOnly: true,
-                src: CommandMethod::TARGET_RECIPIENT,
-                dest: CommandMethod::TARGET_SYSTEM,
+                src: AccountTarget::TARGET_RECIPIENT,
+                dest: AccountTarget::TARGET_SYSTEM,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,
@@ -92,12 +97,12 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            MethodFactory::buildCommand($commandsParser, new CommandMethod(
+            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
                 command: "addmoney",
                 permission: "capital.transfer.addmoney",
                 defaultOpOnly: true,
-                src: CommandMethod::TARGET_SYSTEM,
-                dest: CommandMethod::TARGET_RECIPIENT,
+                src: AccountTarget::TARGET_SYSTEM,
+                dest: AccountTarget::TARGET_RECIPIENT,
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,
@@ -121,7 +126,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $methods = [];
         foreach ($commandNames as $command) {
             $commandParser = $commandsParser->enter($command, "");
-            $methods[] = MethodFactory::buildCommand($commandParser);
+            $methods[] = MethodFactory::buildCommand($commandParser, $schema);
         }
 
         return new self($methods);

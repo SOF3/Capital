@@ -13,16 +13,12 @@ use SOFe\Capital\Plugin\MainClass;
  * Transfer money by running a command.
  */
 final class CommandMethod implements Method {
-    const TARGET_SYSTEM = "system";
-    const TARGET_SENDER = "sender";
-    const TARGET_RECIPIENT = "recipient";
-
     /**
      * @param string $command The name of the command.
      * @param string $permission The permission for the command.
      * @param bool $defaultOpOnly Whether the permission is given to ops only by default.
-     * @param string $src Selects the accounts to take money from.
-     * @param string $dest Selects the accounts to send money to.
+     * @param AccountTarget $src Selects the accounts to take money from.
+     * @param AccountTarget $dest Selects the accounts to send money to.
      * @param float $rate The transfer rate. Must be positive. If $rate > 1.0, an extra transaction from `capital/oracle=transfer` to `$dest` is performed. If `0.0 < $rate < 1.0`, only `$rate` of the amount is transferred, and an extra transaction from `$src` to `capital/oracle=transfer` is performed.
      * @param int $minimumAmount The minimum amount to transfer. This should be a non-negative integer.
      * @param int $maximumAmount The maximum amount to transfer. Note that this does not override the original account valueMin/valueMax labels.
@@ -33,8 +29,8 @@ final class CommandMethod implements Method {
         public string $command,
         public string $permission,
         public bool $defaultOpOnly,
-        public string $src,
-        public string $dest,
+        public AccountTarget $src,
+        public AccountTarget $dest,
         public float $rate,
         public int $minimumAmount,
         public int $maximumAmount,
