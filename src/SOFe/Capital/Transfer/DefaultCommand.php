@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
-use SOFe\Capital\ParameterizedLabelSet;
-
 class DefaultCommand {
     /**
      * @var array<string, string> $transactionLabels
