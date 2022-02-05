@@ -97,8 +97,8 @@ final class CommandMethod implements Method {
 
         $transactionLabels = ParameterizedLabelSet::parse($parser->enter("transaction-labels", <<<'EOT'
             These are labels to add to the transaction.
-            You can match by these labels to identify
-            how players earn and lose money.
+            You can match by these labels to identify how players earn and lose money.
+            Labels are formatted using InfoAPI syntax.
             EOT), $default?->transactionLabels ?? []);
 
         $messages = Messages::parse($parser->enter("messages", ""), $default?->messages);
