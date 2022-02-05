@@ -42,15 +42,15 @@ final class ParameterizedLabelSet {
      */
     public static function parse(Parser $parser, $defaultEntries = []) : self
     {
-        $names = array_filter($parser->getKeys(), fn($currency) => $currency[0] !== "#");
-        if (count($names) === 0) {
+        $labelNames = $parser->getKeys();
+        if (count($labelNames) === 0) {
             $entries = $defaultEntries;
             foreach ($defaultEntries as $name => $value) {
-                $parser->expectString($name, $value, "");
+                $parser->setValue($name, $value, "");
             }
         } else {
             $entries = [];
-            foreach ($parser->getKeys() as $name) {
+            foreach ($labelNames as $name) {
                 $entries[$name] = $parser->expectString($name, "", "");
             }
         }
