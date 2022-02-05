@@ -33,8 +33,8 @@ class AccountTarget{
         $schema = $schema->cloneWithConfig($parser, true);
         $target = $parser->expectString("of", $defaultTarget, <<<'EOT'
             Can be "system", "sender", or "recipient".
-            If "sender" is used, this command will only be usable by
-            players. (ex. not the console)
+            If "sender" is used, this command will only be usable by players.
+            (i.e. cannot be used from console).
             EOT);
         $target = match ($target) {
             "system" => self::TARGET_SYSTEM,
