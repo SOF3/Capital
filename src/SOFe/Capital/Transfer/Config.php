@@ -17,7 +17,6 @@ use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\Schema\Config as SchemaConfig;
 
-use function array_filter;
 use function count;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
@@ -41,7 +40,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             These commands initiate transfers.
             EOT);
 
-        $commandNames = array_filter($commandsParser->getKeys(), fn($command) => $command[0] !== "#");
+        $commandNames = $commandsParser->getKeys();
 
         /** @var SchemaConfig $schemaConfig */
         $schemaConfig = yield from $raw->awaitConfigInternal(SchemaConfig::class);
@@ -118,7 +117,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            $commandNames = array_filter($commandsParser->getKeys(), fn($command) => $command[0] !== "#");
+            $commandNames = $commandsParser->getKeys();
         }
 
         $methods = [];
