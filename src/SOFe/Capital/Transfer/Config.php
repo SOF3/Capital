@@ -60,9 +60,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 10000,
-                transactionLabels: new ParameterizedLabelSet([
+                transactionLabels: [
                     Constants::LABEL_PAYMENT => "",
-                ]),
+                ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.',
@@ -83,9 +83,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,
-                transactionLabels: new ParameterizedLabelSet([
+                transactionLabels: [
                     Constants::LABEL_OPERATOR => "",
-                ]),
+                ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.',
@@ -106,9 +106,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 rate: 1.0,
                 minimumAmount: 0,
                 maximumAmount: 1000000,
-                transactionLabels: new ParameterizedLabelSet([
+                transactionLabels: [
                     Constants::LABEL_OPERATOR => "",
-                ]),
+                ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
                     notifySenderSuccess: '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.',

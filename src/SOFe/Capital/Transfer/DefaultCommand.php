@@ -6,7 +6,9 @@ namespace SOFe\Capital\Transfer;
 
 class DefaultCommand {
     /**
-     * @var array<string, string> $transactionLabels
+     * @phpstan-param AccountTarget::TARGET_* $src
+     * @phpstan-param AccountTarget::TARGET_* $dest
+     * @param array<string, string> $transactionLabels
      */
     public function __construct(
         public string $command,

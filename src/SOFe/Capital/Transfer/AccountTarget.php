@@ -18,13 +18,16 @@ class AccountTarget{
     const TARGET_RECIPIENT = "recipient";
 
     /**
-     * @var $target self::TARGET_*
+     * @phpstan-param self::TARGET_* $target
      */
     public function __construct(
         private string $target,
         private Schema $schema,
     ) {}
 
+    /**
+     * @phpstan-param self::TARGET_* $defaultTarget
+     */
     public static function parse(Parser $parser, Schema $schema, string $defaultTarget = self::TARGET_SYSTEM) : self
     {
         $schema = $schema->cloneWithConfig($parser, true);
@@ -39,6 +42,13 @@ class AccountTarget{
             "recipient" => self::TARGET_RECIPIENT,
             default => $parser->failSafe($defaultTarget, "Expected key \"of\" to be \"system\", \"sender\", or \"recipient\".")
         };
+        /**
+         * PHPStan seems to loose type information when $parser->failSafe
+         * is called even though it says that it returns the type passed into it.
+         * This means that $target is "string" and not "self::TARGET_*" anymore.
+         *
+         * @phpstan-var self::TARGET_* $target
+         */
         return new self($target, $schema);
     }
 
