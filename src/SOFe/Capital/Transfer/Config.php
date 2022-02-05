@@ -50,7 +50,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         if (count($commandNames) === 0) {
             $commandsParser->failSafe(null, "There must be at least one method");
-            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
+            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
                 command: "pay",
                 permission: "capital.transfer.pay",
                 defaultOpOnly: false,
@@ -73,7 +73,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
+            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
                 command: "takemoney",
                 permission: "capital.transfer.takemoney",
                 defaultOpOnly: true,
@@ -96,7 +96,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            MethodFactory::buildCommand($commandsParser, $schema, new DefaultCommand(
+            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
                 command: "addmoney",
                 permission: "capital.transfer.addmoney",
                 defaultOpOnly: true,
@@ -125,7 +125,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $methods = [];
         foreach ($commandNames as $command) {
             $commandParser = $commandsParser->enter($command, "");
-            $methods[] = MethodFactory::buildCommand($commandParser, $schema);
+            $methods[] = CommandMethod::parse($commandParser, $schema);
         }
 
         return new self($methods);

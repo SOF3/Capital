@@ -25,3 +25,13 @@ parameters:
 			count: 1
 			path: src/SOFe/Capital/Plugin/MainClass.php
 
+		-
+			message: "#^Method SOFe\\\\Capital\\\\ParameterizedLabelSet\\:\\:parse\\(\\) return type with generic class SOFe\\\\Capital\\\\ParameterizedLabelSet does not specify its types\\: I$#"
+			count: 1
+			path: src/SOFe/Capital/ParameterizedLabelSet.php
+
+		-
+			message: "#^PHPDoc tag @var for variable \\$labelSet contains generic class SOFe\\\\Capital\\\\ParameterizedLabelSet but does not specify its types\\: I$#"
+			count: 1
+			path: src/SOFe/Capital/ParameterizedLabelSet.php
+
