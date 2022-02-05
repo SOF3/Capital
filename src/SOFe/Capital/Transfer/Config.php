@@ -39,7 +39,6 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $commandsParser = $transferParser->enter("commands", <<<'EOT'
             These commands initiate transfers.
-            If "default-op" is set to true, users must be OP'ed.
             EOT);
 
         $commandNames = array_filter($commandsParser->getKeys(), fn($command) => $command[0] !== "#");
