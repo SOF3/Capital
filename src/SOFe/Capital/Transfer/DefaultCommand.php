@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+/**
+ * Template for generated command entries in failsafe mode.
+ * Only used as a parameter to `CommandMethod::parse()`.
+ */
 class DefaultCommand {
     /**
      * @phpstan-param AccountTarget::TARGET_* $src
