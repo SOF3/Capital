@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+use DomainException;
 use Generator;
 use pocketmine\command\Command as PmCommand;
 use pocketmine\command\CommandSender;
@@ -16,6 +17,7 @@ use pocketmine\player\Player;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
@@ -103,22 +105,20 @@ final class Command extends PmCommand implements PluginOwned {
             if ($srcLabels === null) {
                 if (!$sender instanceof Player) {
                     $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
-                } else {
-                    // This should never happen
-                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->internalError, $info));
+                    return;
                 }
-                return;
+
+                throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
             }
 
             $destLabels = $this->method->dest->getSelector($sender, $recipient);
             if ($destLabels === null) {
                 if (!$sender instanceof Player) {
                     $sender->sendMessage(InfoAPI::resolve($this->method->messages->playerOnlyCommand, $info));
-                } else {
-                    // This should never happen
-                    $sender->sendMessage(InfoAPI::resolve($this->method->messages->internalError, $info));
+                    return;
                 }
-                return;
+
+                throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
             }
 
             $transactionLabels = $this->method->transactionLabels->transform($info);
