@@ -59,7 +59,7 @@ final class CommandMethod implements Method {
         }
 
         $permission = $parser->expectString("permission", $default?->permission ?? "capital.transfer.unspecified", <<<'EOT'
-            This is the permission players must have.
+            Users must have this permission to run this command.
             It will be created for you.
             EOT);
         if ($permission === "") {
