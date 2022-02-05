@@ -15,7 +15,6 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
-use SOFe\Capital\ParameterizedLabelSet;
 use SOFe\Capital\Schema\Config as SchemaConfig;
 
 use function array_filter;
