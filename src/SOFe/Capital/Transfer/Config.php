@@ -17,7 +17,6 @@ use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\Schema\Config as SchemaConfig;
 
-use function count;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
@@ -36,12 +35,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             "transfer" tells Capital what methods admins and players can send money through.
             EOT);
 
-        $commandsParser = $transferParser->enterOrNull("commands", <<<'EOT'
-            These commands initiate transfers.
-            EOT);
-
-        $wasUnfilled = $commandsParser === null;
-        $commandsParser ??= $transferParser->enter("commands", <<<'EOT'
+        [$commandsParser, $wasUnfilled] = $transferParser->enterWithCreated("commands", <<<'EOT'
             These commands initiate transfers.
             EOT);
 

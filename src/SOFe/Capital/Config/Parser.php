@@ -78,14 +78,21 @@ final class Parser {
         return new self($this->data, array_merge($this->path, [$key]), $this->failSafe);
     }
 
-    public function enterOrNull(string $key, string $doc) : ?Parser {
+    /**
+     * @return array{Parser, bool}
+     */
+    public function enterWithCreated(string $key, string $doc) : array {
         $data = $this->expectAny($key, [], $doc, true);
+        $wasCreated = false;
 
         if(!is_array($data) || self::isList($data)) {
-            return null;
+            $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
+            $wasCreated = true;
         }
 
-        return new self($this->data, array_merge($this->path, [$key]), $this->failSafe);
+        return [
+            new self($this->data, array_merge($this->path, [$key]), $this->failSafe), $wasCreated
+        ];
     }
 
     /**
