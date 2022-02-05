@@ -38,7 +38,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             EOT);
 
         $commandsParser = $transferParser->enter("commands", <<<'EOT'
-            These slash commands initiate transfers.
+            These commands initiate transfers.
             If "default-op" is set to true, users must be OP'ed.
             EOT);
 
