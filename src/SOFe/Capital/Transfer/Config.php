@@ -7,7 +7,6 @@ namespace SOFe\Capital\Transfer;
 use Generator;
 use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
-use SOFe\Capital\Config\Constants;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\Config\Raw;
 use SOFe\Capital\Di\Context;
@@ -20,6 +19,12 @@ use SOFe\Capital\Schema\Config as SchemaConfig;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
+
+    /** The label applied on normal payment transactions. */
+    public const LABEL_PAYMENT = "payment";
+
+    /** The label applied on operator-related transactions. */
+    public const LABEL_OPERATOR = "operator";
 
     /**
      * @param list<Method> $transferMethods Methods to initiate money transfer between accounts.
@@ -56,7 +61,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 minimumAmount: 0,
                 maximumAmount: 10000,
                 transactionLabels: [
-                    Constants::LABEL_PAYMENT => "",
+                    Config::LABEL_PAYMENT => "",
                 ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
@@ -79,7 +84,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 minimumAmount: 0,
                 maximumAmount: 1000000,
                 transactionLabels: [
-                    Constants::LABEL_OPERATOR => "",
+                    Config::LABEL_OPERATOR => "",
                 ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
@@ -102,7 +107,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 minimumAmount: 0,
                 maximumAmount: 1000000,
                 transactionLabels: [
-                    Constants::LABEL_OPERATOR => "",
+                    Config::LABEL_OPERATOR => "",
                 ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
