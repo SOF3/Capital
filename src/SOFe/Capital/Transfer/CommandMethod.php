@@ -10,6 +10,8 @@ use SOFe\Capital\Config\Parser;
 use SOFe\Capital\ParameterizedLabelSet;
 use SOFe\Capital\Plugin\MainClass;
 use SOFe\Capital\Schema\Schema;
+use function strpos;
+use function substr;
 
 /**
  * Transfer money by running a command.

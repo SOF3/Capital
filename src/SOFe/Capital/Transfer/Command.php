@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
-use DomainException;
 use Generator;
 use pocketmine\command\Command as PmCommand;
 use pocketmine\command\CommandSender;

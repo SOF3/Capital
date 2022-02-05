@@ -7,7 +7,6 @@ namespace SOFe\Capital;
 use SOFe\Capital\Config\Parser;
 use SOFe\InfoAPI\Info;
 use SOFe\InfoAPI\InfoAPI;
-use function array_filter;
 use function count;
 
 /**
