@@ -36,7 +36,12 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             "transfer" tells Capital what methods admins and players can send money through.
             EOT);
 
-        $commandsParser = $transferParser->enter("commands", <<<'EOT'
+        $commandsParser = $transferParser->enterOrNull("commands", <<<'EOT'
+            These commands initiate transfers.
+            EOT);
+
+        $wasUnfilled = $commandsParser === null;
+        $commandsParser ??= $transferParser->enter("commands", <<<'EOT'
             These commands initiate transfers.
             EOT);
 
@@ -46,8 +51,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $schemaConfig = yield from $raw->awaitConfigInternal(SchemaConfig::class);
         $schema = $schemaConfig->schema;
 
-        if (count($commandNames) === 0) {
-            $commandsParser->failSafe(null, "There must be at least one method");
+        if ($wasUnfilled) {
             CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
                 command: "pay",
                 permission: "capital.transfer.pay",

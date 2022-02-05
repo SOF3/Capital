@@ -78,6 +78,16 @@ final class Parser {
         return new self($this->data, array_merge($this->path, [$key]), $this->failSafe);
     }
 
+    public function enterOrNull(string $key, string $doc) : ?Parser {
+        $data = $this->expectAny($key, [], $doc, true);
+
+        if(!is_array($data) || self::isList($data)) {
+            return null;
+        }
+
+        return new self($this->data, array_merge($this->path, [$key]), $this->failSafe);
+    }
+
     /**
      * @throws ConfigException
      */
