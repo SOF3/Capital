@@ -18,7 +18,7 @@ class AccountTarget{
     const TARGET_RECIPIENT = "recipient";
 
     /**
-     * @phpstan-param self::TARGET_* $target
+     * @param self::TARGET_* $target
      */
     public function __construct(
         private string $target,
@@ -26,7 +26,7 @@ class AccountTarget{
     ) {}
 
     /**
-     * @phpstan-param self::TARGET_* $defaultTarget
+     * @param self::TARGET_* $defaultTarget
      */
     public static function parse(Parser $parser, Schema $schema, string $defaultTarget = self::TARGET_SYSTEM) : self
     {
@@ -47,7 +47,7 @@ class AccountTarget{
          * is called even though it says that it returns the type passed into it.
          * This means that $target is "string" and not "self::TARGET_*" anymore.
          *
-         * @phpstan-var self::TARGET_* $target
+         * @var self::TARGET_* $target
          */
         return new self($target, $schema);
     }
