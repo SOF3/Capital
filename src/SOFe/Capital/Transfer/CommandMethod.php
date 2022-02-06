@@ -79,11 +79,11 @@ final class CommandMethod implements Method {
             EOT);
 
         $src = AccountTarget::parse($parser->enter("src", <<<'EOT'
-            The "source" to take money from.
+            The source account to deduct money from.
             EOT), $schema, $default?->src ?? AccountTarget::TARGET_SENDER);
 
         $dest = AccountTarget::parse($parser->enter("dest", <<<'EOT'
-            The "destination" to give money to.
+            The destination account to add money to.
             EOT), $schema, $default?->dest ?? AccountTarget::TARGET_RECIPIENT);
 
         $rate = $parser->expectNumber("rate", $default?->rate ?? 1.0, <<<'EOT'
