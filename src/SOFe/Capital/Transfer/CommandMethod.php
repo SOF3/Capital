@@ -39,6 +39,7 @@ final class CommandMethod implements Method {
         public float $rate,
         public int $minimumAmount,
         public int $maximumAmount,
+        public int $fee,
         public ParameterizedLabelSet $transactionLabels,
         public Messages $messages,
     ) {}
@@ -100,6 +101,10 @@ final class CommandMethod implements Method {
             The maximum amount of money that can be transferred each time.
             EOT);
 
+        $fee = $parser->expectInt("fee", $default?->fee ?? 0, <<<'EOT'
+            This is taken directly out of the source account before money is transferred.
+            EOT);
+
         /** @var ParameterizedLabelSet<ContextInfo> $transactionLabels */
         $transactionLabels = ParameterizedLabelSet::parse($parser->enter("transaction-labels", <<<'EOT'
             These are labels to add to the transaction.
@@ -109,6 +114,6 @@ final class CommandMethod implements Method {
 
         $messages = Messages::parse($parser->enter("messages", null), $default?->messages);
 
-        return new CommandMethod($commandName, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
+        return new CommandMethod($commandName, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $fee, $transactionLabels, $messages);
     }
 }

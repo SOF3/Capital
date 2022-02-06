@@ -20,6 +20,7 @@ class DefaultCommand {
         public string $src,
         public string $dest,
         public float $rate,
+        public int $fee,
         public int $minimumAmount,
         public int $maximumAmount,
         public array $transactionLabels,

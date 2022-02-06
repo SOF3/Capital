@@ -93,6 +93,8 @@ final class Command extends PmCommand implements PluginOwned {
                 $sinkAmount = $amount - $transferAmount;
             }
 
+            $sinkAmount += $this->method->fee;
+
             $info = new ContextInfo(
                 sender: $sender instanceof Player ? new PlayerInfo($sender) : null,
                 recipient: new PlayerInfo($recipient),
@@ -135,8 +137,14 @@ final class Command extends PmCommand implements PluginOwned {
                 return;
             }
 
-
-            if($sourceAmount > 0 || $sinkAmount > 0) {
+            if ($sourceAmount > 0 && $sinkAmount > 0) {
+                // TODO: Possibly add a `$api->transact3()`?
+                //
+                // To satisfy this transaction we need to:
+                // 1. send $sinkAmount (`==` to $fee) from src to oracle,
+                // 2. send $transferAmount from src to dest, and
+                // 3. send $sourceAmount from oracle to dest.
+            } else if($sourceAmount > 0 || $sinkAmount > 0) {
                 $transactionId = Uuid::uuid4();
 
                 $oracle = yield from $this->api->getOracle(OracleNames::TRANSFER);
