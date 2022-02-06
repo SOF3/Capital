@@ -95,6 +95,7 @@ final class CommandMethod implements Method {
             The maximum amount of money that can be transferred each time.
             EOT);
 
+        /** @var ParameterizedLabelSet<ContextInfo> $transactionLabels */
         $transactionLabels = ParameterizedLabelSet::parse($parser->enter("transaction-labels", <<<'EOT'
             These are labels to add to the transaction.
             You can match by these labels to identify how players earn and lose money.

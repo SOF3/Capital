@@ -36,8 +36,9 @@ final class ParameterizedLabelSet {
     }
 
     /**
+     * @template T of Info
      * @param array<string, string> $defaultEntries
-     * @return ParameterizedLabelSet
+     * @return ParameterizedLabelSet<T>
      */
     public static function parse(Parser $parser, $defaultEntries = []) : self
     {
