@@ -51,7 +51,7 @@ final class ParameterizedLabelSet {
         } else {
             $entries = [];
             foreach ($labelNames as $name) {
-                $entries[$name] = $parser->expectString($name, "", "");
+                $entries[$name] = $parser->expectString($name, "", null);
             }
         }
 

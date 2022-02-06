@@ -68,7 +68,7 @@ final class Parser {
         return $output;
     }
 
-    public function enter(string $key, string $doc) : Parser {
+    public function enter(string $key, ?string $doc) : Parser {
         $data = $this->expectAny($key, [], $doc, true);
 
         if(!is_array($data) || self::isList($data)) {
@@ -81,7 +81,7 @@ final class Parser {
     /**
      * @return array{Parser, bool}
      */
-    public function enterWithCreated(string $key, string $doc) : array {
+    public function enterWithCreated(string $key, ?string $doc) : array {
         $data = $this->expectAny($key, [], $doc, true);
         $wasCreated = false;
 
@@ -98,7 +98,7 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectInt(string $key, int $default, string $doc, bool $required = true) : int {
+    public function expectInt(string $key, int $default, ?string $doc, bool $required = true) : int {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if(!is_int($value)) {
@@ -111,7 +111,7 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectNumber(string $key, float $default, string $doc, bool $required = true) : float {
+    public function expectNumber(string $key, float $default, ?string $doc, bool $required = true) : float {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if(!is_int($value) && !is_float($value)) {
@@ -124,7 +124,7 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectBool(string $key, bool $default, string $doc, bool $required = true) : bool {
+    public function expectBool(string $key, bool $default, ?string $doc, bool $required = true) : bool {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if(!is_bool($value)) {
@@ -141,7 +141,7 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectString(string $key, string $default, string $doc, bool $required = true) : string {
+    public function expectString(string $key, string $default, ?string $doc, bool $required = true) : string {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if(!is_string($value)) {
@@ -154,7 +154,7 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectNullableString(string $key, ?string $default, string $doc, bool $required = true) : ?string {
+    public function expectNullableString(string $key, ?string $default, ?string $doc, bool $required = true) : ?string {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if($value !== null && !is_string($value)) {
@@ -169,7 +169,7 @@ final class Parser {
      * @return list<string>
      * @throws ConfigException
      */
-    public function expectStringList(string $key, array $default, string $doc, bool $required = true) : array {
+    public function expectStringList(string $key, array $default, ?string $doc, bool $required = true) : array {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if(!is_array($value)) {
@@ -196,7 +196,7 @@ final class Parser {
      * @return list<string>|null
      * @throws ConfigException
      */
-    public function expectNullableStringList(string $key, ?array $default, string $doc, bool $required = true) : ?array {
+    public function expectNullableStringList(string $key, ?array $default, ?string $doc, bool $required = true) : ?array {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if($value === null) {
@@ -227,7 +227,7 @@ final class Parser {
      * @return list<Parser>
      * @throws ConfigException
      */
-    public function expectObjectList(string $key, array $default, string $doc, bool $required = true) : ?array {
+    public function expectObjectList(string $key, array $default, ?string $doc, bool $required = true) : ?array {
         $value = $this->expectAny($key, $default, $doc, $required);
 
         if($value === null) {
@@ -261,12 +261,14 @@ final class Parser {
      * @param T $default
      * @return mixed
      */
-    private function expectAny(string $key, $default, string $doc, bool $required) {
+    private function expectAny(string $key, $default, ?string $doc, bool $required) {
         $array = $this->data->get($this->path);
 
         if(!array_key_exists($key, $array)) {
             if($this->failSafe || !$required) {
-                $array["#" . $key] = $doc;
+                if ($doc !== null) {
+                    $array["#" . $key] = $doc;
+                }
                 $array[$key] = $default;
                 $this->data->set($this->path, $array);
             } else {
