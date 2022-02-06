@@ -58,16 +58,7 @@ final class CommandMethod implements Method {
             $command = $parser->setValue("command", $command === "" ? "transfer-command" : $command, "The command's name (key \"command\") must not have spaces.");
         }
 
-        $permission = $parser->expectString("permission", $default?->permission ?? "capital.transfer.unspecified", <<<'EOT'
-            Users must have this permission to run this command.
-            It will be created for you.
-            EOT);
-        if ($permission === "") {
-            $permission = $parser->setValue("permission", "capital.transfer.unspecified", "The command's permission (key \"permission\") must not be empty.");
-        } elseif (($i = strpos($permission, " ")) !== false) {
-            $permission = substr($permission, 0, $i);
-            $permission = $parser->setValue("permission", $permission === "" ? "capital.transfer.unspecified" : $permission, "The command's permission (key \"permission\") must not have spaces.");
-        }
+        $permission = "capital.transfer.$command";
 
         $defaultOpOnly = $parser->expectBool("default-op", $default?->defaultOpOnly ?? true, <<<'EOT'
             This requires the user of the command to have op permissions.
