@@ -61,7 +61,8 @@ final class CommandMethod implements Method {
         $permission = "capital.transfer.$command";
 
         $defaultOpOnly = $parser->expectBool("default-op", $default?->defaultOpOnly ?? true, <<<'EOT'
-            This requires the user of the command to have op permissions.
+            If set to true, only ops can use this command
+            (you can further configure this with permission plugins).
             EOT);
 
         $src = AccountTarget::parse($parser->enter("src", <<<'EOT'
