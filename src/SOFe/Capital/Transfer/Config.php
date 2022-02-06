@@ -125,7 +125,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $methods = [];
         foreach ($commandNames as $command) {
-            $commandParser = $commandsParser->enter($command, "");
+            $commandParser = $commandsParser->enter($command, null);
             $methods[] = CommandMethod::parse($commandParser, $schema);
         }
 

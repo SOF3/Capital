@@ -102,7 +102,7 @@ final class CommandMethod implements Method {
             Labels are formatted using InfoAPI syntax.
             EOT), $default?->transactionLabels ?? []);
 
-        $messages = Messages::parse($parser->enter("messages", ""), $default?->messages);
+        $messages = Messages::parse($parser->enter("messages", null), $default?->messages);
 
         return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
