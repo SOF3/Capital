@@ -59,7 +59,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 rate: 1.0,
                 fee: 0,
                 minimumAmount: 0,
-                maximumAmount: 10000,
+                maximumAmount: 1000000,
                 transactionLabels: [
                     Config::LABEL_PAYMENT => "",
                 ],
@@ -81,7 +81,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 dest: AccountTarget::TARGET_SYSTEM,
                 rate: 1.0,
                 minimumAmount: 0,
-                maximumAmount: 1000000,
+                maximumAmount: null,
                 fee: 0,
                 transactionLabels: [
                     Config::LABEL_OPERATOR => "",
@@ -104,7 +104,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 dest: AccountTarget::TARGET_RECIPIENT,
                 rate: 1.0,
                 minimumAmount: 0,
-                maximumAmount: 1000000,
+                maximumAmount: null,
                 fee: 0,
                 transactionLabels: [
                     Config::LABEL_OPERATOR => "",

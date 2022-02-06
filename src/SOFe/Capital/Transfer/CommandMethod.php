@@ -38,7 +38,7 @@ final class CommandMethod implements Method {
         public AccountTarget $dest,
         public float $rate,
         public int $minimumAmount,
-        public int $maximumAmount,
+        public ?int $maximumAmount,
         public int $fee,
         public ParameterizedLabelSet $transactionLabels,
         public Messages $messages,
@@ -97,7 +97,7 @@ final class CommandMethod implements Method {
             The minimum amount of money that can be transferred each time.
             EOT);
 
-        $maximumAmount = $parser->expectInt("maximum-amount", $default?->maximumAmount ?? 0, <<<'EOT'
+        $maximumAmount = $parser->expectNullableInt("maximum-amount", $default?->maximumAmount ?? 0, <<<'EOT'
             The maximum amount of money that can be transferred each time.
             EOT);
 

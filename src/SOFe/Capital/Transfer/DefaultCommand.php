@@ -22,7 +22,7 @@ class DefaultCommand {
         public float $rate,
         public int $fee,
         public int $minimumAmount,
-        public int $maximumAmount,
+        public ?int $maximumAmount,
         public array $transactionLabels,
         public Messages $messages,
     ) {}

@@ -78,7 +78,7 @@ final class Command extends PmCommand implements PluginOwned {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
             return;
         }
-        if($amount > $this->method->maximumAmount) {
+        if($this->method->maximumAmount !== null && $amount > $this->method->maximumAmount) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
             return;
         }
