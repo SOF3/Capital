@@ -28,6 +28,7 @@ use SOFe\Capital\TransactionLabels;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
+use function abs;
 use function array_sum;
 use function assert;
 use function count;
@@ -138,13 +139,42 @@ final class Command extends PmCommand implements PluginOwned {
             }
 
             if ($sourceAmount > 0 && $sinkAmount > 0) {
-                // TODO: Possibly add a `$api->transact3()`?
-                //
-                // To satisfy this transaction we need to:
-                // 1. send $sinkAmount (`==` to $fee) from src to oracle,
-                // 2. send $transferAmount from src to dest, and
-                // 3. send $sourceAmount from oracle to dest.
-            } else if($sourceAmount > 0 || $sinkAmount > 0) {
+                $transactionId = Uuid::uuid4();
+
+                $oracle = yield from $this->api->getOracle(OracleNames::TRANSFER);
+                $labels2 = [
+                    TransactionLabels::TRANSFER_ORACLE => $transactionId->toString(),
+                ];
+
+                $srcNetChange = -($transferAmount + $sinkAmount); // x
+                $destNetChange = $transferAmount + $sourceAmount; // y
+
+                if (abs($srcNetChange) < abs($destNetChange)) {
+                    // If abs(x) < abs(y), we send x from src to dest, then we send y + x from oracle to dest.
+                    $src1 = $srcAccounts[0];
+                    $dest1 = $destAccounts[0];
+                    $amount1 = -$srcNetChange;
+
+                    $src2 = $oracle;
+                    $dest2 = $destAccounts[0];
+                    $amount2 = $destNetChange + $srcNetChange;
+                } else {
+                    // Else, we send y from src to dest, then we send x + y from src to oracle.
+                    $src1 = $srcAccounts[0];
+                    $dest1 = $destAccounts[0];
+                    $amount1 = $destNetChange;
+
+                    $src2 = $srcAccounts[0];
+                    $dest2 = $oracle;
+                    $amount2 = $srcNetChange + $destNetChange;
+                }
+
+                $promise = $this->api->transact2(
+                    $src1, $dest1, $amount1, $transactionLabels,
+                    $src2, $dest2, $amount2, $labels2,
+                    $transactionId, null
+                );
+            } elseif($sourceAmount > 0 || $sinkAmount > 0) {
                 $transactionId = Uuid::uuid4();
 
                 $oracle = yield from $this->api->getOracle(OracleNames::TRANSFER);
