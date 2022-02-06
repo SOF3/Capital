@@ -10,6 +10,7 @@ use SOFe\Capital\Config\Parser;
 use SOFe\Capital\ParameterizedLabelSet;
 use SOFe\Capital\Plugin\MainClass;
 use SOFe\Capital\Schema\Schema;
+use function array_flip;
 use function strpos;
 use function substr;
 
@@ -47,18 +48,30 @@ final class CommandMethod implements Method {
         Server::getInstance()->getCommandMap()->register("capital", $command);
     }
 
-    public static function parse(Parser $parser, Schema $schema, ?DefaultCommand $default = null) : self {
-        $command = $parser->expectString("command", $default?->command ?? "transfer-command", <<<'EOT'
-            This is the name of the command that will be run.
-            EOT);
-        if ($command === "") {
-            $command = $parser->setValue("command", "transfer-command", "The command's name (key \"command\") must not be empty.");
-        } elseif (($i = strpos($command, " ")) !== false) {
-            $command = substr($command, 0, $i);
-            $command = $parser->setValue("command", $command === "" ? "transfer-command" : $command, "The command's name (key \"command\") must not have spaces.");
+    public static function parse(Parser $allCommands, Schema $schema, string $commandName, ?DefaultCommand $default = null) : self {
+        if ($commandName === "") {
+            $keys = array_flip($allCommands->getKeys());
+            $i = 0;
+
+            do {
+                $commandName = "invalid-name@$i";
+                $i++;
+            } while (isset($keys[$commandName]));
+
+        } elseif (($i = strpos($commandName, " ")) !== false) {
+            $keys = array_flip($allCommands->getKeys());
+            $commandName = $base = substr($commandName, 0, $i);
+
+            $x = 0;
+            while (isset($keys[$commandName])) {
+                $commandName = "$base@$x";
+                $x++;
+            }
         }
 
-        $permission = "capital.transfer.$command";
+        $permission = "capital.transfer.$commandName";
+
+        $parser = $allCommands->enter($commandName, null);
 
         $defaultOpOnly = $parser->expectBool("default-op", $default?->defaultOpOnly ?? true, <<<'EOT'
             If set to true, only ops can use this command
@@ -96,6 +109,6 @@ final class CommandMethod implements Method {
 
         $messages = Messages::parse($parser->enter("messages", null), $default?->messages);
 
-        return new CommandMethod($command, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
+        return new CommandMethod($commandName, $permission, $defaultOpOnly, $src, $dest, $rate, $minimumAmount, $maximumAmount, $transactionLabels, $messages);
     }
 }

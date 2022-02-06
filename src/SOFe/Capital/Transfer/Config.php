@@ -51,8 +51,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $schema = $schemaConfig->schema;
 
         if ($wasUnfilled) {
-            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
-                command: "pay",
+            CommandMethod::parse($commandsParser, $schema, "pay", new DefaultCommand(
                 permission: "capital.transfer.pay",
                 defaultOpOnly: false,
                 src: AccountTarget::TARGET_SENDER,
@@ -74,8 +73,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
-                command: "takemoney",
+            CommandMethod::parse($commandsParser, $schema, "takemoney", new DefaultCommand(
                 permission: "capital.transfer.takemoney",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_RECIPIENT,
@@ -97,8 +95,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            CommandMethod::parse($commandsParser, $schema, new DefaultCommand(
-                command: "addmoney",
+            CommandMethod::parse($commandsParser, $schema, "addmoney", new DefaultCommand(
                 permission: "capital.transfer.addmoney",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_SYSTEM,
@@ -124,9 +121,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         }
 
         $methods = [];
-        foreach ($commandNames as $command) {
-            $commandParser = $commandsParser->enter($command, null);
-            $methods[] = CommandMethod::parse($commandParser, $schema);
+        foreach ($commandNames as $commandName) {
+            $methods[] = CommandMethod::parse($commandsParser, $schema, $commandName);
         }
 
         return new self($methods);
