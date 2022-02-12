@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics;
 
+use AssertionError;
 use Generator;
 use pocketmine\player\Player;
 use SOFe\Capital\AccountQueryMetric;
@@ -16,14 +17,21 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\ParameterizedLabelSelector;
 use SOFe\Capital\Schema;
 use SOFe\Capital\TransactionQueryMetric;
+use SOFe\InfoAPI\PlayerInfo;
+
 use function count;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
 
+    /**
+     * @param array<string, Query<Player>> $singleQueries
+     */
     public function __construct(
+        public array $singleQueries,
     ) {
     }
 
@@ -47,6 +55,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             $infos->enter("money", "This is an example info that displays the total money of a player.");
         }
 
+        $queries = [];
+
         foreach ($infos->getKeys() as $key) {
             $infoConfig = $infos->enter($key, "");
 
@@ -60,51 +70,30 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             }
 
             if ($type === "account") {
-                $accountConfig = $infoConfig->enter("selector", "Selects which accounts of the player to calculate.");
-                $infoSchema = $schema->cloneWithConfig($accountConfig, true);
-                $labelGetter = fn(Player $player) => $infoSchema->getSelector($player);
+                $selectorConfig = $infoConfig->enter("selector", "Selects which accounts of the player to calculate.");
+                $infoSchema = $schema->cloneWithConfig($selectorConfig, true);
 
-                $metric = match ($infoConfig->expectString("metric", "balance-sum", <<<'EOT'
-                    The statistic used to combine multiple values.
+                $metric = AccountQueryMetric::parseConfig($infoConfig, "metric");
 
-                    Possible values:
-                    - "account-count": The number of accounts selected.
-                    - "balance-sum": The sum of the balances of the accounts selected.
-                    - "balance-mean": The average balance of the accounts selected.
-                    - "balance-variance": The variance of the balances of the accounts selected.
-                    - "balance-min": The minimum balance of the accounts selected.
-                    - "balance-max": The maximum balance of the accounts selected.
-                    EOT)) {
-                    "account-count" => AccountQueryMetric::accountCount(),
-                    "balance-sum" => AccountQueryMetric::balanceSum(),
-                    "balance-mean" => AccountQueryMetric::balanceMean(),
-                    "balance-variance" => AccountQueryMetric::balanceVariance(),
-                    "balance-min" => AccountQueryMetric::balanceMin(),
-                    "balance-max" => AccountQueryMetric::balanceMax(),
-                    default => null,
-                };
-                if ($metric === null) {
-                    $infoConfig->setValue("metric", "balance-sum", "Unknown account metric type");
-                    $metric = AccountQueryMetric::balanceSum();
+                $queries[$key] = new AccountQuery($metric, fn(Player $player) => $infoSchema->getSelector($player));
+            } elseif($type === "transaction") {
+                $selectorConfig = $infoConfig->enter("selector", "Filter transactions by labels");
+                $labels = [];
+                foreach($selectorConfig->getKeys() as $labelKey) {
+                    $labels[$labelKey] = $selectorConfig->expectString($key, "", null);
                 }
+                $labels = new ParameterizedLabelSelector($labels);
+
+                $metric = TransactionQueryMetric::parseConfig($infoConfig, "metric");
+
+                $queries[$key] = new TransactionQuery($metric, fn(Player $player) => $labels->transform(new PlayerInfo($player)));
             } else {
-                // TODO implement
-                $labelGetter = fn(Player $player) => ["foo" => "bar"];
-
-                $metric = match ($infoConfig->expectString("metric", "transaction-count", <<<'EOT'
-                    T
-                    EOT)) {
-                    default => null,
-                };
-                if ($metric === null) {
-                    $infoConfig->setValue("metric", "transaction-count", "Unkknown transaction metric type");
-                    $metric = TransactionQueryMetric::transactionCount();
-                }
+                throw new AssertionError("unreachable code");
             }
         }
 
         return new self(
-
+            singleQueries: $queries,
         );
     }
 }

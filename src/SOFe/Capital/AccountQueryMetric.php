@@ -42,4 +42,35 @@ final class AccountQueryMetric {
     public function usesIdOnly() : bool {
         return $this->usesIdOnly;
     }
+
+    public static function parseConfig(Config\Parser $config, string $key) : self {
+        $metricName = $config->expectString($key, "balance-sum", <<<'EOT'
+            The statistic used to combine multiple values.
+
+            Possible values:
+            - "account-count": The number of accounts selected.
+            - "balance-sum": The sum of the balances of the accounts selected.
+            - "balance-mean": The average balance of the accounts selected.
+            - "balance-variance": The variance of the balances of the accounts selected.
+            - "balance-min": The minimum balance of the accounts selected.
+            - "balance-max": The maximum balance of the accounts selected.
+            EOT);
+
+        $metric = match ($metricName) {
+            "account-count" => self::accountCount(),
+            "balance-sum" => self::balanceSum(),
+            "balance-mean" => self::balanceMean(),
+            "balance-variance" => self::balanceVariance(),
+            "balance-min" => self::balanceMin(),
+            "balance-max" => self::balanceMax(),
+            default => null,
+        };
+
+        if ($metric !== null) {
+            return $metric;
+        }
+
+        $config->setValue($key, "balance-sum", "Invalid metric type $metricName");
+        return self::balanceSum();
+    }
 }
