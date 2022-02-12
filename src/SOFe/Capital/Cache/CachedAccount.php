@@ -19,7 +19,8 @@ final class CachedAccount {
         private UuidInterface $uuid,
         private int $value,
         private array $labels,
-    ) {}
+    ) {
+    }
 
     public function getUuid() : UuidInterface {
         return $this->uuid;

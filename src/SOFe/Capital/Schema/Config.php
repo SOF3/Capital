@@ -26,7 +26,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
      */
     public function __construct(
         public Schema $schema,
-    ) {}
+    ) {
+    }
 
     public static function parse(Parser $config, Context $di, Raw $raw) : Generator {
         false && yield;

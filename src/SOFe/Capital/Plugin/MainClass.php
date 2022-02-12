@@ -38,12 +38,12 @@ final class MainClass extends PluginBase implements Singleton {
 
         self::$context = $context;
 
-        Await::f2c(function() use($context) : Generator {
+        Await::f2c(function() use ($context) : Generator {
             yield from self::getStd($context)->sleep(0);
 
             yield from Loader::get($context);
 
-            if($this->debug) {
+            if ($this->debug) {
                 $context->getDepGraph()->write($this->getDataFolder() . "depgraph.dot");
             }
         });

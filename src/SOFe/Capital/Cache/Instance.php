@@ -28,7 +28,8 @@ final class Instance {
         private Database $db,
         private AwaitStd $std,
         private CacheType $type,
-    ) {}
+    ) {
+    }
 
     /**
      * Fetches the value for the given key if it is not already in the cache.
@@ -40,7 +41,7 @@ final class Instance {
     public function fetch($key) : Generator {
         $string = $this->type->keyToString($key);
 
-        if(isset($this->entries[$string])) {
+        if (isset($this->entries[$string])) {
             $this->entries[$string]->incRefCount();
             return;
         }
@@ -57,7 +58,7 @@ final class Instance {
     public function assertFetched($key) {
         $string = $this->type->keyToString($key);
 
-        if(!isset($this->entries[$string])) {
+        if (!isset($this->entries[$string])) {
             throw new RuntimeException("Key " . json_encode($string) . " was not fetched");
         }
         return $this->entries[$string]->getValue();
@@ -69,7 +70,7 @@ final class Instance {
     public function free($key) : void {
         $string = $this->type->keyToString($key);
 
-        if(!isset($this->entries[$string]) || $this->entries[$string]->getRefCount() === 0) {
+        if (!isset($this->entries[$string]) || $this->entries[$string]->getRefCount() === 0) {
             throw new RuntimeException("Attempt to free unreferenced cache entry $key");
         }
 
@@ -82,17 +83,17 @@ final class Instance {
     public function recycle() : Generator {
         $promises = [];
 
-        foreach($this->entries as $key => $entry) {
-            if($entry->getRefCount() === 0) {
+        foreach ($this->entries as $key => $entry) {
+            if ($entry->getRefCount() === 0) {
                 $promise = $this->type->onEntryFree($key, $this->entries[$key]->getValue());
-                if($promise !== null) {
+                if ($promise !== null) {
                     $promises[] = $promise;
                 }
                 unset($this->entries[$key]);
             }
         }
 
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
     }
@@ -105,8 +106,8 @@ final class Instance {
 
         $promises = [];
 
-        foreach($entries as $key => $value) {
-            if(!isset($this->entries[$key])) {
+        foreach ($entries as $key => $value) {
+            if (!isset($this->entries[$key])) {
                 // recycled
                 continue;
             }
@@ -114,14 +115,14 @@ final class Instance {
             $original = $this->entries[$key]->getValue();
             $this->entries[$key]->setCachedValue($value);
             $promise = $this->type->onEntryRefresh($key, $original, $value);
-            if($promise !== null) {
+            if ($promise !== null) {
                 $promises[] = $promise;
             }
 
             // for entries added during refresh, they should be new enough.
         }
 
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
     }
@@ -131,7 +132,7 @@ final class Instance {
      */
     public function refreshLoop(int $interval) : Generator {
         // This should run until the plugin disables, at which `$this->refresh()` will just never yield.
-        while(true) {
+        while (true) {
             yield from $this->std->sleep($interval);
             yield from $this->refresh();
         }

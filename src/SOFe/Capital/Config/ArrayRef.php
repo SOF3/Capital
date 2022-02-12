@@ -17,7 +17,8 @@ final class ArrayRef {
      */
     public function __construct(
         public array $array,
-    ) {}
+    ) {
+    }
 
     /**
      * @param list<int|string> $path
@@ -25,8 +26,8 @@ final class ArrayRef {
     public function get(array $path) : mixed {
         $current = $this->array;
 
-        foreach($path as $key) {
-            if(!isset($current[$key])) {
+        foreach ($path as $key) {
+            if (!isset($current[$key])) {
                 throw new RuntimeException("Invalid path " . implode(".", $path));
             }
             $current = $current[$key];
@@ -39,8 +40,8 @@ final class ArrayRef {
      * @param list<int|string> $path
      */
     public function set(array $path, mixed $value) : void {
-        if(count($path) === 0) {
-            if(!is_array($value)) {
+        if (count($path) === 0) {
+            if (!is_array($value)) {
                 throw new RuntimeException("Cannot set the whole array to " . gettype($value));
             }
 
@@ -50,8 +51,8 @@ final class ArrayRef {
 
         $current = &$this->array;
 
-        foreach(array_slice($path, 0, -1) as $key) {
-            if(!isset($current[$key])) {
+        foreach (array_slice($path, 0, -1) as $key) {
+            if (!isset($current[$key])) {
                 throw new RuntimeException("Invalid path " . implode(".", $path));
             }
             $current = &$current[$key];

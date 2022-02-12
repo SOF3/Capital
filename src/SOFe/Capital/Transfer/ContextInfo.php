@@ -25,7 +25,8 @@ final class ContextInfo extends Info {
         private PlayerInfo $recipient,
         private NumberInfo $sentAmount,
         private NumberInfo $receivedAmount,
-    ) {}
+    ) {
+    }
 
     public function toString() : string {
         throw new RuntimeException("ContextInfo must not be returned as a provided info");

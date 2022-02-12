@@ -12,7 +12,8 @@ final class AggregateTopEntry {
     public function __construct(
         private array $groupValues,
         private array $metrics,
-    ) {}
+    ) {
+    }
 
     /**
      * @return list<string>

@@ -25,5 +25,6 @@ class DefaultCommand {
         public ?int $maximumAmount,
         public array $transactionLabels,
         public Messages $messages,
-    ) {}
+    ) {
+    }
 }

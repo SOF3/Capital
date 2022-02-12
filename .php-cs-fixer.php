@@ -39,6 +39,12 @@ return (function() {
                     "declare"
                 ]
             ],
+            "braces" => [
+                "allow_single_line_closure" => false,
+                "position_after_anonymous_constructs" => "same",
+                "position_after_control_structures" => "same",
+                "position_after_functions_and_oop_constructs" => "same",
+            ],
             "cast_spaces" => [
                 "space" => "single"
             ],

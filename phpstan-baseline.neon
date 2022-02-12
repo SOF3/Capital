@@ -16,16 +16,6 @@ parameters:
 			path: src/SOFe/Capital/Di/Context.php
 
 		-
-			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\Plugin\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Plugin/MainClass.php
-
-		-
-			message: "#^Unreachable statement \\- code above always terminates\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Plugin/MainClass.php
-
-		-
 			message: "#^PHPDoc tag @var for variable \\$labelSet contains generic class SOFe\\\\Capital\\\\ParameterizedLabelSet but does not specify its types\\: I$#"
 			count: 1
 			path: src/SOFe/Capital/ParameterizedLabelSet.php
@@ -34,4 +24,14 @@ parameters:
 			message: "#^Template type T of method SOFe\\\\Capital\\\\ParameterizedLabelSet\\:\\:parse\\(\\) is not referenced in a parameter\\.$#"
 			count: 1
 			path: src/SOFe/Capital/ParameterizedLabelSet.php
+
+		-
+			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\Plugin\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Plugin/MainClass.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Plugin/MainClass.php
 

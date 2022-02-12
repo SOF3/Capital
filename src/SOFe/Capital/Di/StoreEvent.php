@@ -13,7 +13,8 @@ final class StoreEvent extends Event {
     public function __construct(
         private Context $context,
         private Singleton $object,
-    ) {}
+    ) {
+    }
 
     public function getContext() : Context {
         return $this->context;

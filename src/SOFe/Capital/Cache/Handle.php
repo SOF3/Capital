@@ -13,7 +13,8 @@ final class Handle {
     public function __construct(
         private Cache $cache,
         private LabelSelector $labelSelector,
-    ) {}
+    ) {
+    }
 
     /**
      * @return list<CachedAccount>
@@ -22,7 +23,7 @@ final class Handle {
         $uuids = $this->cache->getLabelSelectorCache()->assertFetched($this->labelSelector);
 
         $accounts = [];
-        foreach($uuids as $uuid) {
+        foreach ($uuids as $uuid) {
             $balance = $this->cache->getAccountCache()->assertFetched($uuid);
             $labels = $this->cache->getAccountLabelCache()->assertFetched($uuid);
             $accounts[] = new CachedAccount($uuid, $balance, $labels);
@@ -32,7 +33,7 @@ final class Handle {
     }
 
     public function release() : void {
-        if($this->released) {
+        if ($this->released) {
             throw new RuntimeException("Attempt to release the same Handle twice");
         }
 
@@ -41,7 +42,7 @@ final class Handle {
     }
 
     public function __destruct() {
-        if(!$this->released) {
+        if (!$this->released) {
             $this->cache->getLogger()->warning("Handle ({$this->labelSelector->debugDisplay()}) leak detected");
         }
     }

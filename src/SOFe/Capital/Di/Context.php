@@ -51,8 +51,8 @@ final class Context implements Singleton {
      * @return Generator<mixed, mixed, mixed, T>
      */
     public function loadOrStoreAsync(string $class, Generator $promise) : Generator {
-        if(isset($this->storage[$class])) {
-            if($this->storage[$class] instanceof Mutex) {
+        if (isset($this->storage[$class])) {
+            if ($this->storage[$class] instanceof Mutex) {
                 yield from $this->storage[$class]->run(GeneratorUtil::empty());
             }
 
@@ -63,14 +63,14 @@ final class Context implements Singleton {
 
         $mutex = new Mutex;
         $this->storage[$class] = $mutex;
-        yield from $mutex->runClosure(function() use($class, $promise) : Generator {
+        yield from $mutex->runClosure(function() use ($class, $promise) : Generator {
             $this->logger->debug("Loading $class");
 
             $object = yield from MainClass::getStd($this)->timeout($promise, 100);
-            if($object === null) {
+            if ($object === null) {
                 $blocking = [];
-                foreach($this->storage as $otherClass => $otherMutex) {
-                    if($otherMutex instanceof Mutex && !$otherMutex->isIdle()) {
+                foreach ($this->storage as $otherClass => $otherMutex) {
+                    if ($otherMutex instanceof Mutex && !$otherMutex->isIdle()) {
                         $blocking[] = $otherClass;
                     }
                 }
@@ -78,7 +78,7 @@ final class Context implements Singleton {
                 throw new RuntimeException("$class took more than 5 seconds to initialize (blocking classes: " . implode(", ", $blocking) . ")");
             }
 
-            if(get_class($object) !== $class) {
+            if (get_class($object) !== $class) {
                 throw new RuntimeException("$class must not initialize with a subclass");
             }
 
@@ -97,7 +97,7 @@ final class Context implements Singleton {
     public function store(Singleton|AwaitStd $object) : void {
         $this->storage[get_class($object)] = $object;
 
-        if($object instanceof Singleton) {
+        if ($object instanceof Singleton) {
             $event = new StoreEvent($this, $object);
             $event->call();
         }
@@ -112,10 +112,10 @@ final class Context implements Singleton {
      * @return T|null
      */
     public function fetchClass(string $class) : Singleton|AwaitStd|null {
-        if(isset($this->storage[$class])) {
+        if (isset($this->storage[$class])) {
             /** @var T|Mutex $object */
             $object = $this->storage[$class];
-            if(!($object instanceof Mutex)) {
+            if (!($object instanceof Mutex)) {
                 /** @var T $object */
                 return $object;
             }
@@ -133,8 +133,8 @@ final class Context implements Singleton {
     }
 
     public function shutdown() : void {
-        foreach(array_reverse($this->storage) as $object) {
-            if($object instanceof Singleton) {
+        foreach (array_reverse($this->storage) as $object) {
+            if ($object instanceof Singleton) {
                 $object->close();
             }
         }
@@ -152,7 +152,8 @@ final class Context implements Singleton {
     /**
      * @internal do not use, this is just for implementing interface.
      */
-    public function close() : void {}
+    public function close() : void {
+    }
 
     /**
      * Calls a function where parameters are resolved as singletons from the context.
@@ -170,44 +171,44 @@ final class Context implements Singleton {
      */
     public function resolveArgs(ReflectionFunctionAbstract $fn, ?string $user) : Generator {
         $fnName = $fn->getName();
-        if($fn instanceof ReflectionMethod) {
+        if ($fn instanceof ReflectionMethod) {
             $fnName = $fn->getDeclaringClass()->getName() . "::" . $fnName;
         }
 
         $futures = [];
-        foreach($fn->getParameters() as $param) {
-            $gen = function() use($user, $fnName, $param) {
+        foreach ($fn->getParameters() as $param) {
+            $gen = function() use ($user, $fnName, $param) {
                 $paramType = $param->getType();
-                if(!($paramType instanceof ReflectionNamedType)) {
+                if (!($paramType instanceof ReflectionNamedType)) {
                     throw new RuntimeException("$fnName parameter $paramType is not a named type");
                 }
 
                 $paramClass = $paramType->getName();
-                if(!is_subclass_of($paramClass, Singleton::class) && $paramClass !== AwaitStd::class && $paramClass !== Logger::class) {
+                if (!is_subclass_of($paramClass, Singleton::class) && $paramClass !== AwaitStd::class && $paramClass !== Logger::class) {
                     throw new RuntimeException("$fnName parameter $paramClass is not a singleton");
                 }
 
-                if($paramClass === AwaitStd::class) {
-                    if($user !== null) {
+                if ($paramClass === AwaitStd::class) {
+                    if ($user !== null) {
                         $this->addDepEdge($user, AwaitStd::class);
                     }
 
                     return $this->fetchClass(AwaitStd::class);
-                } elseif($paramClass === Logger::class) {
+                } elseif ($paramClass === Logger::class) {
                     // TODO generalize this with factory pattern
 
                     /** @var MainClass $main */
                     $main = $this->storage[MainClass::class];
 
                     $logger = $main->getLogger();
-                    if($user !== null) {
+                    if ($user !== null) {
                         $logger = new PrefixedLogger($logger, $user);
                     }
 
                     return $logger;
                 } else {
                     /** @var class-string<Singleton> $paramClass */
-                    if($user !== null) {
+                    if ($user !== null) {
                         $this->addDepEdge($user, $paramClass);
                     }
 

@@ -25,7 +25,8 @@ final class Capital implements Singleton, FromContext {
     public function __construct(
         private Logger $logger,
         private Database $database,
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<string, string> $labels
@@ -40,7 +41,7 @@ final class Capital implements Singleton, FromContext {
         $id = yield from $this->database->doTransaction($src->getId(), $dest->getId(), $amount);
 
         $promises = [];
-        foreach($labels as $labelName => $labelValue) {
+        foreach ($labels as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($id, $labelName, $labelValue);
         }
         yield from Await::all($promises);
@@ -76,10 +77,10 @@ final class Capital implements Singleton, FromContext {
         );
 
         $promises = [];
-        foreach($labels1 as $labelName => $labelValue) {
+        foreach ($labels1 as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($ids[0], $labelName, $labelValue);
         }
-        foreach($labels2 as $labelName => $labelValue) {
+        foreach ($labels2 as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($ids[1], $labelName, $labelValue);
         }
         yield from Await::all($promises);
@@ -109,7 +110,7 @@ final class Capital implements Singleton, FromContext {
      */
     public function getBalances(array $accounts) : Generator {
         $ids = [];
-        foreach($accounts as $key => $account) {
+        foreach ($accounts as $key => $account) {
             $ids[$key] = $account->getId();
         }
 
@@ -125,7 +126,7 @@ final class Capital implements Singleton, FromContext {
         ];
 
         $accounts = yield from self::findAccounts(new LabelSelector($labels));
-        if(count($accounts) > 0) {
+        if (count($accounts) > 0) {
             return $accounts[0];
         }
 

@@ -19,13 +19,13 @@ trait SingletonArgs {
 
         try {
             $func = $reflect->getMethod("fromSingletonArgs");
-            if(!$func->isStatic()) {
+            if (!$func->isStatic()) {
                 throw new RuntimeException("{$reflect->getName()}::{$func->getName()}() must be static");
             }
             $constructor = fn($args) => $func->invokeArgs(null, $args);
-        } catch(ReflectionException $_) {
+        } catch (ReflectionException $_) {
             $func = $reflect->getConstructor();
-            if($func === null) {
+            if ($func === null) {
                 return $reflect->newInstance();
             }
 
@@ -36,7 +36,7 @@ trait SingletonArgs {
 
         $ret = $constructor($args);
 
-        if($ret instanceof Generator) {
+        if ($ret instanceof Generator) {
             $ret = yield from $ret;
         }
 

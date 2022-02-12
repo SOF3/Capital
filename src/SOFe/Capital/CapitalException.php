@@ -18,7 +18,7 @@ final class CapitalException extends Exception {
     public const TRANSACTION_LABEL_DOES_NOT_EXIST = 8;
 
     public function __construct(int $code, ?Exception $previous = null) {
-        $message = match($code) {
+        $message = match ($code) {
             self::SOURCE_UNDERFLOW => "Source account resultant value is too low",
             self::DESTINATION_OVERFLOW => "Destination account resultant value is too high",
             self::NO_SUCH_ACCOUNT => "The account does not exist",

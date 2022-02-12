@@ -40,7 +40,8 @@ final class TransactionQueryMetric {
     private function __construct(
         private string $expr,
         private bool $usesIdOnly = false,
-    ) {}
+    ) {
+    }
 
     public function getExpr() : string {
         return $this->expr;

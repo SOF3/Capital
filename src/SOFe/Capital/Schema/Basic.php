@@ -23,7 +23,8 @@ final class Basic implements Schema {
 
     public function __construct(
         private AccountConfig $initialAccount,
-    ) {}
+    ) {
+    }
 
     public static function describe() : string {
         return "Each player only has one account.";

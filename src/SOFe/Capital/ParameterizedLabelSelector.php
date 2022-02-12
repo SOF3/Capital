@@ -20,11 +20,12 @@ final class ParameterizedLabelSelector {
     public function __construct(
         private array $entries,
         private bool $cache = true,
-    ) {}
+    ) {
+    }
 
     public function transform(Info $info) : LabelSelector {
         $labels = [];
-        foreach($this->entries as $name => $valueTemplate) {
+        foreach ($this->entries as $name => $valueTemplate) {
             $labels[$name] = InfoAPI::resolve($valueTemplate, $info, $this->cache);
         }
         return new LabelSelector($labels);

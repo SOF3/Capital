@@ -25,7 +25,7 @@ final class AccountLabelCacheType implements CacheType {
 
     public function fetchEntries(Database $db, array $keys) : Generator {
         $ids = [];
-        foreach($keys as $key) {
+        foreach ($keys as $key) {
             $ids[$key] = Uuid::fromBytes($key);
         }
         return yield from $db->getAccountListAllLabels($ids);

@@ -57,18 +57,18 @@ final class Database implements Singleton, FromContext {
     private Mutex $sqliteMutex;
 
     private function __construct(private Logger $logger, MainClass $plugin, Config $config) {
-        $this->dialect = match($config->libasynql["type"]) {
+        $this->dialect = match ($config->libasynql["type"]) {
             "sqlite" => SqlDialect::SQLITE,
             "mysql" => SqlDialect::MYSQL,
             default => throw new RuntimeException("Unsupported SQL dialect " . $config->libasynql["type"]),
         };
 
-        if($this->dialect === SqlDialect::SQLITE && $config->libasynql["worker-limit"] !== 1) {
+        if ($this->dialect === SqlDialect::SQLITE && $config->libasynql["worker-limit"] !== 1) {
             $this->logger->warning("Multi-worker is not supported for SQLite databases. Force setting worker-limit to 1.");
             $config->libasynql["worker-limit"] = 1;
         }
 
-        if($this->dialect === SqlDialect::SQLITE) {
+        if ($this->dialect === SqlDialect::SQLITE) {
             $this->sqliteMutex = new Mutex;
         }
 
@@ -77,7 +77,7 @@ final class Database implements Singleton, FromContext {
             "mysql" => array_map(fn($file) => "mysql/$file", self::SQL_FILES),
         ]);
 
-        if($config->logQueries) {
+        if ($config->logQueries) {
             $this->conn->setLogger($this->logger);
         }
 
@@ -90,7 +90,7 @@ final class Database implements Singleton, FromContext {
     public static function fromSingletonArgs(Logger $logger, MainClass $plugin, Config $config) : Generator {
         $db = new self($logger, $plugin, $config);
 
-        yield from match($db->dialect) {
+        yield from match ($db->dialect) {
             SqlDialect::SQLITE => $db->sqliteInit(),
             SqlDialect::MYSQL => $db->mysqlInit(),
         };
@@ -125,8 +125,8 @@ final class Database implements Singleton, FromContext {
     private function tryCreateProcedure(Generator $generator) : Generator {
         try {
             yield from $generator;
-        } catch(SqlError $error) {
-            if(preg_match('/^procedure [^ ]+ already exists$/i', $error->getErrorMessage())) {
+        } catch (SqlError $error) {
+            if (preg_match('/^procedure [^ ]+ already exists$/i', $error->getErrorMessage())) {
                 // ignore
             } else {
                 throw $error;
@@ -154,13 +154,20 @@ final class Database implements Singleton, FromContext {
         yield from $this->raw->accountCreate($uuid->toString(), $value);
 
         $promises = [];
-        foreach($labels as $name => $value) {
+        foreach ($labels as $name => $value) {
             $promises[] = $this->addAccountLabel($uuid, $name, $value);
         }
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
         return $uuid;
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    public function touchAccount(UuidInterface $id) : Generator {
+        yield from $this->raw->accountTouch($id->toString());
     }
 
     /**
@@ -169,7 +176,7 @@ final class Database implements Singleton, FromContext {
      */
     public function getAccountValue(UuidInterface $id) : Generator {
         $rows = yield from $this->raw->accountFetch($id->toString());
-        if(count($rows) > 0) {
+        if (count($rows) > 0) {
             return $rows[0]["value"];
         }
         throw new CapitalException(CapitalException::NO_SUCH_ACCOUNT);
@@ -181,24 +188,24 @@ final class Database implements Singleton, FromContext {
      * @throws CapitalException if any of the accounts does not exist
      */
     public function getAccountListValues(array $ids) : Generator {
-        if(count($ids) === 0) {
+        if (count($ids) === 0) {
             return [];
         }
 
         $flip = [];
-        foreach($ids as $k => $id) {
+        foreach ($ids as $k => $id) {
             $flip[$id->toString()] = $k;
         }
 
         $rows = yield from $this->raw->accountFetchList(array_keys($flip));
 
-        if(count($rows) !== count($ids)) {
+        if (count($rows) !== count($ids)) {
             throw new CapitalException(CapitalException::NO_SUCH_ACCOUNT);
         }
 
         $output = [];
 
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $output[$flip[$row["id"]]] = $row["value"];
         }
 
@@ -215,23 +222,27 @@ final class Database implements Singleton, FromContext {
     public function addAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
         try {
             yield from $this->raw->accountLabelAdd($id->toString(), $name, $value);
-        } catch(SqlError $error) {
+        } catch (SqlError $error) {
             throw new CapitalException(CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS, $error);
         }
     }
 
     /**
+     * Updates an account label.
+     *
      * @return VoidPromise
      * @throws CapitalException if the account does not have this label
      */
     public function updateAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
         $changes = yield from $this->raw->accountLabelUpdate($id->toString(), $name, $value);
-        if($changes === 0) {
+        if ($changes === 0) {
             throw new CapitalException(CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
         }
     }
 
     /**
+     * Adds or updates an account label.
+     *
      * @return VoidPromise
      */
     public function setAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
@@ -244,7 +255,7 @@ final class Database implements Singleton, FromContext {
      */
     public function getAccountLabel(UuidInterface $id, string $name) : Generator {
         $rows = yield from $this->raw->accountLabelFetch($id->toString(), $name);
-        if(count($rows) > 0) {
+        if (count($rows) > 0) {
             return $rows[0]["value"];
         }
         throw new CapitalException(CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
@@ -256,7 +267,7 @@ final class Database implements Singleton, FromContext {
     public function getAccountAllLabels(UuidInterface $id) : Generator {
         $rows = yield from $this->raw->accountLabelFetchAll($id->toString());
         $result = [];
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             /** @var string $name */
             $name = $row["name"];
 
@@ -274,19 +285,19 @@ final class Database implements Singleton, FromContext {
      * @return Generator<mixed, mixed, mixed, array<string, string>[]>
      */
     public function getAccountListAllLabels(array $ids) : Generator {
-        if(count($ids) === 0) {
+        if (count($ids) === 0) {
             return [];
         }
 
         $flip = [];
-        foreach($ids as $k => $id) {
+        foreach ($ids as $k => $id) {
             $flip[$id->toString()] = $k;
         }
 
         $rows = yield from $this->raw->accountLabelFetchAllMulti(array_keys($flip));
 
         $output = [];
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             /** @var string $id */
             $id = $row["id"];
             /** @var string $name */
@@ -295,7 +306,7 @@ final class Database implements Singleton, FromContext {
             $value = $row["value"];
 
             $key = $flip[$id];
-            if(!isset($output[$key])) {
+            if (!isset($output[$key])) {
                 $output[$key] = [];
             }
 
@@ -317,11 +328,11 @@ final class Database implements Singleton, FromContext {
 
         $i = 0;
         $joinMain = false;
-        foreach($metrics as $metric) {
+        foreach ($metrics as $metric) {
             $columns[] = $metric->getExpr() . " AS metric_{$i}";
             $i++;
 
-            if(!$metric->usesIdOnly()) {
+            if (!$metric->usesIdOnly()) {
                 $joinMain = true;
             }
         }
@@ -339,7 +350,7 @@ final class Database implements Singleton, FromContext {
 
         $output = [];
         $i = 0;
-        foreach($metrics as $key => $metric) {
+        foreach ($metrics as $key => $metric) {
             $output[$key] = $row["metric_{$i}"];
             $i++;
         }
@@ -364,26 +375,26 @@ final class Database implements Singleton, FromContext {
 
         $i = 0;
         $joinMain = !$orderingMetric->usesIdOnly();
-        foreach($otherMetrics as $metric) {
+        foreach ($otherMetrics as $metric) {
             $columns .= ", " . $metric->getExpr() . " AS metric_{$i}";
             $i++;
 
-            if(!$metric->usesIdOnly()) {
+            if (!$metric->usesIdOnly()) {
                 $joinMain = true;
             }
         }
 
-        foreach($groupBy as $i => $_) {
+        foreach ($groupBy as $i => $_) {
             $columns .= ", t{$i}.value AS group_{$i}";
         }
 
         $newSelector = [];
-        foreach($groupBy as $label) {
+        foreach ($groupBy as $label) {
             $newSelector[$label] = LabelSelector::ANY_VALUE;
         }
 
-        foreach($selector->getEntries() as $label => $value) {
-            if(isset($newSelector[$label])) {
+        foreach ($selector->getEntries() as $label => $value) {
+            if (isset($newSelector[$label])) {
                 throw new RuntimeException("groupBy labels must not be used in the label selector");
             }
 
@@ -401,16 +412,16 @@ final class Database implements Singleton, FromContext {
         );
 
         $output = [];
-        foreach($result->getRows() as $dbRow) {
+        foreach ($result->getRows() as $dbRow) {
             $outputGroupValues = [];
-            foreach($groupBy as $i => $_) {
+            foreach ($groupBy as $i => $_) {
                 $outputGroupValues[] = $dbRow["group_{$i}"];
             }
 
             $outputMetrics[$orderingMetricName] = $dbRow["metric_ordering"];
 
             $i = 0;
-            foreach($otherMetrics as $key => $metric) {
+            foreach ($otherMetrics as $key => $metric) {
                 $outputMetrics[$key] = $dbRow["metric_{$i}"];
                 $i++;
             }
@@ -436,7 +447,7 @@ final class Database implements Singleton, FromContext {
         );
 
         $ids = [];
-        foreach($result->getRows() as $row) {
+        foreach ($result->getRows() as $row) {
             $ids[] = Uuid::fromString($row["id"]);
         }
         return $ids;
@@ -458,11 +469,11 @@ final class Database implements Singleton, FromContext {
         $entries = $selector->getEntries();
 
         $query = "SELECT {$columns} FROM acc_label AS t0 ";
-        for($i = 1; $i < count($entries); $i++) {
+        for ($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN acc_label AS t{$i} USING (id) ";
         }
 
-        if($joinMain) {
+        if ($joinMain) {
             $query .= "INNER JOIN acc USING (id) ";
         }
 
@@ -473,12 +484,12 @@ final class Database implements Singleton, FromContext {
 
         $conditions = [];
         $i = 0;
-        foreach($entries as $name => $value) {
+        foreach ($entries as $name => $value) {
             $condition = "t{$i}.name = :name{$i}";
             $vars["name{$i}"] = new GenericVariable("name{$i}", GenericVariable::TYPE_STRING, null);
             $args["name{$i}"] = $name;
 
-            if($value !== LabelSelector::ANY_VALUE) {
+            if ($value !== LabelSelector::ANY_VALUE) {
                 $condition .= " AND t{$i}.value = :value{$i}";
                 $vars["value{$i}"] = new GenericVariable("value{$i}", GenericVariable::TYPE_STRING, null);
                 $args["value{$i}"] = $value;
@@ -489,11 +500,11 @@ final class Database implements Singleton, FromContext {
         }
         $query .= implode(" AND ", $conditions);
 
-        if($groupBy !== []) {
+        if ($groupBy !== []) {
             $groupByList = [];
-            foreach($groupBy as $label) {
+            foreach ($groupBy as $label) {
                 $groupById = array_search($label, array_keys($entries), true);
-                if($groupById === false) {
+                if ($groupById === false) {
                     throw new RuntimeException("Cannot group by $label because it is not in selector");
                 }
 
@@ -503,20 +514,20 @@ final class Database implements Singleton, FromContext {
             $query .= " GROUP BY " . implode(", ", $groupByList);
         }
 
-        if($orderBy !== null) {
+        if ($orderBy !== null) {
             $query .= " ORDER BY `{$orderBy}`";
-            if($descending) {
+            if ($descending) {
                 $query .= " DESC";
             }
         }
 
-        if($limit !== null) {
+        if ($limit !== null) {
             $query .= " LIMIT {$limit}";
         }
 
         $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-accounts", [$query], "", $vars, __FILE__, __LINE__);
 
-        $rawQuery = $stmt->format($args, match($this->dialect) {
+        $rawQuery = $stmt->format($args, match ($this->dialect) {
             SqlDialect::SQLITE => null,
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
@@ -544,12 +555,12 @@ final class Database implements Singleton, FromContext {
         $uuid = Uuid::uuid4();
 
         $srcMin = PHP_INT_MIN;
-        if($srcMinLabel !== null) {
+        if ($srcMinLabel !== null) {
             try {
                 $srcMinString = yield from $this->getAccountLabel($src, $srcMinLabel);
                 $srcMin = (int) $srcMinString;
-            } catch(CapitalException $ex) {
-                if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+            } catch (CapitalException $ex) {
+                if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
                     throw $ex;
                 }
                 // else, we don't need a constraint
@@ -557,12 +568,12 @@ final class Database implements Singleton, FromContext {
         }
 
         $destMax = PHP_INT_MAX;
-        if($destMaxLabel !== null) {
+        if ($destMaxLabel !== null) {
             try {
                 $destMaxString = yield from $this->getAccountLabel($dest, $destMaxLabel);
                 $destMax = (int) $destMaxString;
-            } catch(CapitalException $ex) {
-                if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+            } catch (CapitalException $ex) {
+                if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
                     throw $ex;
                 }
                 // else, we don't need a constraint
@@ -573,7 +584,7 @@ final class Database implements Singleton, FromContext {
         $destMax = yield from $this->getAccountLabel($dest, AccountLabels::VALUE_MAX);
         $destMax = (int) $destMax;
 
-        yield from match($this->dialect) {
+        yield from match ($this->dialect) {
             SqlDialect::SQLITE => $this->sqliteMutex->run($this->doTransactionSqlite($uuid, $src, $dest, $amount, $srcMin, $destMax)),
             SqlDialect::MYSQL => $this->doTransactionMysql($uuid, $src, $dest, $amount, $srcMin, $destMax),
         };
@@ -585,16 +596,16 @@ final class Database implements Singleton, FromContext {
      * @return VoidPromise
      */
     private function doTransactionSqlite(UuidInterface $uuid, UuidInterface $src, UuidInterface $dest, int $amount, int $srcMin, int $destMax) : Generator {
-        $srcCheck = function() use($src, $amount, $srcMin) {
+        $srcCheck = function() use ($src, $amount, $srcMin) {
             $srcValue = yield from $this->getAccountValue($src);
-            if($srcValue - $amount < $srcMin) {
+            if ($srcValue - $amount < $srcMin) {
                 throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
             }
         };
 
-        $destCheck = function() use($dest, $amount, $destMax) {
+        $destCheck = function() use ($dest, $amount, $destMax) {
             $destValue = yield from $this->getAccountValue($dest);
-            if($destValue - $amount > $destMax) {
+            if ($destValue - $amount > $destMax) {
                 throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
             }
         };
@@ -615,7 +626,7 @@ final class Database implements Singleton, FromContext {
         $rows = yield from $this->raw->transactionCreate($uuid->toString(), $src->toString(), $dest->toString(), $amount, $srcMin, $destMax);
         $errno = $rows[0]["status"];
 
-        match($errno) {
+        match ($errno) {
             0 => null,
             1 => throw new CapitalException(CapitalException::SOURCE_UNDERFLOW),
             2 => throw new CapitalException(CapitalException::DESTINATION_OVERFLOW),
@@ -650,25 +661,25 @@ final class Database implements Singleton, FromContext {
         /** @var array{int, int} $destMax */
         $destMax = [PHP_INT_MAX, PHP_INT_MAX];
 
-        for($i = 0; $i < 2; $i++) {
-            if($srcMinLabel !== null) {
+        for ($i = 0; $i < 2; $i++) {
+            if ($srcMinLabel !== null) {
                 try {
                     $srcMinString = yield from $this->getAccountLabel($src[$i], $srcMinLabel);
                     $srcMin[$i] = (int) $srcMinString;
-                } catch(CapitalException $ex) {
-                    if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                } catch (CapitalException $ex) {
+                    if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
                         throw $ex;
                     }
                     // else, we don't need a constraint
                 }
             }
 
-            if($destMaxLabel !== null) {
+            if ($destMaxLabel !== null) {
                 try {
                     $destMaxString = yield from $this->getAccountLabel($dest[$i], $destMaxLabel);
                     $destMax[$i] = (int) $destMaxString;
-                } catch(CapitalException $ex) {
-                    if($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
+                } catch (CapitalException $ex) {
+                    if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
                         throw $ex;
                     }
                     // else, we don't need a constraint
@@ -679,7 +690,7 @@ final class Database implements Singleton, FromContext {
         /** @var array{int, int} $srcMin */
         /** @var array{int, int} $destMax */
 
-        yield from match($this->dialect) {
+        yield from match ($this->dialect) {
             SqlDialect::SQLITE => $this->sqliteMutex->run($this->doTransaction2Sqlite($uuid, $src, $dest, $amount, $srcMin, $destMax)),
             SqlDialect::MYSQL => $this->doTransaction2Mysql($uuid, $src, $dest, $amount, $srcMin, $destMax),
         };
@@ -704,14 +715,14 @@ final class Database implements Singleton, FromContext {
         /** @var array<string, int> $maxMap the value stores the allowed maximum value of the key (account binary UUID), PHP_INT_MAX if unbounded */
         $maxMap = [];
 
-        for($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 2; $i++) {
             $srcKey = $src[$i]->getBytes();
             $destKey = $dest[$i]->getBytes();
 
             $deltas[$srcKey] = ($deltas[$srcKey] ?? 0) - $amount[$i];
             $deltas[$destKey] = ($deltas[$destKey] ?? 0) + $amount[$i];
 
-            foreach([
+            foreach ([
                 [$srcKey, $srcMin[$i], PHP_INT_MAX],
                 [$destKey, PHP_INT_MIN, $destMax[$i]],
             ] as [$key, $min, $max]) {
@@ -722,26 +733,26 @@ final class Database implements Singleton, FromContext {
 
         /** @var array<int, int> For $k => $v, array_keys($deltas)[$k] is the account binary UUID, and $v is the current value of the account before transactions */
         $values = yield from $this->getAccountListValues(array_map(fn($id) => Uuid::fromBytes($id), array_keys($deltas)));
-        foreach(array_keys($deltas) as $j => $key) {
+        foreach (array_keys($deltas) as $j => $key) {
             $value = $values[$j];
             $delta = $deltas[$key];
             $min = $minMap[$key];
             $max = $maxMap[$key];
 
-            if($value + $delta < $min) {
+            if ($value + $delta < $min) {
                 throw new CapitalException(CapitalException::SOURCE_UNDERFLOW);
             }
 
-            if($value + $delta > $max) {
+            if ($value + $delta > $max) {
                 throw new CapitalException(CapitalException::DESTINATION_OVERFLOW);
             }
         }
 
         $promises = [];
-        for($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 2; $i++) {
             $promises[] = $this->raw->transactionInsert($uuid[$i]->toString(), $src[$i]->toString(), $dest[$i]->toString(), $amount[$i]);
         }
-        foreach(array_keys($deltas) as $j => $key) {
+        foreach (array_keys($deltas) as $j => $key) {
             $uuid = Uuid::fromBytes($key);
             $promises[] = $this->raw->accountSqliteUnsafeDelta($uuid->toString(), $deltas[$key]);
         }
@@ -764,7 +775,7 @@ final class Database implements Singleton, FromContext {
         );
         $errno = $rows[0]["status"];
 
-        match($errno) {
+        match ($errno) {
             0 => null,
             1 => throw new CapitalException(CapitalException::SOURCE_UNDERFLOW),
             2 => throw new CapitalException(CapitalException::DESTINATION_OVERFLOW),
@@ -782,7 +793,7 @@ final class Database implements Singleton, FromContext {
     public function addTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
         try {
             yield from $this->raw->transactionLabelAdd($id->toString(), $name, $value);
-        } catch(SqlError $error) {
+        } catch (SqlError $error) {
             throw new CapitalException(CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS, $error);
         }
     }
@@ -793,7 +804,7 @@ final class Database implements Singleton, FromContext {
      */
     public function updateTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
         $changes = yield from $this->raw->transactionLabelUpdate($id->toString(), $name, $value);
-        if($changes === 0) {
+        if ($changes === 0) {
             throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
         }
     }
@@ -811,7 +822,7 @@ final class Database implements Singleton, FromContext {
      */
     public function getTransactionLabel(UuidInterface $id, string $name) : Generator {
         $rows = yield from $this->raw->transactionLabelFetch($id->toString(), $name);
-        if(count($rows) > 0) {
+        if (count($rows) > 0) {
             return $rows[0]["value"];
         }
         throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
@@ -823,7 +834,7 @@ final class Database implements Singleton, FromContext {
     public function getTransactionAllLabels(UuidInterface $id) : Generator {
         $rows = yield from $this->raw->transactionLabelFetchAll($id->toString());
         $result = [];
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             /** @var string $name */
             $name = $row["name"];
 
@@ -841,19 +852,19 @@ final class Database implements Singleton, FromContext {
      * @return Generator<mixed, mixed, mixed, array<string, string>[]>
      */
     public function getTransactionListAllLabels(array $ids) : Generator {
-        if(count($ids) === 0) {
+        if (count($ids) === 0) {
             return [];
         }
 
         $flip = [];
-        foreach($ids as $k => $id) {
+        foreach ($ids as $k => $id) {
             $flip[$id->toString()] = $k;
         }
 
         $rows = yield from $this->raw->transactionLabelFetchAllMulti(array_keys($flip));
 
         $output = [];
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             /** @var string $id */
             $id = $row["id"];
             /** @var string $name */
@@ -862,7 +873,7 @@ final class Database implements Singleton, FromContext {
             $value = $row["value"];
 
             $key = $flip[$id];
-            if(!isset($output[$key])) {
+            if (!isset($output[$key])) {
                 $output[$key] = [];
             }
 
@@ -884,11 +895,11 @@ final class Database implements Singleton, FromContext {
 
         $i = 0;
         $joinMain = false;
-        foreach($metrics as $metric) {
+        foreach ($metrics as $metric) {
             $columns[] = $metric->getExpr() . " AS metric_{$i}";
             $i++;
 
-            if(!$metric->usesIdOnly()) {
+            if (!$metric->usesIdOnly()) {
                 $joinMain = true;
             }
         }
@@ -906,7 +917,7 @@ final class Database implements Singleton, FromContext {
 
         $output = [];
         $i = 0;
-        foreach($metrics as $key => $metric) {
+        foreach ($metrics as $key => $metric) {
             $output[$key] = $row["metric_{$i}"];
             $i++;
         }
@@ -930,26 +941,26 @@ final class Database implements Singleton, FromContext {
 
         $i = 0;
         $joinMain = !$orderingMetric->usesIdOnly();
-        foreach($otherMetrics as $metric) {
+        foreach ($otherMetrics as $metric) {
             $columns .= ", " . $metric->getExpr() . " AS metric_{$i}";
             $i++;
 
-            if(!$metric->usesIdOnly()) {
+            if (!$metric->usesIdOnly()) {
                 $joinMain = true;
             }
         }
 
-        foreach($groupBy as $i => $_) {
+        foreach ($groupBy as $i => $_) {
             $columns .= ", t{$i}.value AS group_{$i}";
         }
 
         $newSelector = [];
-        foreach($groupBy as $label) {
+        foreach ($groupBy as $label) {
             $newSelector[$label] = LabelSelector::ANY_VALUE;
         }
 
-        foreach($selector->getEntries() as $label => $value) {
-            if(isset($newSelector[$label])) {
+        foreach ($selector->getEntries() as $label => $value) {
+            if (isset($newSelector[$label])) {
                 throw new RuntimeException("groupBy labels must not be used in the label selector");
             }
 
@@ -967,16 +978,16 @@ final class Database implements Singleton, FromContext {
         );
 
         $output = [];
-        foreach($result->getRows() as $dbRow) {
+        foreach ($result->getRows() as $dbRow) {
             $outputGroupValues = [];
-            foreach($groupBy as $i => $_) {
+            foreach ($groupBy as $i => $_) {
                 $outputGroupValues[] = $dbRow["group_{$i}"];
             }
 
             $outputMetrics[$orderingMetricName] = $dbRow["metric_ordering"];
 
             $i = 0;
-            foreach($otherMetrics as $key => $metric) {
+            foreach ($otherMetrics as $key => $metric) {
                 $outputMetrics[$key] = $dbRow["metric_{$i}"];
                 $i++;
             }
@@ -1002,7 +1013,7 @@ final class Database implements Singleton, FromContext {
         );
 
         $ids = [];
-        foreach($result->getRows() as $row) {
+        foreach ($result->getRows() as $row) {
             $ids[] = Uuid::fromString($row["id"]);
         }
         return $ids;
@@ -1024,11 +1035,11 @@ final class Database implements Singleton, FromContext {
         $entries = $selector->getEntries();
 
         $query = "SELECT {$columns} FROM tran_label AS t0 ";
-        for($i = 1; $i < count($entries); $i++) {
+        for ($i = 1; $i < count($entries); $i++) {
             $query .= "INNER JOIN tran_label AS t{$i} USING (id) ";
         }
 
-        if($joinMain) {
+        if ($joinMain) {
             $query .= "INNER JOIN tran USING (id) ";
         }
 
@@ -1039,12 +1050,12 @@ final class Database implements Singleton, FromContext {
 
         $conditions = [];
         $i = 0;
-        foreach($entries as $name => $value) {
+        foreach ($entries as $name => $value) {
             $condition = "t{$i}.name = :name{$i}";
             $vars["name{$i}"] = new GenericVariable("name{$i}", GenericVariable::TYPE_STRING, null);
             $args["name{$i}"] = $name;
 
-            if($value !== LabelSelector::ANY_VALUE) {
+            if ($value !== LabelSelector::ANY_VALUE) {
                 $condition .= " AND t{$i}.value = :value{$i}";
                 $vars["value{$i}"] = new GenericVariable("value{$i}", GenericVariable::TYPE_STRING, null);
                 $args["value{$i}"] = $value;
@@ -1055,11 +1066,11 @@ final class Database implements Singleton, FromContext {
         }
         $query .= implode(" AND ", $conditions);
 
-        if($groupBy !== []) {
+        if ($groupBy !== []) {
             $groupByList = [];
-            foreach($groupBy as $label) {
+            foreach ($groupBy as $label) {
                 $groupById = array_search($label, array_keys($entries), true);
-                if($groupById === false) {
+                if ($groupById === false) {
                     throw new RuntimeException("Cannot group by $label because it is not in selector");
                 }
 
@@ -1069,20 +1080,20 @@ final class Database implements Singleton, FromContext {
             $query .= " GROUP BY " . implode(", ", $groupByList);
         }
 
-        if($orderBy !== null) {
+        if ($orderBy !== null) {
             $query .= " ORDER BY `{$orderBy}`";
-            if($descending) {
+            if ($descending) {
                 $query .= " DESC";
             }
         }
 
-        if($limit !== null) {
+        if ($limit !== null) {
             $query .= " LIMIT {$limit}";
         }
 
         $stmt = GenericStatementImpl::forDialect($this->dialect, "dynamic-find-transactions", [$query], "", $vars, __FILE__, __LINE__);
 
-        $rawQuery = $stmt->format($args, match($this->dialect) {
+        $rawQuery = $stmt->format($args, match ($this->dialect) {
             SqlDialect::SQLITE => null,
             SqlDialect::MYSQL => "?",
         }, $rawArgs);

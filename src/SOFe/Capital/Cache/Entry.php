@@ -15,7 +15,8 @@ final class Entry {
      */
     public function __construct(
         private $value,
-    ) {}
+    ) {
+    }
 
     public function incRefCount() : void {
         $this->refCount++;

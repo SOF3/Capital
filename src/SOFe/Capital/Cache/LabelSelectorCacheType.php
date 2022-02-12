@@ -23,7 +23,8 @@ final class LabelSelectorCacheType implements CacheType {
     public function __construct(
         private Instance $accountCache,
         private Instance $accountLabelCache,
-    ) {}
+    ) {
+    }
 
     public function keyToString($key) : string {
         return $key->toBytes();
@@ -33,11 +34,11 @@ final class LabelSelectorCacheType implements CacheType {
         $accounts = yield from $db->findAccounts($selector);
 
         $promises = [];
-        foreach($accounts as $account) {
+        foreach ($accounts as $account) {
             $promises[] = $this->accountCache->fetch($account);
             $promises[] = $this->accountLabelCache->fetch($account);
         }
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
 
@@ -48,15 +49,15 @@ final class LabelSelectorCacheType implements CacheType {
         $promises = [];
         $output = [];
 
-        foreach($keys as $key) {
-            $promises[] = (function() use(&$output, $key, $db) {
+        foreach ($keys as $key) {
+            $promises[] = (function() use (&$output, $key, $db) {
                 $selector = LabelSelector::parseEntries($key);
                 $accounts = yield from $db->findAccounts($selector);
                 $output[$key] = $accounts;
             })();
         }
 
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
         return $output;
@@ -68,22 +69,22 @@ final class LabelSelectorCacheType implements CacheType {
 
         $promises = [];
 
-        foreach($removed as $account) {
+        foreach ($removed as $account) {
             $this->accountCache->free($account);
             $this->accountLabelCache->free($account);
         }
-        foreach($added as $account) {
+        foreach ($added as $account) {
             $promises[] = $this->accountCache->fetch($account);
             $promises[] = $this->accountLabelCache->fetch($account);
         }
 
-        if(count($promises) > 0) {
+        if (count($promises) > 0) {
             yield from Await::all($promises);
         }
     }
 
     public function onEntryFree(string $key, $accounts) : ?Generator {
-        foreach($accounts as $account) {
+        foreach ($accounts as $account) {
             $this->accountCache->free($account);
             $this->accountLabelCache->free($account);
         }

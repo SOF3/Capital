@@ -23,7 +23,7 @@ final class AccountConfig {
             The minimum amount of money in this account.
             If set to negative, this account can have a negatie balance (i.e. overdraft).
             EOT);
-        if($initialBalance < $min) {
+        if ($initialBalance < $min) {
             $initialBalance = $parser->failSafe($min, "default balance is smaller than minimum ($min)");
         }
 
@@ -32,7 +32,7 @@ final class AccountConfig {
             If this value has more than 10 digits, it may cause problems in some platforms.
             EOT);
 
-        if($initialBalance > $max) {
+        if ($initialBalance > $max) {
             $initialBalance = $parser->failSafe($max, "default balance is greater than maximum ($max)");
         }
 
@@ -49,8 +49,8 @@ final class AccountConfig {
             EOT);
 
         $migration = null;
-        if($importFrom !== null) {
-            $migration = function(Player $player) use($importFrom) : MigrationSetup {
+        if ($importFrom !== null) {
+            $migration = function(Player $player) use ($importFrom) : MigrationSetup {
                 $migrationSelector = new LabelSelector([
                     AccountLabels::PLAYER_NAME => mb_strtolower($player->getName()),
                     AccountLabels::MIGRATION_SOURCE => $importFrom,
@@ -87,7 +87,8 @@ final class AccountConfig {
         private ?Closure $migrationSetup,
         private Closure $initialLabels,
         private int $initialBalance,
-    ) {}
+    ) {
+    }
 
     public function getOverwriteLabels(Player $player) : LabelSet {
         return ($this->overwriteLabels)($player);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
+use Closure;
 use Generator;
 use Logger;
 use RuntimeException;
@@ -35,13 +36,13 @@ final class Raw implements Singleton, FromContext {
         C\Transfer\Config::class => true,
     ];
 
-    /** @var list<Closure() : void> resolve functions called when all configs are loaded */
+    /** @var list<Closure(): void> resolve functions called when all configs are loaded */
     private array $onConfigLoaded = [];
 
     /** @var array<class-string<ConfigInterface>, object> Loaded config files are stored here. */
     private array $loadedConfigs = [];
 
-    /** @var array<class-string<ConfigInterface>, list<Closure(ConfigInterface): void}>>> Callbacks for internal awaits between config loaders */
+    /** @var array<class-string<ConfigInterface>, list<Closure(ConfigInterface): void>> Callbacks for internal awaits between config loaders */
     private array $configInternalAwaits = [];
 
     public Parser $parser;
@@ -57,7 +58,7 @@ final class Raw implements Singleton, FromContext {
         ?array $mainConfig,
         public array $dbConfig,
     ) {
-        if($mainConfig === null) {
+        if ($mainConfig === null) {
             // need to generate new config
             $this->parser = self::createFailSafeParser([]);
         } else {
@@ -71,11 +72,11 @@ final class Raw implements Singleton, FromContext {
      * @return Generator<mixed, mixed, mixed, T>
      */
     public function loadConfig(string $class) : Generator {
-        if(!isset(self::ALL_CONFIGS[$class])) {
+        if (!isset(self::ALL_CONFIGS[$class])) {
             throw new RuntimeException("Config $class not in " . self::class . "::ALL_CONFIGS");
         }
 
-        if(count($this->onConfigLoaded) === 0) {
+        if (count($this->onConfigLoaded) === 0) {
             yield from $this->loadAll();
         } else {
             $this->onConfigLoaded[] = yield Await::RESOLVE;
@@ -83,7 +84,7 @@ final class Raw implements Singleton, FromContext {
         }
 
         $config = $this->loadedConfigs[$class];
-        if(!($config instanceof $class)) {
+        if (!($config instanceof $class)) {
             throw new RuntimeException("$class::parse() returned " . gettype($config));
         }
 
@@ -97,8 +98,8 @@ final class Raw implements Singleton, FromContext {
     private function loadConfigOnce(string $class) : Generator {
         $instance = yield from $class::parse($this->parser, $this->di, $this);
         $this->loadedConfigs[$class] = $instance;
-        if(isset($this->configInternalAwaits[$class])) {
-            foreach($this->configInternalAwaits[$class] as $resolve) {
+        if (isset($this->configInternalAwaits[$class])) {
+            foreach ($this->configInternalAwaits[$class] as $resolve) {
                 $resolve($instance);
             }
 
@@ -112,7 +113,7 @@ final class Raw implements Singleton, FromContext {
      * @return Generator<mixed, mixed, mixed, T>
      */
     public function awaitConfigInternal(string $class) : Generator {
-        if(!isset($this->configInternalAwaits[$class])) {
+        if (!isset($this->configInternalAwaits[$class])) {
             $this->configInternalAwaits[$class] = [];
         }
 
@@ -129,19 +130,19 @@ final class Raw implements Singleton, FromContext {
 
         $promises = [];
         /** @var class-string<ConfigInterface> $class */
-        foreach(self::ALL_CONFIGS as $class => $_) {
+        foreach (self::ALL_CONFIGS as $class => $_) {
             $promises[$class] = $this->loadConfigOnce($class);
         }
 
         try {
             $this->configInternalAwaits = [];
             yield from Await::all($promises);
-        } catch(ConfigException $e) {
+        } catch (ConfigException $e) {
             $this->logger->error("Error loading config.yml: " . $e->getMessage());
 
             $backupPath = $this->dataFolder . "config.yml.old";
             $i = 1;
-            while(file_exists($backupPath)) {
+            while (file_exists($backupPath)) {
                 $i += 1;
                 $backupPath = $this->dataFolder . "config.yml.old.$i";
             }
@@ -152,7 +153,7 @@ final class Raw implements Singleton, FromContext {
 
             $promises = [];
             /** @var class-string<ConfigInterface> $class */
-            foreach(self::ALL_CONFIGS as $class => $_) {
+            foreach (self::ALL_CONFIGS as $class => $_) {
                 $promises[$class] = $this->loadConfigOnce($class);
             }
 
@@ -160,13 +161,13 @@ final class Raw implements Singleton, FromContext {
             yield from Await::all($promises);
         }
 
-        if($this->parser->isFailSafe()) {
+        if ($this->parser->isFailSafe()) {
             file_put_contents($this->dataFolder . "config.yml", yaml_emit($this->parser->getFullConfig()));
         }
     }
 
     public static function fromSingletonArgs(MainClass $main, Context $di, Logger $logger) : self {
-        if(file_exists($main->getDataFolder() . "config.yml")) {
+        if (file_exists($main->getDataFolder() . "config.yml")) {
             $mainConfig = yaml_parse_file($main->getDataFolder() . "config.yml");
         } else {
             $mainConfig = null;

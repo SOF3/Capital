@@ -27,7 +27,7 @@ final class Mod implements Singleton, FromContext {
         ContextInfo::init();
         SuccessContextInfo::init();
 
-        foreach($config->transferMethods as $method) {
+        foreach ($config->transferMethods as $method) {
             $method->register($plugin, $api);
         }
 

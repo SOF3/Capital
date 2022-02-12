@@ -31,8 +31,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:12
-     * - resources/sqlite/account.sql:19
+     * - resources/mysql/account.sql:16
+     * - resources/sqlite/account.sql:23
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -43,8 +43,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:16
-     * - resources/sqlite/account.sql:23
+     * - resources/mysql/account.sql:20
+     * - resources/sqlite/account.sql:27
      * @param string[] $ids
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -55,8 +55,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:23
-     * - resources/sqlite/account.sql:30
+     * - resources/mysql/account.sql:27
+     * - resources/sqlite/account.sql:34
      * @param string $id
      * @param string $name
      * @param string $value
@@ -69,8 +69,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:36
-     * - resources/sqlite/account.sql:42
+     * - resources/mysql/account.sql:40
+     * - resources/sqlite/account.sql:46
      * @param string $id
      * @param string $name
      * @param string $value
@@ -83,8 +83,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:41
-     * - resources/sqlite/account.sql:47
+     * - resources/mysql/account.sql:45
+     * - resources/sqlite/account.sql:51
      * @param string $id
      * @param string $name
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
@@ -96,8 +96,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:45
-     * - resources/sqlite/account.sql:51
+     * - resources/mysql/account.sql:49
+     * - resources/sqlite/account.sql:55
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -108,8 +108,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:49
-     * - resources/sqlite/account.sql:55
+     * - resources/mysql/account.sql:53
+     * - resources/sqlite/account.sql:59
      * @param string[] $ids
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -120,8 +120,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:29
-     * - resources/sqlite/account.sql:36
+     * - resources/mysql/account.sql:33
+     * - resources/sqlite/account.sql:40
      * @param string $id
      * @param string $name
      * @param string $value
@@ -134,13 +134,25 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/sqlite/account.sql:14
+     * - resources/sqlite/account.sql:18
      * @param string $id
      * @param int $delta
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
     public function accountSqliteUnsafeDelta(string $id, int $delta, ) : Generator {
         $this->conn->executeChange("capital.account.sqlite.unsafe.delta", ["id" => $id, "delta" => $delta, ], yield Await::RESOLVE, yield Await::REJECT);
+        return yield Await::ONCE;
+    }
+
+    /**
+     * <h4>Declared in:</h4>
+     * - resources/mysql/account.sql:12
+     * - resources/sqlite/account.sql:12
+     * @param string $id
+     * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
+     */
+    public function accountTouch(string $id, ) : Generator {
+        $this->conn->executeChange("capital.account.touch", ["id" => $id, ], yield Await::RESOLVE, yield Await::REJECT);
         return yield Await::ONCE;
     }
 

@@ -7,8 +7,7 @@ namespace SOFe\Capital\Transfer;
 use SOFe\Capital\Config\Parser;
 
 final class Messages {
-    public static function parse(Parser $parser, ?self $default) : self
-    {
+    public static function parse(Parser $parser, ?self $default) : self {
         return new self (
             $parser->expectString("player-only-command", $default?->playerOnlyCommand ?? "{red}Only players may use this command.", "Sent to command sender if this command requires them to be player and they are not."),
             $parser->expectString("notify-sender-success", $default?->notifySenderSuccess ?? "{green}notify-sender-success (change this!)", "Sent to command sender on success."),
@@ -30,5 +29,6 @@ final class Messages {
         public string $underflow,
         public string $overflow,
         public string $internalError,
-    ) {}
+    ) {
+    }
 }

@@ -52,11 +52,11 @@ final class Command extends PmCommand implements PluginOwned {
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args) {
-        if(!$this->testPermission($sender)) {
+        if (!$this->testPermission($sender)) {
             return;
         }
 
-        if(!isset($args[1])) {
+        if (!isset($args[1])) {
             throw new InvalidCommandSyntaxException;
         }
 
@@ -64,27 +64,27 @@ final class Command extends PmCommand implements PluginOwned {
         $amountString = $args[1];
 
         $recipient = Server::getInstance()->getPlayerByPrefix($recipientNamePrefix);
-        if($recipient === null) {
+        if ($recipient === null) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_player_notFound()->prefix(TextFormat::RED));
             return;
         }
 
-        if(!is_numeric($amountString)) {
+        if (!is_numeric($amountString)) {
             throw new InvalidCommandSyntaxException;
         }
 
         $amount = (int) $amountString;
-        if($amount < $this->method->minimumAmount) {
+        if ($amount < $this->method->minimumAmount) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
             return;
         }
-        if($this->method->maximumAmount !== null && $amount > $this->method->maximumAmount) {
+        if ($this->method->maximumAmount !== null && $amount > $this->method->maximumAmount) {
             $sender->sendMessage(KnownTranslationFactory::commands_generic_num_tooSmall($amountString, (string) $this->method->minimumAmount)->prefix(TextFormat::RED));
             return;
         }
 
-        Await::f2c(function() use($sender, $recipient, $amount) : Generator {
-            if($this->method->rate > 1.0) {
+        Await::f2c(function() use ($sender, $recipient, $amount) : Generator {
+            if ($this->method->rate > 1.0) {
                 $transferAmount = $amount;
                 $sourceAmount = (int) round($amount * ($this->method->rate - 1.0));
                 $sinkAmount = 0;
@@ -128,12 +128,12 @@ final class Command extends PmCommand implements PluginOwned {
             $srcAccounts = yield from $this->api->findAccounts($srcLabels);
             $destAccounts = yield from $this->api->findAccounts($destLabels);
 
-            if(count($srcAccounts) === 0) {
+            if (count($srcAccounts) === 0) {
                 $sender->sendMessage(InfoAPI::resolve($this->method->messages->noSourceAccounts, $info));
                 return;
             }
 
-            if(count($destAccounts) === 0) {
+            if (count($destAccounts) === 0) {
                 $sender->sendMessage(InfoAPI::resolve($this->method->messages->noDestinationAccounts, $info));
                 return;
             }
@@ -174,7 +174,7 @@ final class Command extends PmCommand implements PluginOwned {
                     $src2, $dest2, $amount2, $labels2,
                     $transactionId, null
                 );
-            } elseif($sourceAmount > 0 || $sinkAmount > 0) {
+            } elseif ($sourceAmount > 0 || $sinkAmount > 0) {
                 $transactionId = Uuid::uuid4();
 
                 $oracle = yield from $this->api->getOracle(OracleNames::TRANSFER);
@@ -182,7 +182,7 @@ final class Command extends PmCommand implements PluginOwned {
                     TransactionLabels::TRANSFER_ORACLE => $transactionId->toString(),
                 ];
 
-                if($sourceAmount > 0) {
+                if ($sourceAmount > 0) {
                     $src2 = $oracle;
                     $dest2 = $destAccounts[0];
                     $amount2 = $sourceAmount;
@@ -204,8 +204,8 @@ final class Command extends PmCommand implements PluginOwned {
 
             try {
                 yield from $promise;
-            } catch(CapitalException $ex) {
-                $error = match($ex->getCode()) {
+            } catch (CapitalException $ex) {
+                $error = match ($ex->getCode()) {
                     CapitalException::SOURCE_UNDERFLOW => $this->method->messages->underflow,
                     CapitalException::DESTINATION_OVERFLOW => $this->method->messages->underflow,
                     default => $this->method->messages->internalError,

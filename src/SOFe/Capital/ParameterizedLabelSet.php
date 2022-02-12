@@ -22,14 +22,15 @@ final class ParameterizedLabelSet {
     public function __construct(
         private array $entries,
         private bool $cache = true,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, string>
      */
     public function transform(Info $info) : array {
         $labels = [];
-        foreach($this->entries as $name => $valueTemplate) {
+        foreach ($this->entries as $name => $valueTemplate) {
             $labels[$name] = InfoAPI::resolve($valueTemplate, $info, $this->cache);
         }
         return $labels;
@@ -40,8 +41,7 @@ final class ParameterizedLabelSet {
      * @param array<string, string> $defaultEntries
      * @return ParameterizedLabelSet<T>
      */
-    public static function parse(Parser $parser, $defaultEntries = []) : self
-    {
+    public static function parse(Parser $parser, $defaultEntries = []) : self {
         $labelNames = $parser->getKeys();
         if (count($labelNames) === 0) {
             $entries = $defaultEntries;

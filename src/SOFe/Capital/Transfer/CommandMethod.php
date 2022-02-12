@@ -42,7 +42,8 @@ final class CommandMethod implements Method {
         public int $fee,
         public ParameterizedLabelSet $transactionLabels,
         public Messages $messages,
-    ) {}
+    ) {
+    }
 
     public function register(MainClass $plugin, Capital $api) : void {
         $command = new Command($plugin, $api, $this);
@@ -58,7 +59,6 @@ final class CommandMethod implements Method {
                 $commandName = "invalid-name@$i";
                 $i++;
             } while (isset($keys[$commandName]));
-
         } elseif (($i = strpos($commandName, " ")) !== false) {
             $keys = array_flip($allCommands->getKeys());
             $commandName = $base = substr($commandName, 0, $i);

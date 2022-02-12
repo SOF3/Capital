@@ -12,12 +12,13 @@ final class LabelSet {
      */
     public function __construct(
         private array $entries,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, string>
      */
-    public function getEntries() : array{
+    public function getEntries() : array {
         return $this->entries;
     }
 
@@ -27,7 +28,7 @@ final class LabelSet {
 
     public function debugDisplay() : string {
         $output = [];
-        foreach($this->entries as $key => $value) {
+        foreach ($this->entries as $key => $value) {
             $output[] = $key . "=" . $value;
         }
         return implode(", ", $output);

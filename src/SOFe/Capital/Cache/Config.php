@@ -25,7 +25,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         public int $accountBalanceRefreshInterval,
         public int $labelSetRefreshInterval,
         public int $selectorMatchRefreshInterval,
-    ) {}
+    ) {
+    }
 
     public static function parse(Parser $config, Context $di, Raw $raw) : Generator {
         false && yield;

@@ -14,8 +14,8 @@ trait SingletonTrait {
 
         $self = self::getOrNull($context);
 
-        if($self === null) {
-            if(!is_subclass_of($class, FromContext::class)) {
+        if ($self === null) {
+            if (!is_subclass_of($class, FromContext::class)) {
                 throw new RuntimeException("$class must implement FromContext or be manually stored into Context");
             }
 
@@ -28,12 +28,13 @@ trait SingletonTrait {
     public static function getOrNull(Context $context) : ?static {
         $class = static::class;
 
-        if(!is_subclass_of($class, Singleton::class)) {
+        if (!is_subclass_of($class, Singleton::class)) {
             throw new RuntimeException("$class must implement Singleton to use SingletonTrait");
         }
 
         return $context->fetchClass(static::class);
     }
 
-    public function close() : void {}
+    public function close() : void {
+    }
 }

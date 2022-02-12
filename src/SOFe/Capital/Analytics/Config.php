@@ -11,21 +11,23 @@ use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\Config\Raw;
-use SOFe\Capital\Schema;
 use SOFe\Capital\Di\Context;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\Schema;
 use SOFe\Capital\TransactionQueryMetric;
+use function count;
 
 final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
 
     public function __construct(
-    ) {}
+    ) {
+    }
 
-    public static function parse(Parser $config, Context $di, Raw $raw) : Generator{
+    public static function parse(Parser $config, Context $di, Raw $raw) : Generator {
         /** @var Schema\Config $schemaConfig */
         $schemaConfig = yield from $raw->awaitConfigInternal(Schema\Config::class);
         $schema = $schemaConfig->schema;
@@ -41,11 +43,11 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             average spending per day, total amount of money earned from a specific source, etc.
             EOT);
 
-        if(count($infos->getKeys()) === 0) {
+        if (count($infos->getKeys()) === 0) {
             $infos->enter("money", "This is an example info that displays the total money of a player.");
         }
 
-        foreach($infos->getKeys() as $key) {
+        foreach ($infos->getKeys() as $key) {
             $infoConfig = $infos->enter($key, "");
 
             $type = $infoConfig->expectString("of", "account", <<<'EOT'
@@ -53,16 +55,16 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 If set to \"account\", the info is calculated from statistics of some of the player's accounts.
                 If set to \"transactions\", the info is calculated from statistics of the player's recent transactions.
                 EOT);
-            if($type !== "account" && $type !== "transaction") {
+            if ($type !== "account" && $type !== "transaction") {
                 $type = $infoConfig->setValue($key, "account", "Expected \"account\" or \"transaction\"");
             }
 
-            if($type === "account") {
+            if ($type === "account") {
                 $accountConfig = $infoConfig->enter("selector", "Selects which accounts of the player to calculate.");
                 $infoSchema = $schema->cloneWithConfig($accountConfig, true);
-                $labelGetter = fn(?Player $player) => $infoSchema->getSelector($player);
+                $labelGetter = fn(Player $player) => $infoSchema->getSelector($player);
 
-                $metric = match($infoConfig->expectString("metric", "balance-sum", <<<'EOT'
+                $metric = match ($infoConfig->expectString("metric", "balance-sum", <<<'EOT'
                     The statistic used to combine multiple values.
 
                     Possible values:
@@ -81,7 +83,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     "balance-max" => AccountQueryMetric::balanceMax(),
                     default => null,
                 };
-                if($metric === null) {
+                if ($metric === null) {
                     $infoConfig->setValue("metric", "balance-sum", "Unknown account metric type");
                     $metric = AccountQueryMetric::balanceSum();
                 }
@@ -89,12 +91,12 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 // TODO implement
                 $labelGetter = fn(Player $player) => ["foo" => "bar"];
 
-                $metric = match($infoConfig->expectString("metric", "transaction-count", <<<'EOT'
+                $metric = match ($infoConfig->expectString("metric", "transaction-count", <<<'EOT'
                     T
                     EOT)) {
                     default => null,
                 };
-                if($metric === null) {
+                if ($metric === null) {
                     $infoConfig->setValue("metric", "transaction-count", "Unkknown transaction metric type");
                     $metric = TransactionQueryMetric::transactionCount();
                 }

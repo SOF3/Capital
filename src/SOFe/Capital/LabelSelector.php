@@ -19,14 +19,15 @@ final class LabelSelector {
      */
     public function __construct(
         private array $entries,
-    ) {}
+    ) {
+    }
 
     /**
      * Returns a unique bytestring representation of this selector.
      */
     public function toBytes() : string {
         $bytes = "";
-        foreach($this->entries as $key => $value){
+        foreach ($this->entries as $key => $value) {
             $bytes .= $key . "\0" . $value . "\0";
         }
         return $bytes;
@@ -35,7 +36,7 @@ final class LabelSelector {
     /**
      * @return array<string, string>
      */
-    public function getEntries() : array{
+    public function getEntries() : array {
         return $this->entries;
     }
 
@@ -43,7 +44,7 @@ final class LabelSelector {
         $index = 0;
 
         $output = [];
-        while($index < strlen($bytes)) {
+        while ($index < strlen($bytes)) {
             $pos = strpos($bytes, "\0", $index);
             assert($pos !== false);
             $key = substr($bytes, $index, $pos);
@@ -62,7 +63,7 @@ final class LabelSelector {
 
     public function debugDisplay() : string {
         $output = [];
-        foreach($this->entries as $key => $value) {
+        foreach ($this->entries as $key => $value) {
             $output[] = $key . "=" . $value;
         }
         return implode(", ", $output);
