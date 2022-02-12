@@ -11,7 +11,7 @@ use function array_merge;
 use function array_shift;
 use function count;
 
-final class SchemaUtils {
+final class Utils {
     /**
      * Parses command arguments (and removes them) and returns the label set for the schema.
      *

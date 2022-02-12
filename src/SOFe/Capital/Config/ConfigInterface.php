@@ -11,5 +11,5 @@ interface ConfigInterface {
     /**
      * @return Generator<mixed, mixed, mixed, self>
      */
-    public static function parse(Parser $config, Context $context) : Generator;
+    public static function parse(Parser $config, Context $context, Raw $raw) : Generator;
 }

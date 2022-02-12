@@ -89,8 +89,6 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 // TODO implement
                 $labelGetter = fn(Player $player) => ["foo" => "bar"];
 
-                $findSrc = $infoConfig
-
                 $metric = match($infoConfig->expectString("metric", "transaction-count", <<<'EOT'
                     T
                     EOT)) {
