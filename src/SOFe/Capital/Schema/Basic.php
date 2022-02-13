@@ -30,8 +30,16 @@ final class Basic implements Schema {
         return "Each player only has one account.";
     }
 
-    public function cloneWithConfig(?Parser $specificConfig, bool $expectComplete) : self {
+    public function clone() : self {
         return clone $this;
+    }
+
+    public function cloneWithConfig(Parser $specificConfig) : self {
+        return clone $this;
+    }
+
+    public function cloneWithCompleteConfig(Parser $specificConfig) : Complete {
+        return new Complete(clone $this);
     }
 
     public function isComplete() : bool {

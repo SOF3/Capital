@@ -61,7 +61,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
             if ($type === "account") {
                 $accountConfig = $infoConfig->enter("selector", "Selects which accounts of the player to calculate.");
-                $infoSchema = $schema->cloneWithConfig($accountConfig, true);
+                $infoSchema = $schema->cloneWithCompleteConfig($accountConfig);
                 $labelGetter = fn(Player $player) => $infoSchema->getSelector($player);
 
                 $metric = match ($infoConfig->expectString("metric", "balance-sum", <<<'EOT'

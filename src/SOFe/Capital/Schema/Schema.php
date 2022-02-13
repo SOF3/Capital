@@ -6,6 +6,7 @@ namespace SOFe\Capital\Schema;
 
 use InvalidArgumentException;
 use pocketmine\player\Player;
+use SOFe\Capital\Config\ConfigException;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\LabelSet;
@@ -28,12 +29,23 @@ interface Schema {
     public static function describe() : string;
 
     /**
+     * Clones this schema (e.g. for populating config variables).
+     */
+    public function clone() : self;
+
+    /**
      * Clones this schema with specific config values.
      *
-     * @return Schema A new object that is **not** `$this` (must be a different object even if config is empty)
-     * @throws InvalidArgumentException if the config is invalid.
+     * @throws ConfigException if the config is invalid.
      */
-    public function cloneWithConfig(?Parser $specificConfig, bool $expectComplete) : self;
+    public function cloneWithConfig(Parser $specificConfig) : self;
+
+    /**
+     * Clones this schema with specific config values, expecting a complete config.
+     *
+     * @throws ConfigException if the config is invalid, including incompleteness.
+     */
+    public function cloneWithCompleteConfig(Parser $specificConfig) : Complete;
 
     /**
      * Returns whether all required variables have been populated.

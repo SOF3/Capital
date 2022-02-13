@@ -30,7 +30,7 @@ class AccountTarget {
      * @param self::TARGET_* $defaultTarget
      */
     public static function parse(Parser $parser, Schema $schema, string $defaultTarget = self::TARGET_SYSTEM) : self {
-        $schema = $schema->cloneWithConfig($parser, true);
+        $schema = $schema->cloneWithConfig($parser);
         $target = $parser->expectString("of", $defaultTarget, <<<'EOT'
             Can be "system", "sender", or "recipient".
             If "sender" is used, this command will only be usable by players.
