@@ -42,6 +42,18 @@ CREATE TABLE IF NOT EXISTS tran_label (
     KEY (name, value),
     FOREIGN KEY (id) REFERENCES tran(id) ON DELETE CASCADE
 );
+-- #&
+CREATE TABLE IF NOT EXISTS analytics_top_cache (
+    query CHAR(32) NOT NULL,
+    group_value VARCHAR(255) NOT NULL,
+    metric DOUBLE NOT NULL,
+    last_updated TIMESTAMP NOT NULL,
+    last_updated_with CHAR(32),
+    PRIMARY KEY (query, group_value),
+    KEY (query, metric), -- Used for top queries.
+    KEY (query, last_updated), -- Used for selecting rows to recompute.
+    KEY (query, last_updated_with) -- Used in the actual recomputation query.
+);
 -- #            }
 -- #            { procedures
 -- #                { tran_create

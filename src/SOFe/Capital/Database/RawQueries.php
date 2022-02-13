@@ -158,7 +158,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/init.sql:80
+     * - resources/mysql/init.sql:92
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
     public function initMysqlProceduresTranCreate() : Generator {
@@ -168,7 +168,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/init.sql:117
+     * - resources/mysql/init.sql:129
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
     public function initMysqlProceduresTranCreate2() : Generator {
@@ -178,7 +178,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/init.sql:45
+     * - resources/mysql/init.sql:57
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
     public function initMysqlTables() : Generator {
@@ -188,7 +188,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/sqlite/init.sql:47
+     * - resources/sqlite/init.sql:62
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
     public function initSqlite() : Generator {
