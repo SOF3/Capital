@@ -82,24 +82,6 @@ final class Parser {
     }
 
     /**
-     * @return array{Parser, bool}
-     */
-    public function enterWithCreated(string $key, ?string $doc) : array {
-        $data = $this->expectAny($key, [], $doc, true);
-        $isNew = false;
-
-        if (!is_array($data) || self::isList($data)) {
-            $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
-            $isNew = true;
-        }
-
-        return [
-            new self($this->data, array_merge($this->path, [$key]), $this->failSafe),
-            $isNew,
-        ];
-    }
-
-    /**
      * @throws ConfigException
      */
     public function expectInt(string $key, int $default, ?string $doc, bool $required = true) : int {
