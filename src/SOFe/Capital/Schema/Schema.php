@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Schema;
 
-use InvalidArgumentException;
 use pocketmine\player\Player;
 use SOFe\Capital\Config\ConfigException;
 use SOFe\Capital\Config\Parser;
