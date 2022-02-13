@@ -71,7 +71,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
             if ($type === "account") {
                 $selectorConfig = $infoConfig->enter("selector", "Selects which accounts of the player to calculate.");
-                $infoSchema = $schema->cloneWithConfig($selectorConfig, true);
+                $infoSchema = $schema->cloneWithCompleteConfig($selectorConfig);
 
                 $metric = AccountQueryMetric::parseConfig($infoConfig, "metric");
 
