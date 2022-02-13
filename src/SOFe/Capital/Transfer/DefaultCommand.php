@@ -15,7 +15,7 @@ class DefaultCommand {
      * @param array<string, string> $transactionLabels
      */
     public function __construct(
-        public string $permission,
+        public string $description,
         public bool $defaultOpOnly,
         public string $src,
         public string $dest,

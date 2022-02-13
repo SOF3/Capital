@@ -53,7 +53,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         if ($wasUnfilled) {
             CommandMethod::parse($commandsParser, $schema, "pay", new DefaultCommand(
-                permission: "capital.transfer.pay",
+                description: "Pays another player.",
                 defaultOpOnly: false,
                 src: AccountTarget::TARGET_SENDER,
                 dest: AccountTarget::TARGET_RECIPIENT,
@@ -76,7 +76,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 ),
             ));
             CommandMethod::parse($commandsParser, $schema, "takemoney", new DefaultCommand(
-                permission: "capital.transfer.takemoney",
+                description: "Reduce a player's money.",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_RECIPIENT,
                 dest: AccountTarget::TARGET_SYSTEM,
@@ -99,7 +99,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 ),
             ));
             CommandMethod::parse($commandsParser, $schema, "addmoney", new DefaultCommand(
-                permission: "capital.transfer.addmoney",
+                description: "Adds a player's money.",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_SYSTEM,
                 dest: AccountTarget::TARGET_RECIPIENT,
@@ -126,7 +126,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $methods = [];
         foreach ($commandNames as $commandName) {
-            $methods[] = CommandMethod::parse($commandsParser, $schema, $commandName);
+            $methods[] = CommandMethod::parse($commandsParser, $schema, $commandName, null);
         }
 
         return new self($methods);
