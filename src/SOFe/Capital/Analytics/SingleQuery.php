@@ -10,7 +10,7 @@ use SOFe\Capital\Database\Database;
 /**
  * @template P
  */
-interface Query {
+interface SingleQuery {
     /**
      * @param P $p
      * @return Generator<mixed, mixed, mixed, int|float>

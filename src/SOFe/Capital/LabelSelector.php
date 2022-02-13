@@ -6,6 +6,7 @@ namespace SOFe\Capital;
 
 use function assert;
 use function implode;
+use function ksort;
 use function strlen;
 use function strpos;
 use function substr;
@@ -20,6 +21,7 @@ final class LabelSelector {
     public function __construct(
         private array $entries,
     ) {
+        ksort($this->entries);
     }
 
     /**

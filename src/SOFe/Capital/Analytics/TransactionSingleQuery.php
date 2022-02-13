@@ -6,20 +6,20 @@ namespace SOFe\Capital\Analytics;
 
 use Closure;
 use Generator;
-use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\Database\Database;
 use SOFe\Capital\LabelSelector;
+use SOFe\Capital\TransactionQueryMetric;
 
 /**
  * @template P
- * @implements Query<P>
+ * @implements SingleQuery<P>
  */
-final class AccountQuery implements Query {
+final class TransactionSingleQuery implements SingleQuery {
     /**
      * @param Closure(P): LabelSelector $labelSelector
      */
     public function __construct(
-        public AccountQueryMetric $metric,
+        public TransactionQueryMetric $metric,
         public Closure $labelSelector,
     ) {
     }
@@ -29,7 +29,7 @@ final class AccountQuery implements Query {
      */
     public function fetch($p, Database $db) : Generator {
         $selector = ($this->labelSelector)($p);
-        [$result] = yield from $db->aggregateAccounts($selector, [$this->metric]);
+        [$result] = yield from $db->aggregateTransactions($selector, [$this->metric]);
         return $result;
     }
 }
