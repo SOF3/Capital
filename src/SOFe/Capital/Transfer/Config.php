@@ -41,9 +41,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             "transfer" tells Capital what methods admins and players can send money through.
             EOT);
 
-        [$commandsParser, $wasUnfilled] = $transferParser->enterWithCreated("commands", <<<'EOT'
+        $commandsParser = $transferParser->enter("commands", <<<'EOT'
             These commands initiate transfers.
-            EOT);
+            EOT, $wasUnfilled);
 
         $commandNames = $commandsParser->getKeys();
 

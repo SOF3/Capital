@@ -69,10 +69,12 @@ final class Parser {
         return $output;
     }
 
-    public function enter(string $key, ?string $doc) : Parser {
+    public function enter(string $key, ?string $doc, bool &$isNew = false) : Parser {
         $data = $this->expectAny($key, [], $doc, true);
 
-        if (!is_array($data) || self::isList($data)) {
+        $isNew = !is_array($data) || self::isList($data);
+
+        if ($isNew) {
             $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
         }
 
@@ -84,15 +86,16 @@ final class Parser {
      */
     public function enterWithCreated(string $key, ?string $doc) : array {
         $data = $this->expectAny($key, [], $doc, true);
-        $wasCreated = false;
+        $isNew = false;
 
         if (!is_array($data) || self::isList($data)) {
             $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
-            $wasCreated = true;
+            $isNew = true;
         }
 
         return [
-            new self($this->data, array_merge($this->path, [$key]), $this->failSafe), $wasCreated
+            new self($this->data, array_merge($this->path, [$key]), $this->failSafe),
+            $isNew,
         ];
     }
 
