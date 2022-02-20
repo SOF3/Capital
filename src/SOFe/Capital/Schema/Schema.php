@@ -47,9 +47,23 @@ interface Schema {
     public function cloneWithCompleteConfig(Parser $specificConfig) : Complete;
 
     /**
+     * Clones this schema with specific config values, expecting an invariant config.
+     *
+     * @throws ConfigException if the config is invalid, such as lacking invariance.
+     */
+    public function cloneWithInvariantConfig(Parser $specificConfig) : Invariant;
+
+    /**
      * Returns whether all required variables have been populated.
      */
     public function isComplete() : bool;
+
+    /**
+     * Returns whether the selector can be generated without reading player information other than the UUID.
+     *
+     * Invariance implies completeness, but a complete schema is not necessarily invariant.
+     */
+    public function isInvariant() : bool;
 
     /**
      * Returns the required variables used in this label set.
@@ -78,12 +92,20 @@ interface Schema {
     public function getOptionalVariables() : iterable;
 
     /**
-     * Returns the parameterized label selector with the given settings,
+     * Returns the label selector with the given settings,
      * or null if the required variables have not all been set.
      *
      * This method returns null if and only if `isComplete()` returns false.
      */
     public function getSelector(Player $player) : ?LabelSelector;
+
+    /**
+     * Returns the label selector that, for each player,
+     * when combined with `AccountLabels::PLAYER_UUID => $uuid`,
+     * is equivalent to `getSelector`.
+     * Returns null if and only if `isInvariant()` returns false.
+     */
+    public function getInvariantSelector() : ?LabelSelector;
 
     /**
      * Returns the labels to be overwritten every time an account is loaded.

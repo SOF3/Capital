@@ -13,6 +13,12 @@ use function strlen;
 use function strpos;
 use function substr;
 
+/**
+ * Selects accounts or transactions by label values.
+ * If the label value is empty (`ANY_VALUE`), the selector matches as long as the label exists.
+ *
+ * An empty label selector matches all accounts or transactions.
+ */
 final class LabelSelector {
     /** A special constant string that matches all labels. */
     public const ANY_VALUE = "";
