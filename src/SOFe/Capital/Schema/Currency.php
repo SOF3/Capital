@@ -106,6 +106,10 @@ final class Currency implements Schema {
     }
 
     public function cloneWithCompleteConfig(Parser $config) : Complete {
+        return $this->cloneWithInvariantConfig($config)->asComplete();
+    }
+
+    public function cloneWithInvariantConfig(Parser $config) : Invariant {
         $clone = clone $this;
 
         $currency = $config->expectString("currency", array_keys($clone->currencies)[0], <<<'EOT'
@@ -118,7 +122,7 @@ final class Currency implements Schema {
         $clone->defaultCurrency = $currency;
         $clone->currencies = [$currency => $this->currencies[$currency]];
 
-        return new Complete($clone);
+        return new Invariant($clone);
     }
 
     /**
@@ -134,6 +138,10 @@ final class Currency implements Schema {
     }
 
     public function isComplete() : bool {
+        return $this->defaultCurrency !== null;
+    }
+
+    public function isInvariant() : bool {
         return $this->defaultCurrency !== null;
     }
 
@@ -165,6 +173,17 @@ final class Currency implements Schema {
 
         return new LabelSelector([
             AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
+            self::LABEL_CURRENCY => $defaultCurrency,
+        ]);
+    }
+
+    public function getInvariantSelector() : ?LabelSelector {
+        $defaultCurrency = $this->defaultCurrency;
+        if ($defaultCurrency === null) {
+            return null;
+        }
+
+        return new LabelSelector([
             self::LABEL_CURRENCY => $defaultCurrency,
         ]);
     }

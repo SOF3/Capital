@@ -10,10 +10,7 @@ use SOFe\Capital\LabelSelector;
 use SOFe\Capital\LabelSet;
 
 /**
- * `Schema` defines the common player account labels and how to generate them.
- *
- * This provides a simpler abstraction for other plugins to handle configuration
- * without exposing the raw concept of labels to users directly.
+ * A complete schema is a schema that does not allow further configuration.
  */
 final class Complete {
     public function __construct(private Schema $schema) {

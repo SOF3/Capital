@@ -42,7 +42,15 @@ final class Basic implements Schema {
         return new Complete(clone $this);
     }
 
+    public function cloneWithInvariantConfig(Parser $specificConfig) : Invariant {
+        return new Invariant(clone $this);
+    }
+
     public function isComplete() : bool {
+        return true;
+    }
+
+    public function isInvariant() : bool {
         return true;
     }
 
@@ -58,6 +66,10 @@ final class Basic implements Schema {
         return new LabelSelector([
             AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
         ]);
+    }
+
+    public function getInvariantSelector() : ?LabelSelector {
+        return new LabelSelector([]);
     }
 
     public function getOverwriteLabels(Player $player) : ?LabelSet {
