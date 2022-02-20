@@ -6,6 +6,8 @@ namespace SOFe\Capital;
 
 use Generator;
 use Logger;
+use pocketmine\command\CommandSender;
+use pocketmine\player\Player;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
@@ -142,7 +144,7 @@ final class Capital implements Singleton, FromContext {
      * @param array<AccountQueryMetric> $metrics
      * @return Generator<mixed, mixed, mixed, array<int|float>>
      */
-    public function getAccountMetrics(LabelSelector $labelSelector, array $metrics) {
+    public function getAccountMetrics(LabelSelector $labelSelector, array $metrics) : Generator {
         return yield from $this->database->aggregateAccounts($labelSelector, $metrics);
     }
 
@@ -150,7 +152,36 @@ final class Capital implements Singleton, FromContext {
      * @param list<TransactionQueryMetric> $metrics
      * @return Generator<mixed, mixed, mixed, array<int|float>>
      */
-    public function getTransactionMetrics(LabelSelector $labelSelector, array $metrics) {
+    public function getTransactionMetrics(LabelSelector $labelSelector, array $metrics) : Generator {
         return yield from $this->database->aggregateTransactions($labelSelector, $metrics);
+    }
+
+    /**
+     * Finds the accounts for an incomplete schema, querying the command sender for information if necessary.
+     * Creates or migrates an account if the player does not have the required account.
+     *
+     * @param Player $player The player that owns the returned account.
+     * @param Schema\Schema $schema The incomplete schema.
+     * @param list<string> $args The command arguments for account selection.
+     * @param CommandSender $sender The command sender to ask for more information if necessary.
+     * @return Generator<mixed, mixed, mixed, array<AccountRef>>
+     */
+    public function findAccountsIncomplete(Player $player, Schema\Schema $schema, array &$args, CommandSender $sender) : Generator {
+        $complete = yield from Schema\Utils::fromCommand($schema, $args, $sender);
+        $accounts = yield from Schema\Utils::lazyCreate($complete, $this->database, $player);
+        return $accounts;
+    }
+
+    /**
+     * Finds the accounts for a complete schema.
+     * Creates or migrates an account if the player does not have the required account.
+     *
+     * @param Player $player The player that owns the returned account.
+     * @param Schema\Complete $complete The complete schema.
+     * @return Generator<mixed, mixed, mixed, array<AccountRef>>
+     */
+    public function findAccountsComplete(Player $player, Schema\Complete $complete) : Generator {
+        $accounts = yield from Schema\Utils::lazyCreate($complete, $this->database, $player);
+        return $accounts;
     }
 }

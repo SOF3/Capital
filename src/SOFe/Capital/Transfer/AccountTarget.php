@@ -4,33 +4,34 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Transfer;
 
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use SOFe\Capital\AccountLabels;
+use pocketmine\utils\AssumptionFailedError;
+use SOFe\Capital\AccountRef;
+use SOFe\Capital\Capital;
 use SOFe\Capital\Config\Parser;
-use SOFe\Capital\LabelSelector;
 use SOFe\Capital\OracleNames;
-use SOFe\Capital\Schema\Schema;
+use SOFe\Capital\Schema;
 
-class AccountTarget {
-    const TARGET_SYSTEM = "system";
-    const TARGET_SENDER = "sender";
-    const TARGET_RECIPIENT = "recipient";
+final class AccountTarget {
+    public const TARGET_SYSTEM = "system";
+    public const TARGET_SENDER = "sender";
+    public const TARGET_RECIPIENT = "recipient";
 
     /**
      * @param self::TARGET_* $target
      */
     public function __construct(
-        private string $target,
-        private Schema $schema,
+        public string $target,
+        public ?Schema\Schema $schema,
     ) {
     }
 
     /**
      * @param self::TARGET_* $defaultTarget
      */
-    public static function parse(Parser $parser, Schema $schema, string $defaultTarget = self::TARGET_SYSTEM) : self {
-        $schema = $schema->cloneWithConfig($parser);
+    public static function parse(Parser $parser, Schema\Schema $rootSchema, string $defaultTarget = self::TARGET_SYSTEM) : self {
         $target = $parser->expectString("of", $defaultTarget, <<<'EOT'
             Can be "system", "sender", or "recipient".
             If "sender" is used, this command will only be usable by players.
@@ -40,10 +41,16 @@ class AccountTarget {
             "system" => self::TARGET_SYSTEM,
             "sender" => self::TARGET_SENDER,
             "recipient" => self::TARGET_RECIPIENT,
-            default => $parser->failSafe($defaultTarget, "Expected key \"of\" to be \"system\", \"sender\", or \"recipient\".")
+            default => $parser->setValue("of", $defaultTarget, "Expected key \"of\" to be \"system\", \"sender\", or \"recipient\"."),
         };
+
+        $schema = null;
+        if ($target !== self::TARGET_SYSTEM) {
+            $schema = $rootSchema->cloneWithConfig($parser);
+        }
+
         /**
-         * PHPStan seems to loose type information when $parser->failSafe
+         * PHPStan seems to lose type information when $parser->failSafe
          * is called even though it says that it returns the type passed into it.
          * This means that $target is "string" and not "self::TARGET_*" anymore.
          *
@@ -52,11 +59,28 @@ class AccountTarget {
         return new self($target, $schema);
     }
 
-    public function getSelector(CommandSender $sender, Player $recipient) : ?LabelSelector {
+    /**
+     * @param list<string> $args
+     * @return Generator<mixed, mixed, mixed, AccountRef|null>
+     */
+    public function findAccounts(Capital $api, array &$args, CommandSender $sender, Player $recipient) : Generator {
         return match ($this->target) {
-            self::TARGET_SYSTEM => new LabelSelector([ AccountLabels::ORACLE => OracleNames::TRANSFER ]),
-            self::TARGET_SENDER => ($sender instanceof Player) ? $this->schema->getSelector($sender) : null,
-            self::TARGET_RECIPIENT => $this->schema->getSelector($recipient)
+            self::TARGET_SYSTEM => yield from $api->getOracle(OracleNames::TRANSFER),
+            self::TARGET_SENDER => $sender instanceof Player ? yield from $this->getSelectorForPlayer($api, $args, $sender, $sender) : null,
+            self::TARGET_RECIPIENT => yield from $this->getSelectorForPlayer($api, $args, $sender, $recipient),
         };
+    }
+
+    /**
+     * @param list<string> $args
+     * @return Generator<mixed, mixed, mixed, AccountRef>
+     */
+    private function getSelectorForPlayer(Capital $api, array &$args, CommandSender $sender, Player $player) : Generator {
+        if ($this->schema === null) {
+            throw new AssumptionFailedError("Cannot call getSelectorForPlayer if target is TARGET_SYSTEM");
+        }
+
+        $accounts = yield from $api->findAccountsIncomplete($player, $this->schema, $args, $sender);
+        return $accounts[0];
     }
 }

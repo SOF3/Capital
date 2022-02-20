@@ -20,7 +20,9 @@ use SOFe\Capital\Plugin\MainClass;
 use function count;
 use function file_exists;
 use function file_put_contents;
+use function get_class;
 use function gettype;
+use function is_array;
 use function yaml_emit;
 use function yaml_parse_file;
 
@@ -104,11 +106,11 @@ final class Raw implements Singleton, FromContext {
 
         if (isset($this->configInternalAwaits[$class])) {
             $resolves = $this->configInternalAwaits[$class];
-            if(!is_array($resolves)) {
+            if (!is_array($resolves)) {
                 throw new AssertionError("configInternalAwaits should not be the instance when the instance was just created");
             }
 
-            foreach ($this->configInternalAwaits[$class] as $resolve) {
+            foreach ($resolves as $resolve) {
                 $resolve($instance);
             }
         }
@@ -124,8 +126,12 @@ final class Raw implements Singleton, FromContext {
     public function awaitConfigInternal(string $class) : Generator {
         if (!isset($this->configInternalAwaits[$class])) {
             $this->configInternalAwaits[$class] = [];
-        } elseif($this->configInternalAwaits[$class] instanceof ConfigInterface) {
-            return $this->configInternalAwaits[$class]; // already loaded
+        } elseif ($this->configInternalAwaits[$class] instanceof ConfigInterface) {
+            $instance = $this->configInternalAwaits[$class];
+            if (!($instance instanceof $class)) {
+                throw new AssertionError("$class::parse() returned " . get_class($instance));
+            }
+            return $instance; // already loaded
         }
 
         $this->logger->debug("Internal await for config $class");

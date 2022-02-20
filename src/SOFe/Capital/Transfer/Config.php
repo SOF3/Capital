@@ -27,10 +27,10 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     public const LABEL_OPERATOR = "operator";
 
     /**
-     * @param list<Method> $transferMethods Methods to initiate money transfer between accounts.
+     * @param list<CommandMethod> $commands Commands to initiate money transfer between accounts.
      */
     public function __construct(
-        public array $transferMethods,
+        public array $commands,
     ) {
     }
 
@@ -124,11 +124,11 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             $commandNames = $commandsParser->getKeys();
         }
 
-        $methods = [];
+        $commands = [];
         foreach ($commandNames as $commandName) {
-            $methods[] = CommandMethod::parse($commandsParser, $schema, $commandName, null);
+            $commands[] = CommandMethod::parse($commandsParser, $schema, $commandName, null);
         }
 
-        return new self($methods);
+        return new self($commands);
     }
 }
