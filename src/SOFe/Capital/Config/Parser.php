@@ -69,7 +69,10 @@ final class Parser {
         return $output;
     }
 
-    public function enter(string $key, ?string $doc, bool &$isNew = false) : Parser {
+    /**
+     * @param bool $isNew
+     */
+    public function enter(string $key, ?string $doc, &$isNew = false) : Parser {
         $data = $this->expectAny($key, [], $doc, true);
 
         $isNew = !is_array($data) || self::isList($data);
