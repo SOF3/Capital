@@ -48,17 +48,17 @@ CREATE INDEX IF NOT EXISTS tran_label_kv ON tran_label(name, value);
 CREATE TABLE IF NOT EXISTS analytics_top_cache (
     query CHAR(32) NOT NULL,
     group_value VARCHAR(255) NOT NULL,
-    metric DOUBLE NOT NULL,
+    metric DOUBLE NULL,
     last_updated TIMESTAMP NOT NULL,
-    last_updated_with CHAR(32),
+    last_updated_with CHAR(32) NOT NULL,
     PRIMARY KEY (query, group_value)
 );
 -- #        &
 CREATE INDEX IF NOT EXISTS analytics_top_cache_top_query (query, metric);
 -- #        &
-CREATE INDEX IF NOT EXISTS analytics_top_cache_selection (query, last_updated); -- Used for selecting rows to recompute.
+CREATE INDEX IF NOT EXISTS analytics_top_cache_collection (query, last_updated); -- Used for selecting rows to recompute.
 -- #        &
-CREATE INDEX IF NOT EXISTS analytics_top_cache_selection (query, last_updated_with); -- Used in the actual recomputation query.
+CREATE INDEX IF NOT EXISTS analytics_top_cache_updater (last_updated_with); -- Used in the actual recomputation query.
 -- #        }
 -- #    }
 -- #}

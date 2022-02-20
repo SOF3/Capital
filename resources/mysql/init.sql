@@ -46,13 +46,13 @@ CREATE TABLE IF NOT EXISTS tran_label (
 CREATE TABLE IF NOT EXISTS analytics_top_cache (
     query CHAR(32) NOT NULL,
     group_value VARCHAR(255) NOT NULL,
-    metric DOUBLE NOT NULL,
+    metric DOUBLE NULL,
     last_updated TIMESTAMP NOT NULL,
-    last_updated_with CHAR(32),
+    last_updated_with CHAR(32) NOT NULL,
     PRIMARY KEY (query, group_value),
     KEY (query, metric), -- Used for top queries.
     KEY (query, last_updated), -- Used for selecting rows to recompute.
-    KEY (query, last_updated_with) -- Used in the actual recomputation query.
+    KEY (last_updated_with) -- Used in the actual recomputation query.
 );
 -- #            }
 -- #            { procedures

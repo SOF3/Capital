@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-final class TransactionQueryMetric {
+final class TransactionQueryMetric implements QueryMetric {
     public static function transactionCount() : self {
         return new self("COUNT(DISTINCT id)", true);
     }
@@ -41,6 +41,14 @@ final class TransactionQueryMetric {
         private string $expr,
         private bool $usesIdOnly = false,
     ) {
+    }
+
+    public function getMainTable() : string {
+        return "tran";
+    }
+
+    public function getLabelTable() : string {
+        return "tran_label";
     }
 
     public function getExpr() : string {

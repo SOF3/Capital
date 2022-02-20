@@ -50,9 +50,9 @@ final class Database implements Singleton, FromContext {
     ];
 
     /** @var SqlDialect::SQLITE|SqlDialect::MYSQL */
-    private string $dialect;
+    public string $dialect;
     private DataConnector $conn;
-    private RawQueries $raw;
+    public RawQueries $raw;
 
     private Mutex $sqliteMutex;
 
@@ -140,6 +140,13 @@ final class Database implements Singleton, FromContext {
 
     public function getDataConnector() : DataConnector {
         return $this->conn;
+    }
+
+    /**
+     * @return SqlDialect::*
+     */
+    public function getDialect() : string {
+        return $this->dialect;
     }
 
 

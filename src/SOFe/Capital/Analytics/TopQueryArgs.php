@@ -9,32 +9,43 @@ use RuntimeException;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
+use SOFe\Capital\QueryMetric;
 use SOFe\Capital\Schema\Schema;
 use SOFe\Capital\TransactionQueryMetric;
 use function get_class;
 use function md5;
 use function sort;
 
+/**
+ * Queries the top label values.
+ *
+ * The query studies the accounts/transactions matching selector $labelSelector
+ * and with the label $groupingLabel.
+ * Whether the study target is an account or a transaction
+ * is determined by the type of $metric.
+ * For each distinct value of the label $groupingLabel in the matching accounts/transactions,
+ * the statistic specified by $metric is computed for accounts/transactions with this label value.
+ */
 final class TopQueryArgs {
     public const ORDERING_ASC = "asc";
     public const ORDERING_DESC = "desc";
 
+    private ?string $hash = null;
+
     /**
-     * @param LabelSelector $labelSelector The labels that filter rows.
-     * @param list<string> $groupingLabels The labels to group by.
+     * @param LabelSelector $labelSelector The labels that filter the cacounts/transactions.
+     * @param string $groupingLabel The label to group by.
      * @param list<string> $displayLabels The labels to display in the top list.
-     * @param string $sortingLabel The label to sort by.
      * @param self::ORDERING_* $ordering Whether to sort ascendingly or descendingly.
-     * @param AccountQueryMetric|TransactionQueryMetric $metric The metric used to aggregate the sorting label of accounts/transactions with the same grouping labels.
-     *        The type of this parameter indicates whether to search accounts or transactions.
+     * @param QueryMetric $metric The metric used to aggregate the sorting label of accounts/transactions with the same grouping label.
+     *     The type of this parameter indicates whether to search accounts or transactions.
      */
     public function __construct(
         public LabelSelector $labelSelector,
-        public array $groupingLabels,
+        public string $groupingLabel,
         public array $displayLabels,
-        public string $sortingLabel,
         public string $ordering,
-        public AccountQueryMetric|TransactionQueryMetric $metric,
+        public QueryMetric $metric,
     ) {
     }
 
@@ -43,18 +54,16 @@ final class TopQueryArgs {
      * yielding an output with always 32 hexadecimal characters.
      */
     public function hash() : string {
+        if ($this->hash !== null) {
+            return $this->hash;
+        }
+
         $bytes = "";
         $bytes .= $this->labelSelector->toBytes();
 
         $bytes .= "\0";
 
-        $groupingLabels = $this->groupingLabels;
-        sort($groupingLabels);
-        foreach ($groupingLabels as $label) {
-            $bytes .= $label;
-            $bytes .= "\0";
-        }
-
+        $bytes .= $this->groupingLabel;
         $bytes .= "\0";
 
         $displayLabels = $this->displayLabels;
@@ -64,9 +73,6 @@ final class TopQueryArgs {
             $bytes .= "\0";
         }
 
-        $bytes .= "\0";
-
-        $bytes .= $this->sortingLabel;
         $bytes .= "\0";
 
         $bytes .= match ($this->ordering) {

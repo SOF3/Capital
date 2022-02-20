@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-final class AccountQueryMetric {
+final class AccountQueryMetric implements QueryMetric {
     public static function accountCount() : self {
         return new self("COUNT(DISTINCT id)", true);
     }
@@ -33,6 +33,14 @@ final class AccountQueryMetric {
         private string $expr,
         private bool $usesIdOnly = false,
     ) {
+    }
+
+    public function getMainTable() : string {
+        return "acc";
+    }
+
+    public function getLabelTable() : string {
+        return "acc_label";
     }
 
     public function getExpr() : string {

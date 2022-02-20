@@ -130,8 +130,6 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     private static function parseTopPlayerQuery(Parser $infoConfig, Schema\Schema $schema, string $cmdName) : ConfigTop {
         $queryArgs = TopQueryArgs::parse($infoConfig, $schema);
 
-        $listLength = $infoConfig->expectInt("list-length", 5, "Number of top players to display");
-
         $cmdConfig = $infoConfig->enter("command", "The command that displays the information.");
         $command = DynamicCommand::parse($cmdConfig, "analytics", $cmdName, "Displays the richest player", false);
 
@@ -143,11 +141,17 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             EOT);
         $refreshArgs = TopRefreshArgs::parse($refreshConfig);
 
+        $paginationConfig = $infoConfig->enter("pagination", <<<'EOT'
+            Pagination settings for the top query.
+            EOT);
+        $paginationArgs = TopPaginationArgs::parse($paginationConfig);
+
         return new ConfigTop(
             command: $command,
-            listLength: $listLength,
             queryArgs: $queryArgs,
             refreshArgs: $refreshArgs,
+            paginationArgs: $paginationArgs,
+            messages: TopMessages::parse($infoConfig->enter("messages", "Configures the displayed messages")),
         );
     }
 }
