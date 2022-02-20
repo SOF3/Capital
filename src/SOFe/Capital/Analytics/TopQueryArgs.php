@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace SOFe\Capital\Analytics;
 
 use AssertionError;
+use Closure;
+use pocketmine\player\Player;
 use RuntimeException;
+use SOFe\Capital\AccountLabels;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
@@ -92,6 +95,29 @@ final class TopQueryArgs {
     }
 
     public static function parse(Parser $config, Schema $schema) : self {
-        throw new RuntimeException("Not yet implemented");
+        // For now, we only support accounts in the config
+        // because it is complex to explain transactions to the user.
+        // However, transactions are still a part of the API.
+
+        $selector = $schema->cloneWithCompleteConfig($config->enter("selector", "Selects which accounts of each player to calculate."));
+        $groupingLabel = AccountLabels::PLAYER_UUID;
+        $displayLabels = ["name" => AccountLabels::PLAYER_NAME];
+        $ordering = match($config->expectString("ordering", self::ORDERING_DESC, <<<'EOT'
+            Whether to sort results ascendingly or descendingly.
+            Use "asc" for ascending sort and "desc" for descending sort.
+            EOT)) {
+            self::ORDERING_ASC => self::ORDERING_ASC,
+            self::ORDERING_DESC => self::ORDERING_DESC,
+            default => $config->setValue("ordering", self::ORDERING_DESC, "Invalid ordering"),
+        };
+        $metric = AccountQueryMetric::parseConfig($config, "metric");
+
+        return new self(
+            labelSelector: $selector->getInvariantSelector(),
+            groupingLabel: $groupingLabel,
+            displayLabels: $displayLabels,
+            ordering: $ordering,
+            metric: $metric,
+        );
     }
 }

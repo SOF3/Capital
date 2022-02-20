@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use RuntimeException;
+
 use function assert;
 use function implode;
 use function ksort;
@@ -33,6 +35,16 @@ final class LabelSelector {
             $bytes .= $key . "\0" . $value . "\0";
         }
         return $bytes;
+    }
+
+    public function without(string $key) : LabelSelector {
+        $entries = $this->entries;
+        if(!isset($entries[$key])) {
+            throw new RuntimeException("$key is not in the label selector");
+        }
+
+        unset($entries[$key]);
+        return new LabelSelector($entries);
     }
 
     /**

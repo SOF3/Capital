@@ -26,6 +26,8 @@ final class Complete {
      * Returns the parameterized label selector with the given settings.
      *
      * This method returns null if and only if `isComplete()` returns false.
+     *
+     * It is guaranteed that one of the entries is `[ AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString() ]`
      */
     public function getSelector(Player $player) : LabelSelector {
         $selector = $this->schema->getSelector($player);
