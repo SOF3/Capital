@@ -24,8 +24,9 @@ final class Utils {
      * Parses command arguments (and removes them) and returns the label set for the schema.
      *
      * @param list<string> $args
+     * @return Generator<mixed, mixed, mixed, Complete>
      */
-    public static function fromCommand(Schema $schema, array &$args, CommandSender $sender, string $playerPath) : Schema {
+    public static function fromCommand(Schema $schema, array &$args, CommandSender $sender) : Generator {
         $required = [];
         foreach ($schema->getRequiredVariables() as $var) {
             $required[] = $var;
@@ -37,6 +38,7 @@ final class Utils {
         }
 
         if (count($args) < count($required)) {
+            false && yield;
             // TODO try forms UI
 
             throw new InvalidArgumentException("Usage: " . self::getUsage($schema));
@@ -58,7 +60,7 @@ final class Utils {
             }
         }
 
-        return $schema;
+        return new Complete($clone);
     }
 
     /**

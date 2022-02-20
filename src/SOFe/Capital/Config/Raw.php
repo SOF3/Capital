@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
+use AssertionError;
 use Closure;
 use Generator;
 use Logger;
@@ -19,7 +20,9 @@ use SOFe\Capital\Plugin\MainClass;
 use function count;
 use function file_exists;
 use function file_put_contents;
+use function get_class;
 use function gettype;
+use function is_array;
 use function yaml_emit;
 use function yaml_parse_file;
 
@@ -42,7 +45,7 @@ final class Raw implements Singleton, FromContext {
     /** @var array<class-string<ConfigInterface>, object> Loaded config files are stored here. */
     private array $loadedConfigs = [];
 
-    /** @var array<class-string<ConfigInterface>, list<Closure(ConfigInterface): void>> Callbacks for internal awaits between config loaders */
+    /** @var array<class-string<ConfigInterface>, ConfigInterface|list<Closure(ConfigInterface): void>> Callbacks for internal awaits between config loaders */
     private array $configInternalAwaits = [];
 
     public Parser $parser;
@@ -98,13 +101,21 @@ final class Raw implements Singleton, FromContext {
     private function loadConfigOnce(string $class) : Generator {
         $instance = yield from $class::parse($this->parser, $this->di, $this);
         $this->loadedConfigs[$class] = $instance;
+
+        $this->logger->debug("Loaded config $class");
+
         if (isset($this->configInternalAwaits[$class])) {
-            foreach ($this->configInternalAwaits[$class] as $resolve) {
-                $resolve($instance);
+            $resolves = $this->configInternalAwaits[$class];
+            if (!is_array($resolves)) {
+                throw new AssertionError("configInternalAwaits should not be the instance when the instance was just created");
             }
 
-            $this->configInternalAwaits[$class] = [];
+            foreach ($resolves as $resolve) {
+                $resolve($instance);
+            }
         }
+
+        $this->configInternalAwaits[$class] = $instance;
     }
 
     /**
@@ -115,11 +126,20 @@ final class Raw implements Singleton, FromContext {
     public function awaitConfigInternal(string $class) : Generator {
         if (!isset($this->configInternalAwaits[$class])) {
             $this->configInternalAwaits[$class] = [];
+        } elseif ($this->configInternalAwaits[$class] instanceof ConfigInterface) {
+            $instance = $this->configInternalAwaits[$class];
+            if (!($instance instanceof $class)) {
+                throw new AssertionError("$class::parse() returned " . get_class($instance));
+            }
+            return $instance; // already loaded
         }
 
+        $this->logger->debug("Internal await for config $class");
         $this->configInternalAwaits[$class][] = yield Await::RESOLVE;
 
-        return yield Await::ONCE;
+        $instance = yield Await::ONCE;
+        $this->logger->debug("Internal await for config $class complete");
+        return $instance;
     }
 
     /**

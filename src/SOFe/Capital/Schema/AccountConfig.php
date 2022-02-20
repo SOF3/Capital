@@ -17,7 +17,7 @@ use function mb_strtolower;
  */
 final class AccountConfig {
     public static function parse(Parser $parser) : self {
-        $initialBalance = $parser->expectInt("default", 0, "Default amount of money when the account is created");
+        $initialBalance = $parser->expectInt("default", 100, "Default amount of money when the account is created");
 
         $min = $parser->expectInt("min", 0, <<<'EOT'
             The minimum amount of money in this account.
