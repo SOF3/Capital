@@ -43,7 +43,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $commandsParser = $transferParser->enter("commands", <<<'EOT'
             These commands initiate transfers.
-            EOT, $wasUnfilled);
+            EOT, $isNew);
 
         $commandNames = $commandsParser->getKeys();
 
@@ -51,7 +51,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $schemaConfig = yield from $raw->awaitConfigInternal(SchemaConfig::class);
         $schema = $schemaConfig->schema;
 
-        if ($wasUnfilled) {
+        if ($isNew) {
             CommandMethod::parse($commandsParser, $schema, "pay", new DefaultCommand(
                 description: "Pays another player.",
                 defaultOpOnly: false,

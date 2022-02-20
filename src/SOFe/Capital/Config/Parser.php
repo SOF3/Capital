@@ -73,9 +73,9 @@ final class Parser {
      * @param bool $isNew
      */
     public function enter(string $key, ?string $doc, &$isNew = false) : Parser {
-        $data = $this->expectAny($key, [], $doc, true);
+        $data = $this->expectAny($key, [], $doc, true, $isNew);
 
-        $isNew = !is_array($data) || self::isList($data);
+        $isNew = $isNew || self::isList($data);
 
         if ($isNew) {
             $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
@@ -278,12 +278,14 @@ final class Parser {
     /**
      * @template T
      * @param T $default
+     * @param bool $isNew
      * @return mixed
      */
-    private function expectAny(string $key, $default, ?string $doc, bool $required) {
+    private function expectAny(string $key, $default, ?string $doc, bool $required, &$isNew = false) {
         $array = $this->data->get($this->path);
 
-        if (!array_key_exists($key, $array)) {
+        $isNew = !array_key_exists($key, $array);
+        if ($isNew) {
             if ($this->failSafe || !$required) {
                 if ($doc !== null) {
                     $array["#" . $key] = $doc;
