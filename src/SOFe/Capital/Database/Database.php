@@ -47,6 +47,7 @@ final class Database implements Singleton, FromContext {
         "init.sql",
         "account.sql",
         "transaction.sql",
+        "analytics.sql",
     ];
 
     /** @var SqlDialect::SQLITE|SqlDialect::MYSQL */
@@ -583,12 +584,14 @@ final class Database implements Singleton, FromContext {
                 if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
                     throw $ex;
                 }
-                // else, we don't need a constraint
+
+                $this->logger->debug("No max label");
+                // leave the constraint as PHP_INT_MAX because it is unbounded
             }
         } else {
+            // leave the constraint as PHP_INT_MAX because it is unbounded
         }
 
-        $destMax = yield from $this->getAccountLabel($dest, AccountLabels::VALUE_MAX);
         $destMax = (int) $destMax;
 
         yield from match ($this->dialect) {

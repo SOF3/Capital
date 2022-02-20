@@ -35,6 +35,7 @@ use function is_numeric;
 use function round;
 use function strpos;
 use function substr;
+use function var_dump;
 
 /**
  * Transfer money by running a command.
@@ -201,6 +202,7 @@ final class CommandMethod {
                 try {
                     yield from $promise;
                 } catch (CapitalException $ex) {
+                    var_dump($ex->getTraceAsString());
                     $error = match ($ex->getCode()) {
                         CapitalException::SOURCE_UNDERFLOW => $this->messages->underflow,
                         CapitalException::DESTINATION_OVERFLOW => $this->messages->underflow,

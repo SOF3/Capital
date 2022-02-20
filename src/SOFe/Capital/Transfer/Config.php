@@ -89,8 +89,8 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                 ],
                 messages: new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
-                    notifySenderSuccess: '{green}You have taken ${sentAmount} from {recipient}. They now have ${destBalance} left.',
-                    notifyRecipientSuccess: '{green}An admin took ${sentAmount} from you. You now have ${destBalance} left.',
+                    notifySenderSuccess: '{green}You have taken ${receivedAmount} from {recipient}. They now have ${srcBalance} left.',
+                    notifyRecipientSuccess: '{green}An admin took ${sentAmount} from you. You now have ${srcBalance} left.',
                     noSourceAccounts: '{red}There are no accounts to send money from.',
                     noDestinationAccounts: '{red}An internal error occurred.',
                     underflow: '{red}{recipient} does not have ${sentAmount} to be taken.',

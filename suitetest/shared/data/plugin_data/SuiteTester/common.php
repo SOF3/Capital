@@ -69,6 +69,24 @@ return function() {
             yield from Await::all([$alicePromise, $bobPromise]);
         },
 
+        "take money" => function() use($server) {
+            false && yield;
+            $alice = $server->getPlayerExact("alice");
+            $alice->chat("/takemoney alice 10");
+        },
+        "wait money deduct message" => function() use($server, $std) {
+            $alice = $server->getPlayerExact("alice");
+            $ackMessage = 'You have taken $10 from Alice. They now have $90 left.';
+            $ackPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $ackMessage), false, EventPriority::MONITOR, false);
+
+            $deductMessage = TextFormat::GREEN . 'An admin took $10 from you. You now have $90 left.';
+            $deductPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $deductMessage), false, EventPriority::MONITOR, false);
+
+            yield from Await::all([$ackPromise, $deductPromise]);
+        },
+
         "bob check money" => function() use($server, $std, $plugin) {
             $bob = $server->getPlayerExact("bob");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/mymoney")));

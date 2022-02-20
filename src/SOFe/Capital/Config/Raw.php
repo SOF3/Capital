@@ -17,6 +17,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
 use SOFe\Capital\Plugin\MainClass;
+use function array_shift;
 use function count;
 use function file_exists;
 use function file_put_contents;
@@ -39,8 +40,8 @@ final class Raw implements Singleton, FromContext {
         C\Transfer\Config::class => true,
     ];
 
-    /** @var list<Closure(): void> resolve functions called when all configs are loaded */
-    private array $onConfigLoaded = [];
+    /** @var null|list<Closure(): void> resolve functions called when all configs are loaded, or null if the configs have not started loading yet */
+    private ?array $onConfigLoaded = null;
 
     /** @var array<class-string<ConfigInterface>, object> Loaded config files are stored here. */
     private array $loadedConfigs = [];
@@ -79,8 +80,22 @@ final class Raw implements Singleton, FromContext {
             throw new RuntimeException("Config $class not in " . self::class . "::ALL_CONFIGS");
         }
 
-        if (count($this->onConfigLoaded) === 0) {
+        if ($this->onConfigLoaded === null) {
+            // nothing is loaded right now, either finished loading
+            if (count($this->loadedConfigs) > 0) {
+                return $this->loadedConfigs[$class];
+            }
+
+            $this->onConfigLoaded = [];
+
             yield from $this->loadAll();
+
+            while (count($this->onConfigLoaded) > 0) {
+                $resolve = array_shift($this->onConfigLoaded);
+                $resolve();
+            }
+
+            $this->onConfigLoaded = null;
         } else {
             $this->onConfigLoaded[] = yield Await::RESOLVE;
             yield Await::ONCE;

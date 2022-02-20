@@ -26,7 +26,7 @@ use function is_string;
 final class DatabaseUtils implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
-    private function __construct(private Database $db) {
+    public function __construct(private Database $db) {
     }
 
     /**
@@ -80,7 +80,7 @@ final class DatabaseUtils implements Singleton, FromContext {
      */
     private function collectNew(string $runId, TopQueryArgs $query, int $batchSize) : Generator {
         $vars = [
-            "queryHash" => new GenericVariable("hash", GenericVariable::TYPE_STRING, null),
+            "queryHash" => new GenericVariable("queryHash", GenericVariable::TYPE_STRING, null),
             "runId" => new GenericVariable("runId", GenericVariable::TYPE_STRING, null),
             "groupingLabel" => new GenericVariable("groupingLabel", GenericVariable::TYPE_STRING, null),
             "limit" => new GenericVariable("limit", GenericVariable::TYPE_INT, null),
@@ -103,6 +103,7 @@ final class DatabaseUtils implements Singleton, FromContext {
         }
 
         $sql .= "WHERE grouping_label.name = :groupingLabel";
+        $sql .= " AND grouping_label.value NOT IN (SELECT group_value FROM analytics_top_cache WHERE query = :queryHash)";
 
         $i = 0;
         foreach ($query->labelSelector->getEntries() as $name => $value) {
@@ -118,6 +119,8 @@ final class DatabaseUtils implements Singleton, FromContext {
 
             $i++;
         }
+
+        $sql .= " LIMIT :limit";
 
         $stmt = GenericStatementImpl::forDialect($this->db->dialect, "dynamic-analytics-collect-new", [$sql], "", $vars, __FILE__, __LINE__);
 

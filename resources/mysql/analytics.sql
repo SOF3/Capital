@@ -10,6 +10,11 @@ WHERE query = :queryHash
 ORDER BY metric * :orderSign
 LIMIT :offset, :limit;
 -- #    }
+-- #    { count
+-- #        :queryHash string
+SELECT COUNT(*) cnt FROM analytics_top_cache
+WHERE query = :queryHash AND metric IS NOT NULL;
+-- #    }
 -- #    { collect-updates
 -- #        :queryHash string
 -- #        :runId string

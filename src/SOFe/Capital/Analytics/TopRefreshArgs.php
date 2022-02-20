@@ -21,12 +21,12 @@ final class TopRefreshArgs {
 
     public static function parse(Parser $config) : self {
         return new TopRefreshArgs(
-            batchSize: $config->expectInt("batch-size", 1000, <<<'EOT'
+            batchSize: $config->expectInt("batch-size", 200, <<<'EOT'
                 Number of players to recompute at once.
                 Data are only recomputed if they are older than recompute-frequency.
                 Try reducing this value if the database server is having lag spikes.
                 EOT),
-            batchFrequency: $config->expectInt("batch-frequency", 60, <<<'EOT'
+            batchFrequency: $config->expectInt("batch-frequency", 10, <<<'EOT'
                 The number of seconds between batches.
 
                 If there are multiple servers connected to the same database,

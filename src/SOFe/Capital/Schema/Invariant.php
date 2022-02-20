@@ -32,10 +32,10 @@ final class Invariant {
      *
      * This method returns null if and only if `isComplete()` returns false.
      */
-    public function getSelector(Player $player) : LabelSelector {
-        $selector = $this->schema->getSelector($player);
+    public function getSelector() : LabelSelector {
+        $selector = $this->schema->getInvariantSelector();
         if ($selector === null) {
-            throw new AssertionError("getSelector must not return null for complete schemas");
+            throw new AssertionError("getSelector must not return null for invariant schemas");
         }
         return $selector;
     }

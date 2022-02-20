@@ -54,11 +54,11 @@ CREATE TABLE IF NOT EXISTS analytics_top_cache (
     PRIMARY KEY (query, group_value)
 );
 -- #        &
-CREATE INDEX IF NOT EXISTS analytics_top_cache_top_query (query, metric);
+CREATE INDEX IF NOT EXISTS analytics_top_cache_top_query ON analytics_top_cache (query, metric);
 -- #        &
-CREATE INDEX IF NOT EXISTS analytics_top_cache_collection (query, last_updated); -- Used for selecting rows to recompute.
+CREATE INDEX IF NOT EXISTS analytics_top_cache_collection ON analytics_top_cache (query, last_updated); -- Used for selecting rows to recompute.
 -- #        &
-CREATE INDEX IF NOT EXISTS analytics_top_cache_updater (last_updated_with); -- Used in the actual recomputation query.
+CREATE INDEX IF NOT EXISTS analytics_top_cache_updater ON analytics_top_cache (last_updated_with); -- Used in the actual recomputation query.
 -- #        }
 -- #    }
 -- #}

@@ -158,8 +158,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/analytics.sql:27
-     * - resources/sqlite/analytics.sql:32
+     * - resources/mysql/analytics.sql:32
+     * - resources/sqlite/analytics.sql:34
      * @param string $queryHash
      * @param string $runId
      * @param int $expiry
@@ -173,6 +173,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
+     * - resources/mysql/analytics.sql:17
      * - resources/sqlite/analytics.sql:17
      * @param string $queryHash
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>

@@ -86,7 +86,7 @@ final class ConfigTop {
      */
     private function runRefreshLoop(AwaitStd $std, DatabaseUtils $database) : Generator {
         while (true) {
-            yield from $std->sleep($this->refreshArgs->batchFrequency);
+            yield from $std->sleep(($this->refreshArgs->batchFrequency * 20));
 
             $runId = bin2hex(random_bytes(16));
 

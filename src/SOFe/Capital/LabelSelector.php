@@ -45,7 +45,7 @@ final class LabelSelector {
 
     public function without(string $key) : LabelSelector {
         $entries = $this->entries;
-        if(!isset($entries[$key])) {
+        if (!isset($entries[$key])) {
             throw new RuntimeException("$key is not in the label selector");
         }
 

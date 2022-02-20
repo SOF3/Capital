@@ -24,10 +24,12 @@ UPDATE analytics_top_cache
 SET
     last_updated = CURRENT_TIMESTAMP,
     last_updated_with = :runId
-WHERE
-    query = :queryHash
-    AND TIMESTAMPDIFF(SECOND, last_updated, CURRENT_TIMESTAMP) > :expiry
-ORDER BY last_updated ASC
-LIMIT :limit;
+WHERE query = :queryHash AND group_value IN (
+    SELECT group_value FROM analytics_top_cache
+    WHERE query = :queryHash
+        AND JULIANDAY(CURRENT_TIMESTAMP)- JULIANDAY(last_updated) > :expiry
+    ORDER BY last_updated ASC
+    LIMIT :limit
+);
 -- #    }
 -- #}
