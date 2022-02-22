@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Analytics;
 
 use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\Database\Database;
 use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
@@ -17,14 +18,19 @@ final class Mod implements Singleton, FromContext {
 
     public const API_VERSION = "0.1.0";
 
-    public static function fromSingletonArgs(Config $config, MainClass $plugin, AwaitStd $std, DatabaseUtils $db) : self {
+    public static function fromSingletonArgs(Config $config, MainClass $plugin, AwaitStd $std, Database $db, DatabaseUtils $dbu) : self {
         Info::registerByReflection("capital.analytics.top", PaginationInfo::class);
 
-        foreach ($config->singleQueries as $infoName => $query) {
+        foreach ($config->singleQueries as $manager) {
+            $manager->register($plugin, $std, $db);
+        }
+
+        foreach ($config->infoCommands as $cmd) {
+            $cmd->register($plugin);
         }
 
         foreach ($config->topQueries as $query) {
-            $query->register($plugin, $std, $db);
+            $query->register($plugin, $std, $dbu);
         }
 
         return new self;

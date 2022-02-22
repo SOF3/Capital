@@ -132,7 +132,7 @@ final class Currency implements Schema {
         return new Variable(
             type: Variable::TYPE_STRING,
             name: $this->currencyTerm,
-            populate: fn(Currency $schema, $currency) => $schema->defaultCurrency = $currency,
+            populate: fn(Currency $schema, string $currency) => $schema->defaultCurrency = $currency,
             enumValues: array_keys($this->currencies),
         );
     }

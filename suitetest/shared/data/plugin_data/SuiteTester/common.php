@@ -88,10 +88,12 @@ return function() {
         },
 
         "bob check money" => function() use($server, $std, $plugin) {
-            $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/mymoney")));
+            yield from $std->sleep(100); // to wait for refresh
 
-            $message = 'You have $110 in total.';
+            $bob = $server->getPlayerExact("bob");
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/checkmoney")));
+
+            $message = 'Bob has $110.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
@@ -100,7 +102,7 @@ return function() {
             $alice = $server->getPlayerExact("alice");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $alice->chat("/checkmoney bob")));
 
-            $message = 'Bob has $110 in total.';
+            $message = 'Bob has $110.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },

@@ -35,7 +35,7 @@ final class TopQueryArgs {
     /**
      * @param LabelSelector $labelSelector The labels that filter the cacounts/transactions.
      * @param string $groupingLabel The label to group by.
-     * @param list<string> $displayLabels The labels to display in the top list.
+     * @param array<string, string> $displayLabels The labels to display in the top list. Keys are InfoAPI info names and values are the labels to display.
      * @param self::ORDERING_* $ordering Whether to sort ascendingly or descendingly.
      * @param QueryMetric $metric The metric used to aggregate the sorting label of accounts/transactions with the same grouping label.
      *     The type of this parameter indicates whether to search accounts or transactions.
@@ -99,6 +99,7 @@ final class TopQueryArgs {
         $schema = $schema->cloneWithInvariantConfig($config->enter("selector", "Selects which accounts of each player to calculate."));
         $groupingLabel = AccountLabels::PLAYER_UUID;
         $displayLabels = ["name" => AccountLabels::PLAYER_NAME];
+        /** @var self::ORDERING_* $ordering */
         $ordering = match ($config->expectString("ordering", self::ORDERING_DESC, <<<'EOT'
             Whether to sort results ascendingly or descendingly.
             Use "asc" for ascending sort and "desc" for descending sort.

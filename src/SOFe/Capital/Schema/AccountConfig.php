@@ -68,7 +68,7 @@ final class AccountConfig {
             ]),
             migrationSetup: $migration,
             initialLabels: fn(Player $player) => new LabelSet([
-                AccountLabels::PLAYER_UUID => mb_strtolower($player->getName()),
+                AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
                 AccountLabels::VALUE_MIN => (string) $min,
                 AccountLabels::VALUE_MAX => (string) $max,
             ]),
