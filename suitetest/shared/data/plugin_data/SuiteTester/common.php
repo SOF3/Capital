@@ -108,20 +108,19 @@ return function() {
         },
 
         "bob check top money" => function() use($server, $std, $plugin) {
+            yield from $std->sleep(100); // to wait for batch
+
             $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/topmoney")));
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/richest")));
 
-            $message = 'Top 5 players:';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-
-            $message = '#1: Bob - $110';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-
-            $message = '#2: Alice - $100';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+            foreach([
+                'Showing page 1 of 1',
+                '#1 bob: 110',
+                '#2 alice: 90',
+            ] as $message) {
+                yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                    fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+            }
         },
     ];
 };

@@ -11,10 +11,8 @@ use pocketmine\plugin\Plugin;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Config\DynamicCommand;
-use SOFe\InfoAPI\AnonInfo;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
-use SOFe\InfoAPI\StringInfo;
 use function bin2hex;
 use function intdiv;
 use function is_numeric;
@@ -53,27 +51,20 @@ final class ConfigTop {
                 $totalCount = min(yield from $database->fetchTopAnalyticsCount($this->queryArgs), $this->paginationArgs->limit);
                 $totalPages = intdiv($totalCount - 1, $this->paginationArgs->limit) + 1;
 
+                $firstRank = ($page - 1) * $this->paginationArgs->perPage + 1;
                 $paginationInfo = new PaginationInfo(
                     page: new NumberInfo($page),
                     totalPages: new NumberInfo($totalPages),
                     perPage: new NumberInfo($this->paginationArgs->perPage),
                     total: new NumberInfo($totalCount),
-                    firstRank: new NumberInfo(($page - 1) * $this->paginationArgs->perPage + 1),
+                    firstRank: new NumberInfo($firstRank),
                     lastRank: new NumberInfo(min($page * $this->paginationArgs->perPage, $totalCount)),
                 );
 
                 $sender->sendMessage(InfoAPI::resolve($this->messages->header, $paginationInfo));
 
-                $rank = ($page - 1) * $this->paginationArgs->perPage;
-                foreach ($analytics as $name => $value) {
-                    $rank += 1;
-
-                    $sender->sendMessage(InfoAPI::resolve($this->messages->entry, new class("capital.analytics.top", [
-                        "rank" => new NumberInfo($rank),
-                        "name" => new StringInfo($name),
-                        "value" => new NumberInfo($value),
-                    ]) extends AnonInfo {
-                    }));
+                foreach ($analytics as $entry) {
+                    $sender->sendMessage(InfoAPI::resolve($this->messages->entry, $entry->asInfo($firstRank)));
                 }
 
                 $sender->sendMessage(InfoAPI::resolve($this->messages->footer, $paginationInfo));

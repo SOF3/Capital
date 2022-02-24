@@ -20,6 +20,7 @@ final class Mod implements Singleton, FromContext {
 
     public static function fromSingletonArgs(Config $config, MainClass $plugin, AwaitStd $std, Database $db, DatabaseUtils $dbu) : self {
         Info::registerByReflection("capital.analytics.top", PaginationInfo::class);
+        TopResultEntryInfo::initCommon();
 
         foreach ($config->singleQueries as $manager) {
             $manager->register($plugin, $std, $db);

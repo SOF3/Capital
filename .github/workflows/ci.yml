@@ -20,9 +20,15 @@ jobs:
   suites:
     name: suite tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suite-name:
+          - sqlite
+          - mysql
+          - config-regen-currency
     steps:
       - uses: actions/checkout@v2
-      - run: make suitetest
+      - run: make suitetest/cases/${{matrix.suite-name}}
   fmt:
     name: code style check
     runs-on: ubuntu-latest

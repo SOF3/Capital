@@ -166,10 +166,10 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     }
 
     private static function parseTopPlayerQuery(Parser $infoConfig, Schema\Schema $schema, string $cmdName) : ConfigTop {
-        $queryArgs = TopQueryArgs::parse($infoConfig, $schema);
-
         $cmdConfig = $infoConfig->enter("command", "The command that displays the information.");
         $command = DynamicCommand::parse($cmdConfig, "analytics.top", $cmdName, "Displays the richest player", false);
+
+        $queryArgs = TopQueryArgs::parse($infoConfig, $schema);
 
         $refreshConfig = $infoConfig->enter("refresh", <<<'EOT'
             Refresh settings for the top query.

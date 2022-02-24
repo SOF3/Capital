@@ -9,6 +9,7 @@ use Generator;
 use poggit\libasynql\generic\GenericStatementImpl;
 use poggit\libasynql\generic\GenericVariable;
 use poggit\libasynql\result\SqlChangeResult;
+use poggit\libasynql\result\SqlSelectResult;
 use poggit\libasynql\SqlDialect;
 use poggit\libasynql\SqlThread;
 use SOFe\AwaitGenerator\Await;
@@ -30,16 +31,68 @@ final class DatabaseUtils implements Singleton, FromContext {
     }
 
     /**
-     * @return Generator<mixed, mixed, mixed, array<string, float>>
+     * @return Generator<mixed, mixed, mixed, array<string, TopResultEntry>>
      */
     public function fetchTopAnalytics(TopQueryArgs $query, int $limit, int $page) : Generator {
-        $hash = $query->hash();
-        $offset = ($page - 1) * $limit;
-        $orderSign = $query->ordering === TopQueryArgs::ORDERING_DESC ? -1 : 1;
+        $vars = [
+            "queryHash" => new GenericVariable("queryHash", GenericVariable::TYPE_STRING, null),
+            "offset" => new GenericVariable("offset", GenericVariable::TYPE_INT, null),
+            "limit" => new GenericVariable("limit", GenericVariable::TYPE_INT, null),
+            "groupingLabel" => new GenericVariable("groupingLabel", GenericVariable::TYPE_STRING, null),
+        ];
+        $args = [
+            "queryHash" => $query->hash(),
+            "offset" => ($page - 1) * $limit,
+            "limit" => $limit,
+            "groupingLabel" => $query->groupingLabel,
+        ];
 
-        $rows = yield from $this->db->raw->analyticsFetchTop($hash, $limit, $offset, $orderSign);
+        $ascDesc = $query->ordering === TopQueryArgs::ORDERING_ASC ? "ASC" : "DESC";
+        $labelTable = $query->metric->getLabelTable();
+
+        $sql = "SELECT group_value, metric";
+
+        for ($i = 0; $i < count($query->displayLabels); $i++) {
+            $sql .= ", t{$i}.value AS display_{$i}";
+        }
+
+        $sql .= " FROM analytics_top_cache";
+        $sql .= " INNER JOIN $labelTable AS grouping_label ON analytics_top_cache.group_value = grouping_label.value";
+
+        $i = 0;
+        foreach ($query->displayLabels as $displayLabel) {
+            $sql .= " LEFT JOIN $labelTable AS t{$i} ON grouping_label.id = t{$i}.id";
+            $i++;
+        }
+
+        $sql .= " WHERE query = :queryHash AND grouping_label.name = :groupingLabel";
+
+        $i = 0;
+        foreach ($query->displayLabels as $displayLabel) {
+            $sql .= " AND t{$i}.name = :display_{$i}";
+            $vars["display_{$i}"] = new GenericVariable("display_{$i}", GenericVariable::TYPE_STRING, $displayLabel);
+            $args["display_{$i}"] = $displayLabel;
+            $i++;
+        }
+
+        $sql .= " ORDER BY metric $ascDesc LIMIT :offset, :limit";
+
+        $stmt = GenericStatementImpl::forDialect($this->db->dialect, "dynamic-analytics-fetch", [$sql], "", $vars, __FILE__, __LINE__);
+
+        $rawQuery = $stmt->format($args, match ($this->db->dialect) {
+            SqlDialect::SQLITE => null,
+            SqlDialect::MYSQL => "?",
+        }, $rawArgs);
+
+        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
+        [$result] = yield Await::ONCE;
+        if (!($result instanceof SqlSelectResult)) {
+            throw new AssertionError("libasynql returned incorrect result type");
+        }
+        $rows = $result->getRows();
 
         $output = [];
+        $rank = 0;
         foreach ($rows as $row) {
             $key = $row["group_value"];
             if (!is_string($key)) {
@@ -51,8 +104,22 @@ final class DatabaseUtils implements Singleton, FromContext {
                 throw new AssertionError("libasynql returned value of incorrect data type");
             }
 
-            $output[$key] = $metric;
+            $i = 0;
+            $displays = [];
+            foreach ($query->displayLabels as $infoName => $displayLabel) {
+                $value = $row["display_{$i}"];
+                if (!is_string($value)) {
+                    throw new AssertionError("libasynql returned value of incorrect data type");
+                }
+
+                $displays[$infoName] = $value;
+                $i++;
+            }
+
+            $output[$key] = new TopResultEntry($rank, $metric, $displays);
+            $rank++;
         }
+
         return $output;
     }
 
