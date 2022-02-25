@@ -6,7 +6,7 @@ namespace SOFe\Capital\Transfer;
 
 /**
  * Template for generated command entries in failsafe mode.
- * Only used as a parameter to `CommandMethod::parse()`.
+ * Only used as a parameter to `Command::parse()`.
  */
 class DefaultCommand {
     /**

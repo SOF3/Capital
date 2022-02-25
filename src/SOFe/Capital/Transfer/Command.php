@@ -40,9 +40,9 @@ use function substr;
 /**
  * Transfer money by running a command.
  */
-final class CommandMethod {
+final class Command {
     /**
-     * @param DynamicCommand $command The command that invokes this method.
+     * @param DynamicCommand $command The command definition.
      * @param AccountTarget $src Selects the accounts to take money from.
      * @param AccountTarget $dest Selects the accounts to send money to.
      * @param float $rate The transfer rate. Must be positive. If $rate > 1.0, an extra transaction from `capital/oracle=transfer` to `$dest` is performed. If `0.0 < $rate < 1.0`, only `$rate` of the amount is transferred, and an extra transaction from `$src` to `capital/oracle=transfer` is performed.
@@ -133,7 +133,7 @@ final class CommandMethod {
 
                         throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
                     }
-                } catch(InvalidArgumentException $e) {
+                } catch (InvalidArgumentException $e) {
                     $sender->sendMessage($e->getMessage());
                     return;
                 }
@@ -294,7 +294,7 @@ final class CommandMethod {
 
         $messages = Messages::parse($parser->enter("messages", null), $default?->messages);
 
-        return new CommandMethod(
+        return new self(
             command: $command,
             src: $src,
             dest: $dest,

@@ -27,7 +27,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     public const LABEL_OPERATOR = "operator";
 
     /**
-     * @param list<CommandMethod> $commands Commands to initiate money transfer between accounts.
+     * @param list<Command> $commands Commands to initiate money transfer between accounts.
      */
     public function __construct(
         public array $commands,
@@ -52,7 +52,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         $schema = $schemaConfig->schema;
 
         if ($isNew) {
-            CommandMethod::parse($commandsParser, $schema, "pay", new DefaultCommand(
+            Command::parse($commandsParser, $schema, "pay", new DefaultCommand(
                 description: "Pays another player.",
                 defaultOpOnly: false,
                 src: AccountTarget::TARGET_SENDER,
@@ -75,7 +75,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            CommandMethod::parse($commandsParser, $schema, "takemoney", new DefaultCommand(
+            Command::parse($commandsParser, $schema, "takemoney", new DefaultCommand(
                 description: "Reduce a player's money.",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_RECIPIENT,
@@ -98,7 +98,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
                     internalError: '{red}An internal error occurred. Please try again.',
                 ),
             ));
-            CommandMethod::parse($commandsParser, $schema, "addmoney", new DefaultCommand(
+            Command::parse($commandsParser, $schema, "addmoney", new DefaultCommand(
                 description: "Adds a player's money.",
                 defaultOpOnly: true,
                 src: AccountTarget::TARGET_SYSTEM,
@@ -126,7 +126,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         $commands = [];
         foreach ($commandNames as $commandName) {
-            $commands[] = CommandMethod::parse($commandsParser, $schema, $commandName, null);
+            $commands[] = Command::parse($commandsParser, $schema, $commandName, null);
         }
 
         return new self($commands);
