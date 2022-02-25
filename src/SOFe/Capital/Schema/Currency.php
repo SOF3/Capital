@@ -138,11 +138,11 @@ final class Currency implements Schema {
     }
 
     public function isComplete() : bool {
-        return $this->defaultCurrency !== null;
+        return $this->isInvariant();
     }
 
     public function isInvariant() : bool {
-        return $this->defaultCurrency !== null;
+        return $this->defaultCurrency !== null || count($this->currencies) === 1;
     }
 
     public function getRequiredVariables() : iterable {
@@ -157,34 +157,43 @@ final class Currency implements Schema {
         }
     }
 
-    public function getSelectedAccountConfig() : ?AccountConfig {
-        if ($this->defaultCurrency === null) {
+    private function getCompleteCurrency() : ?string {
+        if ($this->defaultCurrency === null && count($this->currencies) > 1) {
             return null;
         }
 
-        return $this->currencies[$this->defaultCurrency];
+        return $this->defaultCurrency ?? array_keys($this->currencies)[0];
+    }
+
+    public function getSelectedAccountConfig() : ?AccountConfig {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
+            return null;
+        }
+
+        return $this->currencies[$currency];
     }
 
     public function getSelector(Player $player) : ?LabelSelector {
-        $defaultCurrency = $this->defaultCurrency;
-        if ($defaultCurrency === null) {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
             return null;
         }
 
         return new LabelSelector([
             AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
-            self::LABEL_CURRENCY => $defaultCurrency,
+            self::LABEL_CURRENCY => $currency,
         ]);
     }
 
     public function getInvariantSelector() : ?LabelSelector {
-        $defaultCurrency = $this->defaultCurrency;
-        if ($defaultCurrency === null) {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
             return null;
         }
 
         return new LabelSelector([
-            self::LABEL_CURRENCY => $defaultCurrency,
+            self::LABEL_CURRENCY => $currency,
         ]);
     }
 
@@ -197,15 +206,15 @@ final class Currency implements Schema {
     }
 
     public function getInitialSetup(Player $player) : ?InitialSetup {
-        $defaultCurrency = $this->defaultCurrency;
-        if ($defaultCurrency === null) {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
             return null;
         }
 
         return $this->getSelectedAccountConfig()
             ?->getInitialSetup($player)
             ?->andInitialLabel(new LabelSet([
-                self::LABEL_CURRENCY => $defaultCurrency,
+                self::LABEL_CURRENCY => $currency,
             ]));
     }
 }

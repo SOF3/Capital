@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use Generator;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -62,6 +63,7 @@ final class AccountTarget {
     /**
      * @param list<string> $args
      * @return Generator<mixed, mixed, mixed, AccountRef|null>
+     * @throws InvalidArgumentException if the arguments cannot be inferred.
      */
     public function findAccounts(Capital $api, array &$args, CommandSender $sender, Player $recipient) : Generator {
         return match ($this->target) {
@@ -74,6 +76,7 @@ final class AccountTarget {
     /**
      * @param list<string> $args
      * @return Generator<mixed, mixed, mixed, AccountRef>
+     * @throws InvalidArgumentException if the arguments cannot be inferred.
      */
     private function getSelectorForPlayer(Capital $api, array &$args, CommandSender $sender, Player $player) : Generator {
         if ($this->schema === null) {

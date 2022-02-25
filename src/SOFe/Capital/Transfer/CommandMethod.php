@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital\Transfer;
 
 use Generator;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -112,24 +113,29 @@ final class CommandMethod {
                     receivedAmount: new NumberInfo((float) $transferAmount + $sourceAmount),
                 );
 
-                $srcAccount = yield from $this->src->findAccounts($api, $args, $sender, $recipient);
-                if ($srcAccount === null) {
-                    if (!$sender instanceof Player) {
-                        $sender->sendMessage(InfoAPI::resolve($this->messages->playerOnlyCommand, $info));
-                        return;
+                try {
+                    $srcAccount = yield from $this->src->findAccounts($api, $args, $sender, $recipient);
+                    if ($srcAccount === null) {
+                        if (!$sender instanceof Player) {
+                            $sender->sendMessage(InfoAPI::resolve($this->messages->playerOnlyCommand, $info));
+                            return;
+                        }
+
+                        throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
                     }
 
-                    throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
-                }
+                    $destAccount = yield from $this->dest->findAccounts($api, $args, $sender, $recipient);
+                    if ($destAccount === null) {
+                        if (!$sender instanceof Player) {
+                            $sender->sendMessage(InfoAPI::resolve($this->messages->playerOnlyCommand, $info));
+                            return;
+                        }
 
-                $destAccount = yield from $this->dest->findAccounts($api, $args, $sender, $recipient);
-                if ($destAccount === null) {
-                    if (!$sender instanceof Player) {
-                        $sender->sendMessage(InfoAPI::resolve($this->messages->playerOnlyCommand, $info));
-                        return;
+                        throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
                     }
-
-                    throw new AssumptionFailedError("AccountTarget::getSelector() must only return null when \$sender is not an instanceof Player.");
+                } catch(InvalidArgumentException $e) {
+                    $sender->sendMessage($e->getMessage());
+                    return;
                 }
 
                 $transactionLabels = $this->transactionLabels->transform($info);

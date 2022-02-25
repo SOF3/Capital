@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SOFe\Capital;
 
 use Generator;
+use InvalidArgumentException;
 use Logger;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -165,6 +166,7 @@ final class Capital implements Singleton, FromContext {
      * @param list<string> $args The command arguments for account selection.
      * @param CommandSender $sender The command sender to ask for more information if necessary.
      * @return Generator<mixed, mixed, mixed, array<AccountRef>>
+     * @throws InvalidArgumentException if the arguments cannot be inferred.
      */
     public function findAccountsIncomplete(Player $player, Schema\Schema $schema, array &$args, CommandSender $sender) : Generator {
         $complete = yield from Schema\Utils::fromCommand($schema, $args, $sender);

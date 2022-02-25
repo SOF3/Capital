@@ -25,6 +25,7 @@ final class Utils {
      *
      * @param list<string> $args
      * @return Generator<mixed, mixed, mixed, Complete>
+     * @throws InvalidArgumentException if the arguments cannot be inferred.
      */
     public static function fromCommand(Schema $schema, array &$args, CommandSender $sender) : Generator {
         $required = [];
