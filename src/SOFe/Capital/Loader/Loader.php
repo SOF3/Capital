@@ -20,7 +20,6 @@ final class Loader implements Singleton, FromContext {
         C\Config\Mod $config,
         C\Schema\Mod $schema,
         C\Database\Mod $database,
-        C\Cache\Mod $cache,
         C\Transfer\Mod $transfer,
         C\Analytics\Mod $analytics,
     ) : self {

@@ -240,28 +240,6 @@ from imported sources as specified by the schema.
 If no migration is eligible,
 it creates new accounts based on initial setup specified by the schema.
 
-### Cache
-
-Capital maintains three types of cache:
-
-- Account list matching a label selector
-- Balance of a specific account
-- Labels of a specific account
-
-Each type of cache is managed in a `Cache\Instance` object,
-and centrally managed in the singleton class `Cache\Cache`.
-Downstream modules can asynchronously request the creation a cache entry
-by calling `Cache\Cache::query(LabelSelector)`,
-which returns a `Cache\Handle`,
-keeping the account list and balance and labels of each account
-persisted in cache and updated periodically,
-as configured by the user.
-
-The handle provides a synchronous `getAccounts()` method,
-which returns the local cache matching the selector.
-The cache user must explicitly call `Cache\Handle::release()`
-when the cache entry is no longer used.
-
 ### Analytics
 
 <!-- TODO -->

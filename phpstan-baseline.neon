@@ -6,16 +6,6 @@ parameters:
 			path: src/SOFe/Capital/Analytics/ConfigTop.php
 
 		-
-			message: "#^While loop condition is always true\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Cache/Instance.php
-
-		-
-			message: "#^Yield can be used only with these return types\\: Generator, Iterator, Traversable, iterable\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
-
-		-
 			message: "#^Method SOFe\\\\Capital\\\\Config\\\\Raw\\:\\:loadConfig\\(\\) should return T of SOFe\\\\Capital\\\\Config\\\\ConfigInterface but returns object\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Config/Raw.php
