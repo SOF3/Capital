@@ -21,7 +21,7 @@ final class AccountConfig {
 
         $min = $parser->expectInt("min", 0, <<<'EOT'
             The minimum amount of money in this account.
-            If set to negative, this account can have a negatie balance (i.e. overdraft).
+            If set to negative, this account can have a negative balance (i.e. overdraft).
             EOT);
         if ($initialBalance < $min) {
             $initialBalance = $parser->failSafe($min, "default balance is smaller than minimum ($min)");
