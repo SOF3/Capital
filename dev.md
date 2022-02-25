@@ -199,7 +199,7 @@ There are other planned schema types, which impose speical challenges:
 - `wallet`: Accounts are bound to inventory items instead of players.
   Players can spend money in an account
   when the item associated with the account is in the player's inventory.
-  This means the player label is mutable and require real-time updating.
+  This means the player label is mutable and requires real-time updating.
 
 Let's explain how schemas work with a payment command and a currency schema.
 The default schema is configured as:
