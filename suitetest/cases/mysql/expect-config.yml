@@ -22,7 +22,7 @@ schema:
     default: 100
     '#min': |-
       The minimum amount of money in this account.
-      If set to negative, this account can have a negatie balance (i.e. overdraft).
+      If set to negative, this account can have a negative balance (i.e. overdraft).
     min: 0
     '#max': |-
       The maximum amount of money in this account.
