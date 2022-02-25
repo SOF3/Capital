@@ -17,7 +17,8 @@ final class InitialSetup {
     public function __construct(
         public LabelSet $initialLabels,
         public int $initialValue,
-    ) {}
+    ) {
+    }
 
     public function andInitialLabel(LabelSet $labels) : self {
         return new self(

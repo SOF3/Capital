@@ -1,25 +1,396 @@
 ---
 schema:
-  '#': |-
-    A "schema" tells Capital how to manage accounts for each player.
-    For example, the "basic" schema only sets up one account for each player,
-    while the "currency" schema lets you define multiple currencies and sets up one account for each currency for each player.
-  '#type': The type of schema. Possible values are "basic", "currency".
   type: currency
-  '##': In the currency schema, each player has one account for each currency.
-  '#currencies': The list of currencies to use
+  '#currencies': All currencies used on your server.
   currencies:
-  - money
-  '#migrate-unassigned': |-
-    If the player previously had an account from the basic schema or migrated from a plugin without currencies,
-    the original account will be assigned to the currency specified here.
-    If you do not want to migrate the original account, set this to ~.
-  migrate-unassigned: money
-  '#term': The name for the currency argument in commands usage message
-  term: Currency
+    '#money': |-
+      This is an example currency called \"money\".
+      You can rename this by changing the word \"money\".
+      You can also add new currencies by duplicating the whole block below.
+    money:
+      '#default': Default amount of money when the account is created
+      default: 100
+      '#min': |-
+        The minimum amount of money in this account.
+        If set to negative, this account can have a negative balance (i.e. overdraft).
+      min: 0
+      '#max': |-
+        The maximum amount of money in this account.
+        If this value has more than 10 digits, it may cause problems in some platforms.
+      max: 100000000
+      '#import-from': |-
+        Accounts from the specified sources will be converted to this account type.
+
+        Enabling this option does NOT import the database from other databases.
+        Please use the migration tool to import the database first,
+        then enable this option to start importing accounts for new players.
+
+        This option does NOT affect players who already have an account of this type.
+
+        Possible values: ~ (do not import), economyapi
+      import-from: economyapi
+  '#term': |-
+    The name of the command argument for the currency.
+    Also used in forms when to select the currency.
+  term: currency
   '#default-currency': |-
     The default currency to use in commands if the user does not specify one.
     If this is set to ~, the user is required to specify the currency for every command.
     This option can be overridden in the config for individual commands.
   default-currency: ~
+'#': |-
+  This is the main config file of Capital.
+  You can change the values in this file to configure Capital.
+  If you change some main settings that change the structure (e.g. schema), Capital will try its best
+  to migrate your previous settings to the new structure and overwrite this file.
+  The previous file will be stored in config.yml.old.
+'#analytics': Settings related to statistics display.
+analytics:
+  '#player-infos': |-
+    The InfoAPI infos for a player.
+    An info is a number related to the wealth or activities of a player,
+    e.g. the total amount of money, amount of money in a specific currency,
+    average spending per day, total amount of money earned from a specific source, etc.
+
+    After setting up infos, you can use them in the info-commands section below.
+  player-infos:
+    '#money': This is an example info that displays the total money of a player.
+    money:
+      '#of': |-
+        The data source of this info.
+        If set to "account", the info is calculated from statistics of some of the player's accounts.
+        If set to "transaction", the info is calculated from statistics of the player's recent transactions.
+      of: account
+      '#selector': Selects which accounts of the player to calculate.
+      selector:
+        '#currency': The currency to use.
+        currency: money
+      '#metric': |-
+        The statistic used to combine multiple values.
+
+        Possible values:
+        - "account-count": The number of accounts selected.
+        - "balance-sum": The sum of the balances of the accounts selected.
+        - "balance-mean": The average balance of the accounts selected.
+        - "balance-variance": The variance of the balances of the accounts selected.
+        - "balance-min": The minimum balance of the accounts selected.
+        - "balance-max": The maximum balance of the accounts selected.
+      metric: balance-sum
+      '#update-freuqency': |-
+        The frequency in seconds at which the info is refreshed from the server.
+        This will only affect displays and will not affect transactions.
+      update-freuqency: 5
+  '#info-commands': |-
+    Commands that display information about a player.
+    You can use the infos defined in the player-infos section above,
+    as well as usual InfoAPI commands.
+  info-commands:
+    '#checkmoney': This is an example command that checks the total money of a player
+      using the {money} info defined above.
+    checkmoney:
+      '#description': The description message of this command.
+      description: Check money of yourself or another player
+      '#self-requires-op': |-
+        If set to true, only ops can use this command for self
+        (you can further configure this with permission plugins).
+      self-requires-op: false
+      '#other-requires-op': |-
+        If set to true, only ops can use this command for other
+        (you can further configure this with permission plugins).
+      other-requires-op: true
+      '#format': |-
+        The format of command output.
+        Use InfoAPI syntax here.
+      format: '{name} has ${money}.'
+  '#top-player-commands': |-
+    A top-player command lets you create commands that discover the top players in a certain category.
+    It provides the answer to questions like "who is the richest player?" or
+    "who spent the most money last week?".
+  top-player-commands:
+    '#richest': This is an example top-player command that shows the richest players.
+    richest:
+      '#command': The command that displays the information.
+      command:
+        '#description': The description message of this command.
+        description: Displays the richest player
+        '#requires-op': |-
+          If set to true, only ops can use this command
+          (you can further configure this with permission plugins).
+        requires-op: false
+      '#selector': Selects which accounts of each player to calculate.
+      selector:
+        '#currency': The currency to use.
+        currency: money
+      '#ordering': |-
+        Whether to sort results ascendingly or descendingly.
+        Use "asc" for ascending sort and "desc" for descending sort.
+      ordering: desc
+      '#metric': |-
+        The statistic used to combine multiple values.
+
+        Possible values:
+        - "account-count": The number of accounts selected.
+        - "balance-sum": The sum of the balances of the accounts selected.
+        - "balance-mean": The average balance of the accounts selected.
+        - "balance-variance": The variance of the balances of the accounts selected.
+        - "balance-min": The minimum balance of the accounts selected.
+        - "balance-max": The maximum balance of the accounts selected.
+      metric: balance-sum
+      '#refresh': |-
+        Refresh settings for the top query.
+        These settings depend on how many active accounts you have in the database
+        as well as how powerful the CPU of your database server is.
+        Try increasing the frequencies and reducing batch size if the database server is lagging.
+      refresh:
+        '#batch-size': |-
+          Number of players to recompute at once.
+          Data are only recomputed if they are older than recompute-frequency.
+          Try reducing this value if the database server is having lag spikes.
+        batch-size: 200
+        '#batch-frequency': |-
+          The number of seconds between batches.
+
+          If there are multiple servers connected to the same database,
+          the batch frequency is scheduled independently on each server,
+          but the CPU and memory consumed are still on the database server.
+          You may want to multiply this frequency by the number of servers.
+        batch-frequency: 10
+        '#recompute-frequency': |-
+          The number of seconds for which metrics are considered valid and will not be recomputed.
+
+          Originally, the metrics of a player are recomputed every (batch-frequency * number-of-active-accounts / batch-size) seconds.
+          This wastes CPU and memory on the database server if there are too few active accounts.
+          Setting a higher recompute-frequency reduces the frequency of recomputation and saves electricity,
+          but the top list results may be more outdated.
+          Note that recompute-frequency does nothing if it is lower than (batch-frequency * number-of-active-accounts / batch-size).
+        recompute-frequency: 86400
+      '#pagination': Pagination settings for the top query.
+      pagination:
+        '#per-page': Number of top players to display per page
+        per-page: 5
+        '#limit': Total number of top players to display through this command.
+        limit: 5
+      '#messages': Configures the displayed messages
+      messages:
+        '#header': The top line of the page.
+        header: Showing page {page} of {totalPages}
+        '#entry': This line is repeated for each entry in the page.
+        entry: '#{rank} {name}: {value}'
+        '#footer': The bottom line of the page.
+        footer: ""
+'#transfer': '"transfer" tells Capital what methods admins and players can send money
+  through.'
+transfer:
+  '#commands': These commands initiate transfers.
+  commands:
+    pay:
+      '#description': The description message of this command.
+      description: Pays another player.
+      '#requires-op': |-
+        If set to true, only ops can use this command
+        (you can further configure this with permission plugins).
+      requires-op: false
+      '#src': The source account to deduct money from.
+      src:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: sender
+        '#default-currency': |-
+          The default currency to use in commands if the user does not specify one.
+          If this is set to ~, the user is required to specify the currency for every command.
+          This option can be overridden in the config for individual commands.
+        default-currency: ~
+        '#allowed-currencies': The list of currencies the user can select from.
+        allowed-currencies: ~
+      '#dest': The destination account to add money to.
+      dest:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: recipient
+        '#default-currency': |-
+          The default currency to use in commands if the user does not specify one.
+          If this is set to ~, the user is required to specify the currency for every command.
+          This option can be overridden in the config for individual commands.
+        default-currency: ~
+        '#allowed-currencies': The list of currencies the user can select from.
+        allowed-currencies: ~
+      '#rate': |-
+        The exchange rate, or how much of the original money is sent.
+        When using "currency" schema, this allows transferring between
+        accounts of different currencies.
+      rate: 1
+      '#minimum-amount': The minimum amount of money that can be transferred each
+        time.
+      minimum-amount: 0
+      '#maximum-amount': The maximum amount of money that can be transferred each
+        time.
+      maximum-amount: 1000000
+      '#fee': This is taken directly out of the source account before money is transferred.
+      fee: 0
+      '#transaction-labels': |-
+        These are labels to add to the transaction.
+        You can match by these labels to identify how players earn and lose money.
+        Labels are formatted using InfoAPI syntax.
+      transaction-labels:
+        payment: ""
+      messages:
+        '#player-only-command': Sent to command sender if this command requires them
+          to be player and they are not.
+        player-only-command: '{red}Only players may use this command.'
+        '#notify-sender-success': Sent to command sender on success.
+        notify-sender-success: '{green}You have sent ${sentAmount} to ${recipient}.
+          You now have ${srcBalance} left.'
+        '#notify-recipient-success': Sent to recipient on success.
+        notify-recipient-success: '{green}You have received ${receivedAmount} from
+          ${sender}. You now have ${destBalance} left.'
+        '#no-source-accounts': Sent when no source accounts are found.
+        no-source-accounts: '{red}There are no accounts to send money from.'
+        '#no-destination-accounts': Sent when no destination accounts are found.
+        no-destination-accounts: '{red}There are no accounts to send money to.'
+        '#underflow': Sent when too much money is withdrawn.
+        underflow: '{red}You do not have ${sentAmount}.'
+        '#overflow': Sent when too much money is given.
+        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount}
+          more.'
+        '#internal-error': Sent when an unexpected error occurs.
+        internal-error: '{red}An internal error occurred. Please try again.'
+    takemoney:
+      '#description': The description message of this command.
+      description: Reduce a player's money.
+      '#requires-op': |-
+        If set to true, only ops can use this command
+        (you can further configure this with permission plugins).
+      requires-op: true
+      '#src': The source account to deduct money from.
+      src:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: recipient
+        '#default-currency': |-
+          The default currency to use in commands if the user does not specify one.
+          If this is set to ~, the user is required to specify the currency for every command.
+          This option can be overridden in the config for individual commands.
+        default-currency: ~
+        '#allowed-currencies': The list of currencies the user can select from.
+        allowed-currencies: ~
+      '#dest': The destination account to add money to.
+      dest:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: system
+      '#rate': |-
+        The exchange rate, or how much of the original money is sent.
+        When using "currency" schema, this allows transferring between
+        accounts of different currencies.
+      rate: 1
+      '#minimum-amount': The minimum amount of money that can be transferred each
+        time.
+      minimum-amount: 0
+      '#maximum-amount': The maximum amount of money that can be transferred each
+        time.
+      maximum-amount: ~
+      '#fee': This is taken directly out of the source account before money is transferred.
+      fee: 0
+      '#transaction-labels': |-
+        These are labels to add to the transaction.
+        You can match by these labels to identify how players earn and lose money.
+        Labels are formatted using InfoAPI syntax.
+      transaction-labels:
+        operator: ""
+      messages:
+        '#player-only-command': Sent to command sender if this command requires them
+          to be player and they are not.
+        player-only-command: '{red}Only players may use this command.'
+        '#notify-sender-success': Sent to command sender on success.
+        notify-sender-success: '{green}You have taken ${receivedAmount} from {recipient}.
+          They now have ${srcBalance} left.'
+        '#notify-recipient-success': Sent to recipient on success.
+        notify-recipient-success: '{green}An admin took ${sentAmount} from you. You
+          now have ${srcBalance} left.'
+        '#no-source-accounts': Sent when no source accounts are found.
+        no-source-accounts: '{red}There are no accounts to send money from.'
+        '#no-destination-accounts': Sent when no destination accounts are found.
+        no-destination-accounts: '{red}An internal error occurred.'
+        '#underflow': Sent when too much money is withdrawn.
+        underflow: '{red}{recipient} does not have ${sentAmount} to be taken.'
+        '#overflow': Sent when too much money is given.
+        overflow: '{red}An internal error occurred.'
+        '#internal-error': Sent when an unexpected error occurs.
+        internal-error: '{red}An internal error occurred. Please try again.'
+    addmoney:
+      '#description': The description message of this command.
+      description: Adds a player's money.
+      '#requires-op': |-
+        If set to true, only ops can use this command
+        (you can further configure this with permission plugins).
+      requires-op: true
+      '#src': The source account to deduct money from.
+      src:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: system
+      '#dest': The destination account to add money to.
+      dest:
+        '#of': |-
+          Can be "system", "sender", or "recipient".
+          If "sender" is used, this command will only be usable by players.
+          (i.e. cannot be used from console).
+        of: recipient
+        '#default-currency': |-
+          The default currency to use in commands if the user does not specify one.
+          If this is set to ~, the user is required to specify the currency for every command.
+          This option can be overridden in the config for individual commands.
+        default-currency: ~
+        '#allowed-currencies': The list of currencies the user can select from.
+        allowed-currencies: ~
+      '#rate': |-
+        The exchange rate, or how much of the original money is sent.
+        When using "currency" schema, this allows transferring between
+        accounts of different currencies.
+      rate: 1
+      '#minimum-amount': The minimum amount of money that can be transferred each
+        time.
+      minimum-amount: 0
+      '#maximum-amount': The maximum amount of money that can be transferred each
+        time.
+      maximum-amount: ~
+      '#fee': This is taken directly out of the source account before money is transferred.
+      fee: 0
+      '#transaction-labels': |-
+        These are labels to add to the transaction.
+        You can match by these labels to identify how players earn and lose money.
+        Labels are formatted using InfoAPI syntax.
+      transaction-labels:
+        operator: ""
+      messages:
+        '#player-only-command': Sent to command sender if this command requires them
+          to be player and they are not.
+        player-only-command: '{red}Only players may use this command.'
+        '#notify-sender-success': Sent to command sender on success.
+        notify-sender-success: '{green}{recipient} has received ${receivedAmount}.
+          They now have ${destBalance} left.'
+        '#notify-recipient-success': Sent to recipient on success.
+        notify-recipient-success: '{green}You have received ${receivedAmount}. You
+          now have ${destBalance} left.'
+        '#no-source-accounts': Sent when no source accounts are found.
+        no-source-accounts: '{red}An internal error occurred.'
+        '#no-destination-accounts': Sent when no destination accounts are found.
+        no-destination-accounts: '{red}There are no accounts to send money to.'
+        '#underflow': Sent when too much money is withdrawn.
+        underflow: '{red}An internal error occurred.'
+        '#overflow': Sent when too much money is given.
+        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount}
+          more.'
+        '#internal-error': Sent when an unexpected error occurs.
+        internal-error: '{red}An internal error occurred. Please try again.'
 ...

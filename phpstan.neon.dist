@@ -9,10 +9,6 @@ parameters:
 			message: "#^Left side of && is always false\\.$#"
 			paths:
 				- src/*
-		- # Cannot specify generic parameters explicitly
-			message: "#^Parameter \\$[A-Za-z0-9_]+ of .* expects SOFe\\\\Capital\\\\ParameterizedLabel(Set|Selector)\\<[^>]+\\>, SOFe\\\\Capital\\\\ParameterizedLabel(Set|Selector)\\<SOFe\\\\InfoAPI\\\\Info\\> given\\.$#"
-			paths:
-				- src/*
 
 
 includes:

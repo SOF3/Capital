@@ -18,5 +18,5 @@ trait ConfigTrait {
     /**
      * @return Generator<mixed, mixed, mixed, self>
      */
-    public abstract static function parse(Parser $config, Context $context) : Generator;
+    public abstract static function parse(Parser $config, Context $context, Raw $raw) : Generator;
 }

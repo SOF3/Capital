@@ -47,10 +47,10 @@ final class Variable {
         public ?array $range = null,
         public $default = null,
     ) {
-        if($enumValues !== null && $type !== self::TYPE_STRING) {
+        if ($enumValues !== null && $type !== self::TYPE_STRING) {
             throw new RuntimeException("Enum values are ignored if the type is not string");
         }
-        if($range !== null && $type !== self::TYPE_INT && $type !== self::TYPE_FLOAT) {
+        if ($range !== null && $type !== self::TYPE_INT && $type !== self::TYPE_FLOAT) {
             throw new RuntimeException("Range is ignored if the type is not int or float");
         }
     }
@@ -60,27 +60,27 @@ final class Variable {
      * @throws InvalidArgumentException
      */
     public function processValue(mixed $value, Schema $schema) : void {
-        if($this->transform !== null) {
+        if ($this->transform !== null) {
             $value = ($this->transform)($value);
         }
 
-        if($this->type === self::TYPE_STRING && $this->enumValues !== null) {
-            if(!in_array($value, $this->enumValues, true)) {
+        if ($this->type === self::TYPE_STRING && $this->enumValues !== null) {
+            if (!in_array($value, $this->enumValues, true)) {
                 throw new InvalidArgumentException("expected one of \"" . implode("\", \"", $this->enumValues) . "\"");
             }
         }
 
-        if($this->type === self::TYPE_INT || $this->type === self::TYPE_FLOAT) {
-            if($this->range !== null) {
+        if ($this->type === self::TYPE_INT || $this->type === self::TYPE_FLOAT) {
+            if ($this->range !== null) {
                 [$min, $max] = $this->range;
 
-                if($value < $min || $value > $max) {
+                if ($value < $min || $value > $max) {
                     throw new InvalidArgumentException("Invalid value for $this->name, expected a value between $min and $max");
                 }
             }
         }
 
-        if($this->validate !== null) {
+        if ($this->validate !== null) {
             ($this->validate)($value);
         }
 

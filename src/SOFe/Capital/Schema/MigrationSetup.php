@@ -20,5 +20,6 @@ final class MigrationSetup {
         public LabelSelector $migrationSelector,
         public LabelSet $postMigrateLabels,
         public int $migrationLimit,
-    ) {}
+    ) {
+    }
 }

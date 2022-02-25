@@ -6,6 +6,10 @@
 -- #            :value int
 INSERT INTO acc (id, value) VALUES (:id, :value);
 -- #        }
+-- #        { touch
+-- #            :id string
+UPDATE acc SET touch = CURRENT_TIMESTAMP WHERE id = :id;
+-- #        }
 -- #        { fetch
 -- #            :id string
 SELECT value FROM acc WHERE id = :id;

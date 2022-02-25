@@ -17,13 +17,13 @@ use function mb_strtolower;
  */
 final class AccountConfig {
     public static function parse(Parser $parser) : self {
-        $initialBalance = $parser->expectInt("default", 0, "Default amount of money when the account is created");
+        $initialBalance = $parser->expectInt("default", 100, "Default amount of money when the account is created");
 
         $min = $parser->expectInt("min", 0, <<<'EOT'
             The minimum amount of money in this account.
-            If set to negative, this account can have a negatie balance (i.e. overdraft).
+            If set to negative, this account can have a negative balance (i.e. overdraft).
             EOT);
-        if($initialBalance < $min) {
+        if ($initialBalance < $min) {
             $initialBalance = $parser->failSafe($min, "default balance is smaller than minimum ($min)");
         }
 
@@ -32,7 +32,7 @@ final class AccountConfig {
             If this value has more than 10 digits, it may cause problems in some platforms.
             EOT);
 
-        if($initialBalance > $max) {
+        if ($initialBalance > $max) {
             $initialBalance = $parser->failSafe($max, "default balance is greater than maximum ($max)");
         }
 
@@ -49,8 +49,8 @@ final class AccountConfig {
             EOT);
 
         $migration = null;
-        if($importFrom !== null) {
-            $migration = function(Player $player) use($importFrom) : MigrationSetup {
+        if ($importFrom !== null) {
+            $migration = function(Player $player) use ($importFrom) : MigrationSetup {
                 $migrationSelector = new LabelSelector([
                     AccountLabels::PLAYER_NAME => mb_strtolower($player->getName()),
                     AccountLabels::MIGRATION_SOURCE => $importFrom,
@@ -68,7 +68,7 @@ final class AccountConfig {
             ]),
             migrationSetup: $migration,
             initialLabels: fn(Player $player) => new LabelSet([
-                AccountLabels::PLAYER_UUID => mb_strtolower($player->getName()),
+                AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
                 AccountLabels::VALUE_MIN => (string) $min,
                 AccountLabels::VALUE_MAX => (string) $max,
             ]),
@@ -87,7 +87,8 @@ final class AccountConfig {
         private ?Closure $migrationSetup,
         private Closure $initialLabels,
         private int $initialBalance,
-    ) {}
+    ) {
+    }
 
     public function getOverwriteLabels(Player $player) : LabelSet {
         return ($this->overwriteLabels)($player);

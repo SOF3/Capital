@@ -28,9 +28,10 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     public function __construct(
         public array $libasynql,
         public bool $logQueries,
-    ) {}
+    ) {
+    }
 
-    public static function parse(Parser $parser, Context $context) : Generator {
+    public static function parse(Parser $parser, Context $context, Raw $raw) : Generator {
         $raw = yield from Raw::get($context);
 
         return new self(

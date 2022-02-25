@@ -69,11 +69,31 @@ return function() {
             yield from Await::all([$alicePromise, $bobPromise]);
         },
 
-        "bob check money" => function() use($server, $std, $plugin) {
-            $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/mymoney")));
+        "take money" => function() use($server) {
+            false && yield;
+            $alice = $server->getPlayerExact("alice");
+            $alice->chat("/takemoney alice 10");
+        },
+        "wait money deduct message" => function() use($server, $std) {
+            $alice = $server->getPlayerExact("alice");
+            $ackMessage = 'You have taken $10 from Alice. They now have $90 left.';
+            $ackPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $ackMessage), false, EventPriority::MONITOR, false);
 
-            $message = 'You have $110 in total.';
+            $deductMessage = TextFormat::GREEN . 'An admin took $10 from you. You now have $90 left.';
+            $deductPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $deductMessage), false, EventPriority::MONITOR, false);
+
+            yield from Await::all([$ackPromise, $deductPromise]);
+        },
+
+        "bob check money" => function() use($server, $std, $plugin) {
+            yield from $std->sleep(100); // to wait for refresh
+
+            $bob = $server->getPlayerExact("bob");
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/checkmoney")));
+
+            $message = 'Bob has $110.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
@@ -82,26 +102,25 @@ return function() {
             $alice = $server->getPlayerExact("alice");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $alice->chat("/checkmoney bob")));
 
-            $message = 'Bob has $110 in total.';
+            $message = 'Bob has $110.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
 
         "bob check top money" => function() use($server, $std, $plugin) {
+            yield from $std->sleep(100); // to wait for batch
+
             $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/topmoney")));
+            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/richest")));
 
-            $message = 'Top 5 players:';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-
-            $message = '#1: Bob - $110';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-
-            $message = '#2: Alice - $100';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+            foreach([
+                'Showing page 1 of 1',
+                '#1 bob: 110',
+                '#2 alice: 90',
+            ] as $message) {
+                yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                    fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
+            }
         },
     ];
 };

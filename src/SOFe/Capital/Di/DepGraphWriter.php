@@ -27,7 +27,7 @@ final class DepGraphWriter {
         $id = str_replace("\\", "__", $class);
 
         $nsLen = strrpos($class, "\\");
-        if($nsLen !== false) {
+        if ($nsLen !== false) {
             $ns = substr($class, 0, $nsLen);
             $disp = substr($class, $nsLen + 1);
         } else {
@@ -35,12 +35,12 @@ final class DepGraphWriter {
             $disp = $class;
         }
 
-        if(!isset($this->clusters[$ns])) {
+        if (!isset($this->clusters[$ns])) {
             $this->clusters[$ns] = [];
         }
         $this->clusters[$ns][$id] = $disp;
 
-        if($time !== null) {
+        if ($time !== null) {
             $this->nodeTime[$id] = $time;
         }
 
@@ -51,7 +51,7 @@ final class DepGraphWriter {
         $fromId = $this->addNode($from);
         $toId = $this->addNode($to);
 
-        if(!isset($this->edges[$fromId])) {
+        if (!isset($this->edges[$fromId])) {
             $this->edges[$fromId] = [];
         }
         $this->edges[$fromId][$toId] = true;
@@ -59,7 +59,7 @@ final class DepGraphWriter {
 
     public function write(string $file) : void {
         $f = fopen($file, "w");
-        if($f === false) {
+        if ($f === false) {
             throw new RuntimeException("Error opening $file");
         }
 
@@ -68,16 +68,16 @@ final class DepGraphWriter {
             fwrite($f, "graph [ranksep=0.8, nodesep=0.3]\n");
 
             $i = 0;
-            foreach($this->clusters as $ns => $nodes) {
+            foreach ($this->clusters as $ns => $nodes) {
                 ++$i;
                 fwrite($f, "subgraph cluster_$i {\n");
 
                 $label = "\"" . str_replace("\\", "\\\\", $ns) . "\"";
                 fwrite($f, "label = $label;\n");
 
-                foreach($nodes as $id => $disp) {
+                foreach ($nodes as $id => $disp) {
                     $label = str_replace("\\", "\\\\", $disp);
-                    if(isset($this->nodeTime[$id])) {
+                    if (isset($this->nodeTime[$id])) {
                         $label .= sprintf("\n%g ms", $this->nodeTime[$id] * 1000.0);
                     }
                     fwrite($f, "$id [label = \"$label\", shape = none];\n");
@@ -85,8 +85,8 @@ final class DepGraphWriter {
                 fwrite($f, "}\n");
             }
 
-            foreach($this->edges as $from => $edges) {
-                foreach($edges as $to => $_) {
+            foreach ($this->edges as $from => $edges) {
+                foreach ($edges as $to => $_) {
                     fwrite($f, "$from -> $to [color = \"#AAAAAA\"];\n");
                 }
             }

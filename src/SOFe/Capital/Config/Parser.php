@@ -29,7 +29,8 @@ final class Parser {
         private ArrayRef $data,
         private array $path,
         private bool $failSafe,
-    ) {}
+    ) {
+    }
 
     public function isFailSafe() : bool {
         return $this->failSafe;
@@ -45,45 +46,53 @@ final class Parser {
     }
 
     /**
-     * Returns the keys, including comment keys, of the current section.
+     * Returns the keys of the current section, excluding comment keys.
      *
      * @return list<string>
      */
     public function getKeys() : array {
         $list = array_keys($this->data->get($this->path));
 
-        foreach($list as &$key) {
-            if(is_int($key)) {
+        $output = [];
+        foreach ($list as $key) {
+            if (is_int($key)) {
                 $key = (string) $key;
-            } else {
-                break;
             }
+
+            if ($key[0] === "#") {
+                continue;
+            }
+
+            $output[] = $key;
         }
 
-        /** @var list<string> $list */
-        return $list;
+        return $output;
     }
 
-    public function enter(string $key, string $doc) : Parser {
-        $data = $this->expectAny($key, [], $doc, true, $path);
+    /**
+     * @param bool $isNew
+     */
+    public function enter(string $key, ?string $doc, &$isNew = false) : Parser {
+        $data = $this->expectAny($key, [], $doc, true, $isNew);
 
-        if(!is_array($data) || self::isList($data)) {
-            $data = $this->failSafe([],"Expected mapping for $key, got " . gettype($data));
-            $this->data->set($path, $data);
+        $isNew = $isNew || self::isList($data);
+
+        if ($isNew) {
+            $data = $this->setValue($key, [], "Expected mapping, got " . gettype($data));
         }
 
-        return new self($this->data, $path, $this->failSafe);
+        return new self($this->data, array_merge($this->path, [$key]), $this->failSafe);
     }
 
     /**
      * @throws ConfigException
      */
-    public function expectInt(string $key, int $default, string $doc, bool $required = true) : int {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectInt(string $key, int $default, ?string $doc, bool $required = true) : int {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if(!is_int($value)) {
-            $value = $this->failSafe((int) $value, "Expected integer for $key, got " . gettype($value));
-            $this->data->set($path, $value);
+        if (!is_int($value)) {
+            $value = $this->setValue($key, (int) $value, "Expected integer, got " . gettype($value));
+            ;
         }
 
         return $value;
@@ -92,12 +101,25 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectNumber(string $key, float $default, string $doc, bool $required = true) : float {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectNullableInt(string $key, ?int $default, ?string $doc, bool $required = true) : ?int {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if(!is_int($value) && !is_float($value)) {
-            $value = $this->failSafe((float) $value, "Expected number for $key, got " . gettype($value));
-            $this->data->set($path, $value);
+        if ($value !== null && !is_int($value)) {
+            $value = $this->setValue($key, (int) $value, "Expected integer, got " . gettype($value));
+            ;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @throws ConfigException
+     */
+    public function expectNumber(string $key, float $default, ?string $doc, bool $required = true) : float {
+        $value = $this->expectAny($key, $default, $doc, $required);
+
+        if (!is_int($value) && !is_float($value)) {
+            $value = $this->setValue($key, (float) $value, "Expected number, got " . gettype($value));
         }
 
         return (float) $value;
@@ -106,16 +128,32 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectBool(string $key, bool $default, string $doc, bool $required = true) : bool {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectNullableNumber(string $key, ?float $default, ?string $doc, bool $required = true) : ?float {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if(!is_bool($value)) {
-            if(is_int($value) && ($value === 0 || $value === 1)) {
+        if ($value !== null && !is_int($value) && !is_float($value)) {
+            $value = $this->setValue($key, (float) $value, "Expected number, got " . gettype($value));
+        }
+
+        if (is_int($value)) {
+            $value = (float) $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @throws ConfigException
+     */
+    public function expectBool(string $key, bool $default, ?string $doc, bool $required = true) : bool {
+        $value = $this->expectAny($key, $default, $doc, $required);
+
+        if (!is_bool($value)) {
+            if (is_int($value) && ($value === 0 || $value === 1)) {
                 $default = $value === 1;
             }
 
-            $value = $this->failSafe($default, "Expected true/false for $key, got " . gettype($value));
-            $this->data->set($path, $value);
+            $value = $this->setValue($key, $default, "Expected true/false, got " . gettype($value));
         }
 
         return $value;
@@ -124,12 +162,11 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectString(string $key, string $default, string $doc, bool $required = true) : string {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectString(string $key, string $default, ?string $doc, bool $required = true) : string {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if(!is_string($value)) {
-            $value = $this->failSafe((string) $value, "Expected string for $key, got " . gettype($value));
-            $this->data->set($path, $value);
+        if (!is_string($value)) {
+            $value = $this->setValue($key, (string) $value, "Expected string, got " . gettype($value));
         }
 
         return $value;
@@ -138,12 +175,11 @@ final class Parser {
     /**
      * @throws ConfigException
      */
-    public function expectNullableString(string $key, ?string $default, string $doc, bool $required = true) : ?string {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectNullableString(string $key, ?string $default, ?string $doc, bool $required = true) : ?string {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if($value !== null && !is_string($value)) {
-            $value = $this->failSafe((string) $value, "Expected null or string for $key, got " . gettype($value));
-            $this->data->set($path, $value);
+        if ($value !== null && !is_string($value)) {
+            $value = $this->setValue($key, (string) $value, "Expected null or string, got " . gettype($value));
         }
 
         return $value;
@@ -154,23 +190,21 @@ final class Parser {
      * @return list<string>
      * @throws ConfigException
      */
-    public function expectStringList(string $key, array $default, string $doc, bool $required = true) : array {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectStringList(string $key, array $default, ?string $doc, bool $required = true) : array {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if(!is_array($value)) {
-            $value = $this->failSafe([$value], "Expected $key to be a list, got " . gettype($value));
-            $this->data->set($path, $value);
+        if (!is_array($value)) {
+            $value = $this->setValue($key, [$value], "Expected a list, got " . gettype($value));
         }
 
-        if(!self::isList($value)) {
-            $value = $this->failSafe(array_values($value), "Expected $key to be a list, got mapping");
-            $this->data->set($path, $value);
+        if (!self::isList($value)) {
+            $value = $this->setValue($key, array_values($value), "Expected a list, got mapping");
         }
 
-        foreach($value as $i => &$v) {
-            if(!is_string($v)) {
-                $v = $this->failSafe((string) $v, "Expected $key to be a list of strings, but element #$i is " . gettype($v));
-                $this->data->set($path, $value);
+        foreach ($value as $i => &$v) {
+            if (!is_string($v)) {
+                $v = (string) $v;
+                $this->setValue($key, $value, "Expected a list of strings, but element #$i is " . gettype($value));
             }
         }
         unset($v);
@@ -183,27 +217,25 @@ final class Parser {
      * @return list<string>|null
      * @throws ConfigException
      */
-    public function expectNullableStringList(string $key, ?array $default, string $doc, bool $required = true) : ?array {
-        $value = $this->expectAny($key, $default, $doc, $required, $path);
+    public function expectNullableStringList(string $key, ?array $default, ?string $doc, bool $required = true) : ?array {
+        $value = $this->expectAny($key, $default, $doc, $required);
 
-        if($value === null) {
+        if ($value === null) {
             return null;
         }
 
-        if(!is_array($value)) {
-            $value = $this->failSafe([$value], "Expected $key to be a list, got " . gettype($value));
-            $this->data->set($path, $value);
+        if (!is_array($value)) {
+            $value = $this->setValue($key, [$value], "Expected a list, got " . gettype($value));
         }
 
-        if(!self::isList($value)) {
-            $value = $this->failSafe(array_values($value), "Expected $key to be a list, got mapping");
-            $this->data->set($path, $value);
+        if (!self::isList($value)) {
+            $value = $this->setValue($key, array_values($value), "Expected a list, got mapping");
         }
 
-        foreach($value as $i => &$v) {
-            if(!is_string($v)) {
-                $v = $this->failSafe((string) $v, "Expected $key to be a list of strings, but element #$i is " . gettype($v));
-                $this->data->set($path, $value);
+        foreach ($value as $i => &$v) {
+            if (!is_string($v)) {
+                $v = (string) $v;
+                $this->setValue($key, $value, "Expected a list of strings, but element #$i is " . gettype($value));
             }
         }
         unset($v);
@@ -212,17 +244,52 @@ final class Parser {
     }
 
     /**
+     * @param list<array<string, mixed>> $default
+     * @return list<Parser>
+     * @throws ConfigException
+     */
+    public function expectObjectList(string $key, array $default, ?string $doc, bool $required = true) : ?array {
+        $value = $this->expectAny($key, $default, $doc, $required);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_array($value)) {
+            $value = $this->setValue($key, $default, "Expected a list, got " . gettype($value));
+        }
+
+        if (!self::isList($value)) {
+            $value = $this->setValue($key, [$value], "Expected a list, got mapping");
+        }
+
+        $result = [];
+        foreach ($value as $index => $mapping) {
+            if (!is_array($mapping) || self::isList($mapping)) {
+                $this->setValue($key, $value, "Expected [{$index}] to be a mapping, got " . gettype($value));
+            }
+
+            $element = new self($this->data, array_merge($this->path, [$key, $index]), $this->failSafe);
+            $result[] = $element;
+        }
+        return $result;
+    }
+
+    /**
      * @template T
      * @param T $default
-     * @param list<string> $fullPath
+     * @param bool $isNew
      * @return mixed
      */
-    private function expectAny(string $key, $default, string $doc, bool $required, &$fullPath) {
+    private function expectAny(string $key, $default, ?string $doc, bool $required, &$isNew = false) {
         $array = $this->data->get($this->path);
 
-        if(!array_key_exists($key, $array)) {
-            if($this->failSafe || !$required) {
-                $array["#" . $key] = $doc;
+        $isNew = !array_key_exists($key, $array);
+        if ($isNew) {
+            if ($this->failSafe || !$required) {
+                if ($doc !== null) {
+                    $array["#" . $key] = $doc;
+                }
                 $array[$key] = $default;
                 $this->data->set($this->path, $array);
             } else {
@@ -230,9 +297,18 @@ final class Parser {
             }
         }
 
-        $fullPath = array_merge($this->path, [$key]);
-
         return $array[$key];
+    }
+
+    /**
+     * @template T
+     * @param T $value
+     * @return T
+     */
+    public function setValue(string $key, $value, string $message) {
+        $this->failSafe(null, "Invalid $key: $message");
+        $this->data->set(array_merge($this->path, [$key]), $value);
+        return $value;
     }
 
     /**
@@ -241,7 +317,7 @@ final class Parser {
      * @return T
      */
     public function failSafe($defaultValue, string $exceptionMessage) {
-        if($this->failSafe) {
+        if ($this->failSafe) {
             return $defaultValue;
         } else {
             throw $this->throw($exceptionMessage);

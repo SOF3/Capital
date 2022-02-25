@@ -1,29 +1,24 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#6 \\$otherMetrics of method SOFe\\\\Capital\\\\Database\\\\Database\\:\\:aggregateTopAccounts\\(\\) expects array\\<SOFe\\\\Capital\\\\AccountQueryMetric\\>, array\\<string, SOFe\\\\Capital\\\\AccountQueryMetric\\|SOFe\\\\Capital\\\\TransactionQueryMetric\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Analytics/TopCommand.php
-
-		-
-			message: "#^Parameter \\#6 \\$otherMetrics of method SOFe\\\\Capital\\\\Database\\\\Database\\:\\:aggregateTopTransactions\\(\\) expects array\\<SOFe\\\\Capital\\\\TransactionQueryMetric\\>, array\\<string, SOFe\\\\Capital\\\\AccountQueryMetric\\|SOFe\\\\Capital\\\\TransactionQueryMetric\\> given\\.$#"
-			count: 1
-			path: src/SOFe/Capital/Analytics/TopCommand.php
-
-		-
 			message: "#^While loop condition is always true\\.$#"
 			count: 1
-			path: src/SOFe/Capital/Cache/Instance.php
+			path: src/SOFe/Capital/Analytics/ConfigTop.php
 
 		-
-			message: "#^Yield can be used only with these return types\\: Generator, Iterator, Traversable, iterable\\.$#"
+			message: "#^Method SOFe\\\\Capital\\\\Config\\\\Raw\\:\\:loadConfig\\(\\) should return T of SOFe\\\\Capital\\\\Config\\\\ConfigInterface but returns object\\.$#"
 			count: 1
-			path: src/SOFe/Capital/Cache/LabelSelectorCacheType.php
+			path: src/SOFe/Capital/Config/Raw.php
 
 		-
-			message: "#^Method SOFe\\\\Capital\\\\Di\\\\Context\\:\\:fetchClass\\(\\) should return \\(T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\)\\|null but returns T of SOFe\\\\AwaitStd\\\\AwaitStd\\|SOFe\\\\Capital\\\\Di\\\\Singleton\\.$#"
+			message: "#^PHPDoc tag @var for variable \\$labelSet contains generic class SOFe\\\\Capital\\\\ParameterizedLabelSet but does not specify its types\\: I$#"
 			count: 1
-			path: src/SOFe/Capital/Di/Context.php
+			path: src/SOFe/Capital/ParameterizedLabelSet.php
+
+		-
+			message: "#^Template type T of method SOFe\\\\Capital\\\\ParameterizedLabelSet\\:\\:parse\\(\\) is not referenced in a parameter\\.$#"
+			count: 1
+			path: src/SOFe/Capital/ParameterizedLabelSet.php
 
 		-
 			message: "#^Call to function is_subclass_of\\(\\) with 'SOFe\\\\\\\\Capital\\\\\\\\Plugin\\\\\\\\MainClass' and 'SOFe\\\\\\\\Capital\\\\\\\\Di\\\\\\\\FromContext' will always evaluate to false\\.$#"
@@ -34,4 +29,14 @@ parameters:
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
 			path: src/SOFe/Capital/Plugin/MainClass.php
+
+		-
+			message: "#^Method SOFe\\\\Capital\\\\Schema\\\\Currency\\:\\:createCurrencyVariable\\(\\) should return SOFe\\\\Capital\\\\Schema\\\\Variable\\<SOFe\\\\Capital\\\\Schema\\\\Currency, string\\> but returns SOFe\\\\Capital\\\\Schema\\\\Variable\\<SOFe\\\\Capital\\\\Schema\\\\Currency, null\\>\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Schema/Currency.php
+
+		-
+			message: "#^Parameter \\$populate of class SOFe\\\\Capital\\\\Schema\\\\Variable constructor expects Closure\\(SOFe\\\\Capital\\\\Schema\\\\Currency, null\\)\\: void, Closure\\(SOFe\\\\Capital\\\\Schema\\\\Currency, string\\)\\: string given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Schema/Currency.php
 

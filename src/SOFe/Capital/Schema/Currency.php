@@ -10,7 +10,6 @@ use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\LabelSet;
 
-use function array_filter;
 use function array_keys;
 use function count;
 use function implode;
@@ -26,8 +25,8 @@ final class Currency implements Schema {
         $currenciesParser = $globalConfig->enter("currencies", <<<'EOT'
             All currencies used on your server.
             EOT);
-        $currencyNames = array_filter($currenciesParser->getKeys(), fn($currency) => $currency[0] !== "#",);
-        if(count($currencyNames) === 0) {
+        $currencyNames = $currenciesParser->getKeys();
+        if (count($currencyNames) === 0) {
             $currenciesParser->failSafe(null, "There must be at least one currency");
             $currencyNames[] = "money";
             $currenciesParser->enter("money", <<<'EOT'
@@ -38,7 +37,7 @@ final class Currency implements Schema {
         }
 
         $currencies = [];
-        foreach($currencyNames as $currency) {
+        foreach ($currencyNames as $currency) {
             $currencyParser = $currenciesParser->enter($currency, "this string should never appear");
             $currencies[$currency] = AccountConfig::parse($currencyParser);
         }
@@ -68,39 +67,62 @@ final class Currency implements Schema {
         private array $currencies,
         private string $currencyTerm,
         private ?string $defaultCurrency = null,
-    ) {}
+    ) {
+    }
 
-    public function cloneWithConfig(?Parser $config) : self {
+    public function clone() : self {
+        return clone $this;
+    }
+
+    public function cloneWithConfig(Parser $config) : self {
         $clone = clone $this;
 
-        if($config !== null) {
-            $defaultCurrency = $config->expectNullableString("default-currency", null, <<<'EOT'
-                The default currency to use in commands if the user does not specify one.
-                If this is set to ~, the user is required to specify the currency for every command.
-                This option can be overridden in the config for individual commands.
-                EOT, false);
-            if(!isset($clone->currencies[$defaultCurrency])) {
-                $defaultCurrency = $config->failSafe(null, "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
-            }
-            $clone->defaultCurrency = $defaultCurrency;
+        $defaultCurrency = $config->expectNullableString("default-currency", null, <<<'EOT'
+            The default currency to use in commands if the user does not specify one.
+            If this is set to ~, the user is required to specify the currency for every command.
+            This option can be overridden in the config for individual commands.
+            EOT, false);
+        if (!isset($clone->currencies[$defaultCurrency])) {
+            $defaultCurrency = $config->failSafe(null, "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
+        }
+        $clone->defaultCurrency = $defaultCurrency;
 
-            $allowedCurrencies = $config->expectNullableStringList("allowed-currencies", null, <<<'EOT'
-                The list of currencies the user can select from.
-                EOT, false);
-            if($allowedCurrencies !== null) {
-                $clone->currencies = [];
+        $allowedCurrencies = $config->expectNullableStringList("allowed-currencies", null, <<<'EOT'
+            The list of currencies the user can select from.
+            EOT, false);
+        if ($allowedCurrencies !== null) {
+            $clone->currencies = [];
 
-                foreach($allowedCurrencies as $i => $currency) {
-                    if(!isset($this->currencies[$currency])) {
-                        $config->failSafe(null, "Item #" . ($i + 1) . " in allowed-currencies is not one of " . implode(", ", array_keys($this->currencies)));
-                    }
-
-                    $clone->currencies[$currency] = $this->currencies[$currency];
+            foreach ($allowedCurrencies as $i => $currency) {
+                if (!isset($this->currencies[$currency])) {
+                    $config->failSafe(null, "Item #" . ($i + 1) . " in allowed-currencies is not one of " . implode(", ", array_keys($this->currencies)));
                 }
+
+                $clone->currencies[$currency] = $this->currencies[$currency];
             }
         }
 
         return $clone;
+    }
+
+    public function cloneWithCompleteConfig(Parser $config) : Complete {
+        return $this->cloneWithInvariantConfig($config)->asComplete();
+    }
+
+    public function cloneWithInvariantConfig(Parser $config) : Invariant {
+        $clone = clone $this;
+
+        $currency = $config->expectString("currency", array_keys($clone->currencies)[0], <<<'EOT'
+            The currency to use.
+            EOT);
+        if (!isset($clone->currencies[$currency])) {
+            $currency = $config->failSafe(array_keys($clone->currencies)[0], "default-currency must be one of " . implode(", ", array_keys($clone->currencies)));
+        }
+
+        $clone->defaultCurrency = $currency;
+        $clone->currencies = [$currency => $this->currencies[$currency]];
+
+        return new Invariant($clone);
     }
 
     /**
@@ -110,44 +132,68 @@ final class Currency implements Schema {
         return new Variable(
             type: Variable::TYPE_STRING,
             name: $this->currencyTerm,
-            populate: fn(Currency $schema, $currency) => $schema->defaultCurrency = $currency,
+            populate: fn(Currency $schema, string $currency) => $schema->defaultCurrency = $currency,
             enumValues: array_keys($this->currencies),
         );
     }
 
     public function isComplete() : bool {
-        return $this->defaultCurrency !== null;
+        return $this->isInvariant();
+    }
+
+    public function isInvariant() : bool {
+        return $this->defaultCurrency !== null || count($this->currencies) === 1;
     }
 
     public function getRequiredVariables() : iterable {
-        if($this->defaultCurrency === null && count($this->currencies) > 1) {
+        if ($this->defaultCurrency === null && count($this->currencies) > 1) {
             yield $this->createCurrencyVariable();
         }
     }
 
     public function getOptionalVariables() : iterable {
-        if($this->defaultCurrency !== null && count($this->currencies) > 1) {
+        if ($this->defaultCurrency !== null && count($this->currencies) > 1) {
             yield $this->createCurrencyVariable();
         }
     }
 
-    public function getSelectedAccountConfig() : ?AccountConfig {
-        if($this->defaultCurrency === null) {
+    private function getCompleteCurrency() : ?string {
+        if ($this->defaultCurrency === null && count($this->currencies) > 1) {
             return null;
         }
 
-        return $this->currencies[$this->defaultCurrency];
+        return $this->defaultCurrency ?? array_keys($this->currencies)[0];
+    }
+
+    public function getSelectedAccountConfig() : ?AccountConfig {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
+            return null;
+        }
+
+        return $this->currencies[$currency];
     }
 
     public function getSelector(Player $player) : ?LabelSelector {
-        $defaultCurrency = $this->defaultCurrency;
-        if($defaultCurrency === null) {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
             return null;
         }
 
         return new LabelSelector([
             AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
-            self::LABEL_CURRENCY => $defaultCurrency,
+            self::LABEL_CURRENCY => $currency,
+        ]);
+    }
+
+    public function getInvariantSelector() : ?LabelSelector {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
+            return null;
+        }
+
+        return new LabelSelector([
+            self::LABEL_CURRENCY => $currency,
         ]);
     }
 
@@ -160,15 +206,15 @@ final class Currency implements Schema {
     }
 
     public function getInitialSetup(Player $player) : ?InitialSetup {
-        $defaultCurrency = $this->defaultCurrency;
-        if($defaultCurrency === null) {
+        $currency = $this->getCompleteCurrency();
+        if ($currency === null) {
             return null;
         }
 
         return $this->getSelectedAccountConfig()
             ?->getInitialSetup($player)
             ?->andInitialLabel(new LabelSet([
-                self::LABEL_CURRENCY => $defaultCurrency,
+                self::LABEL_CURRENCY => $currency,
             ]));
     }
 }

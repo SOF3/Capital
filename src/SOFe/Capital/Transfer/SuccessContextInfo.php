@@ -22,7 +22,8 @@ final class SuccessContextInfo extends Info {
         private NumberInfo $srcBalance,
         private NumberInfo $destBalance,
         private ContextInfo $fallback,
-    ) {}
+    ) {
+    }
 
     public function toString() : string {
         throw new RuntimeException("ContextInfo must not be returned as a provided info");

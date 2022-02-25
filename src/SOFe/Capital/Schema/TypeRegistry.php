@@ -41,13 +41,13 @@ final class TypeRegistry implements Singleton, FromContext {
 
     public function build(Parser $config) : Schema {
         $doc = "The type of the schema. Possible values include:\n";
-        foreach($this->types as $typeName => $class) {
+        foreach ($this->types as $typeName => $class) {
             $doc .= "\n$typeName: " . $class::describe();
         }
 
         $type = $config->expectString("type", "basic", $doc);
 
-        if(!isset($this->types[$type])) {
+        if (!isset($this->types[$type])) {
             $type = $config->failSafe("basic", "Unknown schema type $type");
         }
 
