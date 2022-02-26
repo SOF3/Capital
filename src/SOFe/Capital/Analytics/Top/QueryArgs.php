@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
-use AssertionError;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\Config\Parser;
 use SOFe\Capital\LabelSelector;
 use SOFe\Capital\QueryMetric;
 use SOFe\Capital\Schema\Schema;
-use SOFe\Capital\TransactionQueryMetric;
 use function get_class;
 use function md5;
 use function sort;
@@ -26,7 +24,7 @@ use function sort;
  * For each distinct value of the label $groupingLabel in the matching accounts/transactions,
  * the statistic specified by $metric is computed for accounts/transactions with this label value.
  */
-final class TopQueryArgs {
+final class QueryArgs {
     public const ORDERING_ASC = "asc";
     public const ORDERING_DESC = "desc";
 
@@ -66,25 +64,8 @@ final class TopQueryArgs {
         $bytes .= $this->groupingLabel;
         $bytes .= "\0";
 
-        $displayLabels = $this->displayLabels;
-        sort($displayLabels);
-        foreach ($displayLabels as $label) {
-            $bytes .= $label;
-            $bytes .= "\0";
-        }
-
+        $bytes .= get_class($this->metric);
         $bytes .= "\0";
-
-        $bytes .= match ($this->ordering) {
-            self::ORDERING_ASC => "\0",
-            self::ORDERING_DESC => "\1",
-        };
-
-        $bytes .= match (get_class($this->metric)) {
-            AccountQueryMetric::class => "\0",
-            TransactionQueryMetric::class => "\1",
-            default => throw new AssertionError("unreachable code"),
-        };
 
         $bytes .= $this->metric->getExpr();
 

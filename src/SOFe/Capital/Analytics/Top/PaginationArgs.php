@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use SOFe\Capital\Config\Parser;
 
-final class TopPaginationArgs {
+final class PaginationArgs {
     /**
      * @param int $perPage The number of results to display per page.
      * @param int $limit The maximum number of results to display.

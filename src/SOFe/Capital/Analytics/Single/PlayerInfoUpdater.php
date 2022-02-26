@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Single;
 
-use Generator;
 use pocketmine\event\EventPriority;
 use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -17,28 +17,50 @@ use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
 
-final class PlayerInfosManager {
-    /** @var array<int, CachedSingleValue> */
+final class PlayerInfoUpdater {
+    /** @var array<int, CachedValue> */
     private array $cache = [];
 
     /**
-     * @param CachedSingleQuery<Player> $query
+     * @param Cached<Player> $query
      */
     public function __construct(
         private string $name,
-        private CachedSingleQuery $query,
+        private Cached $query,
     ) {
     }
 
     public function register(Plugin $plugin, AwaitStd $std, Database $db) : void {
-        Server::getInstance()->getPluginManager()->registerEvent(
+        $this->registerListener($plugin, $std, $db);
+
+        $this->registerInfo();
+    }
+
+    public function registerListener(Plugin $plugin, AwaitStd $std, Database $db) : void {
+        $pm = Server::getInstance()->getPluginManager();
+
+        $pm->registerEvent(
             event: PlayerLoginEvent::class,
             handler: fn(PlayerLoginEvent $event) => $this->startSession($event->getPlayer(), $std, $db),
             priority: EventPriority::MONITOR,
             plugin: $plugin,
             handleCancelled: false,
         );
+        $pm->registerEvent(
+            event: PlayerQuitEvent::class,
+            handler: function(PlayerQuitEvent $event) {
+                $id = $event->getPlayer()->getId();
+                if (isset($this->cache[$id])) {
+                    unset($this->cache[$id]);
+                }
+            },
+            priority: EventPriority::MONITOR,
+            plugin: $plugin,
+            handleCancelled: false,
+        );
+    }
 
+    public function registerInfo() : void {
         InfoAPI::provideInfo(PlayerInfo::class, NumberInfo::class, "capital.analytics.single.{$this->name}",
             function(PlayerInfo $info) : ?NumberInfo {
                 if (isset($this->cache[$info->getValue()->getId()])) {
@@ -50,22 +72,9 @@ final class PlayerInfosManager {
     }
 
     private function startSession(Player $player, AwaitStd $std, Database $db) : void {
-        $this->cache[$player->getId()] = new CachedSingleValue(null);
+        $value = new CachedValue(null);
+        $this->cache[$player->getId()] = $value;
 
-        Await::g2c($this->sessionLoop($player, $std, $db));
-    }
-
-    /**
-     * @return VoidPromise
-     */
-    private function sessionLoop(Player $player, AwaitStd $std, Database $db) : Generator {
-        while ($player->isOnline()) {
-            $value = yield from $this->query->query->fetch($player, $db);
-            $this->cache[$player->getId()]->value = $value;
-
-            yield from $std->sleep($this->query->updateFrequencyTicks);
-        }
-
-        unset($this->cache[$player->getId()]);
+        Await::g2c($value->loop(fn() => $player->isOnline(), $std, $this->query, $player, $db));
     }
 }
