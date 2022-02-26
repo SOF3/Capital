@@ -1,68 +1,46 @@
 # Capital
+
 [![CI](https://github.com/SOF3/Capital/actions/workflows/ci.yml/badge.svg)](https://github.com/SOF3/Capital/actions/workflows/ci.yml)
 
-A simple but very extensible economy plugin for PocketMine-MP.
+An extensible economy plugin for PocketMine-MP.
 
 ## How is Capital different from other economy plugins?
-Capital introduces a label-oriented paradigm,
-allowing Capital to be extensible for many purposes:
 
-- Currencies are no longer imposed by the core.
-  You don't need to deal with currencies if you don't want to,
-  and you can create as many currencies as you like without breaking things.
-- The planned Wallet extension allows connecting inventory items to player accounts,
-  and this is automatically compatible with other plugins that are not even aware of wallets.
-- Analytics can be easily achieved using label-based queries.
-  Track how capital flows in your server without writing code!
+As a core API for economy, Capital supports different styles of account management:
 
-## Labels
-Capital uses *labels* to identify accounts.
-In a nutshell, every account has:
+- You can have the old, simple one-account-per-player mechanism.
+- Or do you like currencies? You can add new currencies to config.yml
+  and other plugins will let you configure which currency to use in each case.
+- Or are currencies too complicated for you?
+  What about just having one account per world?
+  You don't need any special configuration in other plugins!
+- Are commands and form UI boring for you?
+  Maybe use banknote/wallet items
+  so that players lose money when they drop the item?
+  (Capital itself does not support banknote/wallet items,
+  but it is the *only* economy API where both
+  simple accounts and item payment can be used from other plugins
+  without writing code twice)
 
-- a UUID (which has nothing to do with the player UUID)
-- a balance value (signed 64-bit integer)
-- a key-value map of string labels
+Other cool features include:
 
-Labels are used to store metadata about an account,
-and can also be used for searching.
-For example, the default player account (in basic config) has the following labels:
+- Powerful analytics commands.
+  How much active capital is there?
+  How is wealth distributed on the server?
+  Which industries are the most active?
+  What are the biggest transactions in the server yesterday?
+  Capital can help you answer these questions with label-based analytics.
+- Is editing the config file too confusing for you?
+  Capital supports self-healing configuration.
+  Your config file will be automatically regenerated if something is wrong,
+  and Capital will try its best to guess what you really wanted.
+- Supports migration from other economy plugins, including:
+  - EconomyAPI
+- Uses async database access, supporting both SQLite and MySQL.
+  Capital will not lag your server.
+- Safe for multiple servers. Transactions are strictly atomic.
+  Players cannot duplicate money by joining multiple servers.
 
-| Name | Value |
-| :---: | :---: |
-| `capital/playerUuid` | The player UUID |
-| `currency` | `default` |
-| `capital/playerName` | The player name |
-| `capital/playerInfoName` | `money` |
-| `capital/valueMin` | `0` |
-| `capital/valueMax` | `1000000` |
+## Contributing
 
-This is how we find the accounts for a player:
-we find accounts with the label `capital/player/uuid`
-equal to the player's UUID,
-then we use other labels like `currency`
-to identify which account it is.
-
-In fact, Capital itself does not know what `currency` is;
-it's just the default label we use for currencies,
-but you can change it to anything.
-It is perfectly fine to delete the `currency` label.
-
-Plugins that perform Capital transactions should
-prefer using labels to select accounts for transactions.
-For example, the pay command is implemented as
-two label selectors for the source and destination accounts,
-parameterized with InfoAPI to change labels by players.
-
-## Building
-On Linux, the phar can be built simply by running `make dev/Capital.phar`.
-
-## Testing
-Capital uses integration testing.
-Run `make suites` to run all integration tests.
-
-To rerun a test without resetting MySQL,
-set `REUSE_MYSQL=true` for the make recipe.
-
-To interact iwth the MySQL database
-(it is persisted until the next time a suite is run without `REUSE_MYSQL=true`),
-run `make debug/suite-mysql`.
+See [dev.md](dev.md) if if you want to get started with developing Capital.
