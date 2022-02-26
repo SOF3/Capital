@@ -18,23 +18,23 @@ final class TransactionQueryMetric implements QueryMetric {
     }
 
     public static function deltaSum() : self {
-        return new self("SUM(tran.value)");
+        return new self("SUM(capital_tran.value)");
     }
 
     public static function deltaMean() : self {
-        return new self("AVG(tran.value)");
+        return new self("AVG(capital_tran.value)");
     }
 
     public static function deltaVariance() : self {
-        return new self("AVG(tran.value * tran.value) - AVG(tran.value) * AVG(tran.value)");
+        return new self("AVG(capital_tran.value * capital_tran.value) - AVG(capital_tran.value) * AVG(capital_tran.value)");
     }
 
     public static function deltaMin() : self {
-        return new self("MIN(tran.value)");
+        return new self("MIN(capital_tran.value)");
     }
 
     public static function deltaMax() : self {
-        return new self("MAX(tran.value)");
+        return new self("MAX(capital_tran.value)");
     }
 
     private function __construct(
@@ -44,11 +44,11 @@ final class TransactionQueryMetric implements QueryMetric {
     }
 
     public function getMainTable() : string {
-        return "tran";
+        return "capital_tran";
     }
 
     public function getLabelTable() : string {
-        return "tran_label";
+        return "capital_tran_label";
     }
 
     public function getExpr() : string {

@@ -476,13 +476,13 @@ final class Database implements Singleton, FromContext {
     ) : Generator {
         $entries = $selector->getEntries();
 
-        $query = "SELECT {$columns} FROM acc_label AS t0 ";
+        $query = "SELECT {$columns} FROM capital_acc_label AS t0 ";
         for ($i = 1; $i < count($entries); $i++) {
-            $query .= "INNER JOIN acc_label AS t{$i} USING (id) ";
+            $query .= "INNER JOIN capital_acc_label AS t{$i} USING (id) ";
         }
 
         if ($joinMain) {
-            $query .= "INNER JOIN acc USING (id) ";
+            $query .= "INNER JOIN capital_acc USING (id) ";
         }
 
         $query .= "WHERE ";
@@ -1044,13 +1044,13 @@ final class Database implements Singleton, FromContext {
     ) : Generator {
         $entries = $selector->getEntries();
 
-        $query = "SELECT {$columns} FROM tran_label AS t0 ";
+        $query = "SELECT {$columns} FROM capital_tran_label AS t0 ";
         for ($i = 1; $i < count($entries); $i++) {
-            $query .= "INNER JOIN tran_label AS t{$i} USING (id) ";
+            $query .= "INNER JOIN capital_tran_label AS t{$i} USING (id) ";
         }
 
         if ($joinMain) {
-            $query .= "INNER JOIN tran USING (id) ";
+            $query .= "INNER JOIN capital_tran USING (id) ";
         }
 
         $query .= "WHERE ";

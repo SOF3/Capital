@@ -18,8 +18,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:8
-     * - resources/sqlite/account.sql:8
+     * - resources/mysql/account.sql:7
+     * - resources/sqlite/account.sql:7
      * @param string $id
      * @param int $value
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
@@ -31,8 +31,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:16
-     * - resources/sqlite/account.sql:23
+     * - resources/mysql/account.sql:15
+     * - resources/sqlite/account.sql:22
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -43,8 +43,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:20
-     * - resources/sqlite/account.sql:27
+     * - resources/mysql/account.sql:19
+     * - resources/sqlite/account.sql:26
      * @param string[] $ids
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -55,8 +55,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:27
-     * - resources/sqlite/account.sql:34
+     * - resources/mysql/account.sql:26
+     * - resources/sqlite/account.sql:33
      * @param string $id
      * @param string $name
      * @param string $value
@@ -69,8 +69,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:40
-     * - resources/sqlite/account.sql:46
+     * - resources/mysql/account.sql:39
+     * - resources/sqlite/account.sql:45
      * @param string $id
      * @param string $name
      * @param string $value
@@ -83,8 +83,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:45
-     * - resources/sqlite/account.sql:51
+     * - resources/mysql/account.sql:44
+     * - resources/sqlite/account.sql:50
      * @param string $id
      * @param string $name
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
@@ -96,8 +96,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:49
-     * - resources/sqlite/account.sql:55
+     * - resources/mysql/account.sql:48
+     * - resources/sqlite/account.sql:54
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -108,8 +108,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:53
-     * - resources/sqlite/account.sql:59
+     * - resources/mysql/account.sql:52
+     * - resources/sqlite/account.sql:58
      * @param string[] $ids
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -120,8 +120,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:33
-     * - resources/sqlite/account.sql:40
+     * - resources/mysql/account.sql:32
+     * - resources/sqlite/account.sql:39
      * @param string $id
      * @param string $name
      * @param string $value
@@ -134,7 +134,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/sqlite/account.sql:18
+     * - resources/sqlite/account.sql:17
      * @param string $id
      * @param int $delta
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
@@ -146,8 +146,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/account.sql:12
-     * - resources/sqlite/account.sql:12
+     * - resources/mysql/account.sql:11
+     * - resources/sqlite/account.sql:11
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, int>
      */
@@ -159,7 +159,7 @@ final class RawQueries{
     /**
      * <h4>Declared in:</h4>
      * - resources/mysql/analytics.sql:32
-     * - resources/sqlite/analytics.sql:34
+     * - resources/sqlite/analytics.sql:24
      * @param string $queryHash
      * @param string $runId
      * @param int $expiry
@@ -174,7 +174,7 @@ final class RawQueries{
     /**
      * <h4>Declared in:</h4>
      * - resources/mysql/analytics.sql:17
-     * - resources/sqlite/analytics.sql:17
+     * - resources/sqlite/analytics.sql:7
      * @param string $queryHash
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -186,7 +186,6 @@ final class RawQueries{
     /**
      * <h4>Declared in:</h4>
      * - resources/mysql/analytics.sql:12
-     * - resources/sqlite/analytics.sql:12
      * @param string $queryHash
      * @param int $limit
      * @param int $offset
@@ -240,7 +239,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:18
+     * - resources/mysql/transaction.sql:17
      * @param string $id
      * @param string $src
      * @param string $dest
@@ -256,7 +255,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:39
+     * - resources/mysql/transaction.sql:38
      * @param string $id1
      * @param string $src1
      * @param string $dest1
@@ -278,7 +277,7 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/sqlite/transaction.sql:10
+     * - resources/sqlite/transaction.sql:9
      * @param string $id
      * @param string $src
      * @param string $dest
@@ -292,8 +291,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:46
-     * - resources/sqlite/transaction.sql:17
+     * - resources/mysql/transaction.sql:45
+     * - resources/sqlite/transaction.sql:16
      * @param string $id
      * @param string $name
      * @param string $value
@@ -306,8 +305,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:59
-     * - resources/sqlite/transaction.sql:29
+     * - resources/mysql/transaction.sql:58
+     * - resources/sqlite/transaction.sql:28
      * @param string $id
      * @param string $name
      * @param string $value
@@ -320,8 +319,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:64
-     * - resources/sqlite/transaction.sql:34
+     * - resources/mysql/transaction.sql:63
+     * - resources/sqlite/transaction.sql:33
      * @param string $id
      * @param string $name
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
@@ -333,8 +332,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:68
-     * - resources/sqlite/transaction.sql:38
+     * - resources/mysql/transaction.sql:67
+     * - resources/sqlite/transaction.sql:37
      * @param string $id
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -345,8 +344,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:72
-     * - resources/sqlite/transaction.sql:42
+     * - resources/mysql/transaction.sql:71
+     * - resources/sqlite/transaction.sql:41
      * @param string[] $ids
      * @return Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, list<array<string, mixed>>>
      */
@@ -357,8 +356,8 @@ final class RawQueries{
 
     /**
      * <h4>Declared in:</h4>
-     * - resources/mysql/transaction.sql:52
-     * - resources/sqlite/transaction.sql:23
+     * - resources/mysql/transaction.sql:51
+     * - resources/sqlite/transaction.sql:22
      * @param string $id
      * @param string $name
      * @param string $value

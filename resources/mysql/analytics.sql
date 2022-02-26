@@ -5,14 +5,14 @@
 -- #        :limit int
 -- #        :offset int
 -- #        :orderSign int
-SELECT group_value, metric FROM analytics_top_cache
+SELECT group_value, metric FROM capital_analytics_top_cache
 WHERE query = :queryHash
 ORDER BY metric * :orderSign
 LIMIT :offset, :limit;
 -- #    }
 -- #    { count
 -- #        :queryHash string
-SELECT COUNT(*) cnt FROM analytics_top_cache
+SELECT COUNT(*) cnt FROM capital_analytics_top_cache
 WHERE query = :queryHash AND metric IS NOT NULL;
 -- #    }
 -- #    { collect-updates
@@ -20,7 +20,7 @@ WHERE query = :queryHash AND metric IS NOT NULL;
 -- #        :runId string
 -- #        :expiry int
 -- #        :limit int
-UPDATE analytics_top_cache
+UPDATE capital_analytics_top_cache
 SET
     last_updated = CURRENT_TIMESTAMP,
     last_updated_with = :runId

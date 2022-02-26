@@ -56,8 +56,8 @@ final class DatabaseUtils implements Singleton, FromContext {
             $sql .= ", t{$i}.value AS display_{$i}";
         }
 
-        $sql .= " FROM analytics_top_cache";
-        $sql .= " INNER JOIN $labelTable AS grouping_label ON analytics_top_cache.group_value = grouping_label.value";
+        $sql .= " FROM capital_analytics_top_cache";
+        $sql .= " INNER JOIN $labelTable AS grouping_label ON capital_analytics_top_cache.group_value = grouping_label.value";
 
         $i = 0;
         foreach ($query->displayLabels as $displayLabel) {
@@ -161,7 +161,7 @@ final class DatabaseUtils implements Singleton, FromContext {
 
         $labelTable = $query->metric->getLabelTable();
 
-        $sql = "INSERT INTO analytics_top_cache (query, metric, last_updated, last_updated_with, group_value) ";
+        $sql = "INSERT INTO capital_analytics_top_cache (query, metric, last_updated, last_updated_with, group_value) ";
         $sql .= "SELECT :queryHash, NULL, CURRENT_TIMESTAMP, :runId, grouping_label.value ";
         $sql .= "FROM $labelTable AS grouping_label ";
 
@@ -170,7 +170,7 @@ final class DatabaseUtils implements Singleton, FromContext {
         }
 
         $sql .= "WHERE grouping_label.name = :groupingLabel";
-        $sql .= " AND grouping_label.value NOT IN (SELECT group_value FROM analytics_top_cache WHERE query = :queryHash)";
+        $sql .= " AND grouping_label.value NOT IN (SELECT group_value FROM capital_analytics_top_cache WHERE query = :queryHash)";
 
         $i = 0;
         foreach ($query->labelSelector->getEntries() as $name => $value) {
@@ -238,7 +238,7 @@ final class DatabaseUtils implements Singleton, FromContext {
             $metricExpr .= " INNER JOIN $mainTable USING (id)";
         }
 
-        $metricExpr .= " WHERE grouping_label.name = :groupingLabel AND grouping_label.value = analytics_top_cache.group_value";
+        $metricExpr .= " WHERE grouping_label.name = :groupingLabel AND grouping_label.value = capital_analytics_top_cache.group_value";
 
         $i = 0;
         foreach ($query->labelSelector->getEntries() as $name => $value) {
@@ -255,7 +255,7 @@ final class DatabaseUtils implements Singleton, FromContext {
             $i++;
         }
 
-        $sql = "UPDATE analytics_top_cache SET metric = ($metricExpr) WHERE last_updated_with = :runId";
+        $sql = "UPDATE capital_analytics_top_cache SET metric = ($metricExpr) WHERE last_updated_with = :runId";
         $stmt = GenericStatementImpl::forDialect($this->db->dialect, "dynamic-analytics-compute", [$sql], "", $vars, __FILE__, __LINE__);
 
         $rawQuery = $stmt->format($args, match ($this->db->dialect) {

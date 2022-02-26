@@ -10,23 +10,23 @@ final class AccountQueryMetric implements QueryMetric {
     }
 
     public static function balanceSum() : self {
-        return new self("SUM(acc.value)");
+        return new self("SUM(capital_acc.value)");
     }
 
     public static function balanceMean() : self {
-        return new self("AVG(acc.value)");
+        return new self("AVG(capital_acc.value)");
     }
 
     public static function balanceVariance() : self {
-        return new self("AVG(acc.value * acc.value) - AVG(acc.value) * AVG(acc.value)");
+        return new self("AVG(capital_acc.value * capital_acc.value) - AVG(capital_acc.value) * AVG(capital_acc.value)");
     }
 
     public static function balanceMin() : self {
-        return new self("MIN(acc.value)");
+        return new self("MIN(capital_acc.value)");
     }
 
     public static function balanceMax() : self {
-        return new self("MAX(acc.value)");
+        return new self("MAX(capital_acc.value)");
     }
 
     private function __construct(
@@ -36,11 +36,11 @@ final class AccountQueryMetric implements QueryMetric {
     }
 
     public function getMainTable() : string {
-        return "acc";
+        return "capital_acc";
     }
 
     public function getLabelTable() : string {
-        return "acc_label";
+        return "capital_acc_label";
     }
 
     public function getExpr() : string {
