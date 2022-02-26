@@ -88,7 +88,7 @@ return function() {
         },
 
         "bob check money" => function() use($server, $std, $plugin) {
-            yield from $std->sleep(100); // to wait for refresh
+            yield from $std->sleep(10); // to wait for refresh
 
             $bob = $server->getPlayerExact("bob");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/checkmoney")));
@@ -108,7 +108,7 @@ return function() {
         },
 
         "bob check top money" => function() use($server, $std, $plugin) {
-            yield from $std->sleep(100); // to wait for batch
+            yield from $std->sleep(200); // to wait for batch
 
             $bob = $server->getPlayerExact("bob");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/richest")));

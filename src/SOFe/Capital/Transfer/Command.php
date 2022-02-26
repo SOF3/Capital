@@ -140,6 +140,11 @@ final class Command {
 
                 $transactionLabels = $this->transactionLabels->transform($info);
 
+                $involvedPlayers = [$recipient];
+                if ($sender instanceof Player) {
+                    $involvedPlayers[] = $sender;
+                }
+
                 if ($sourceAmount > 0 && $sinkAmount > 0) {
                     $transactionId = Uuid::uuid4();
 
@@ -174,6 +179,7 @@ final class Command {
                     $promise = $api->transact2(
                         $src1, $dest1, $amount1, $transactionLabels,
                         $src2, $dest2, $amount2, $labels2,
+                        $involvedPlayers,
                         $transactionId, null
                     );
                 } elseif ($sourceAmount > 0 || $sinkAmount > 0) {
@@ -198,10 +204,11 @@ final class Command {
                     $promise = $api->transact2(
                         $srcAccount, $destAccount, $transferAmount, $transactionLabels,
                         $src2, $dest2, $amount2, $labels2,
+                        $involvedPlayers,
                         $transactionId, null, // we don't need to specify the oracle transaction ID
                     );
                 } else {
-                    $promise = $api->transact($srcAccount, $destAccount, $transferAmount, $transactionLabels);
+                    $promise = $api->transact($srcAccount, $destAccount, $transferAmount, $transactionLabels, $involvedPlayers);
                 }
 
                 try {
