@@ -40,7 +40,7 @@ final class Mod implements Singleton, FromContext {
                     $this->setPermission($permission->getName());
                 }
 
-                public function getOwningPlugin(): Plugin {
+                public function getOwningPlugin() : Plugin {
                     return $this->plugin;
                 }
 
