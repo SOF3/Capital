@@ -33,11 +33,16 @@ final class Capital implements Singleton, FromContext {
 
     /**
      * @param array<string, string> $labels
+     * @param list<Player> $involvedPlayers
      * @return Generator<mixed, mixed, mixed, TransactionRef> the transaction ID
      */
-    public function transact(AccountRef $src, AccountRef $dest, int $amount, array $labels) : Generator {
-        $event = new TransactionEvent($src, $dest, $amount, $labels);
+    public function transact(AccountRef $src, AccountRef $dest, int $amount, array $labels, array $involvedPlayers) : Generator {
+        $event = new TransactionEvent($src, $dest, $amount, $labels, $involvedPlayers);
         $event->call();
+        if ($event->isCancelled()) {
+            throw new CapitalException(CapitalException::EVENT_CANCELLED);
+        }
+
         $amount = $event->getAmount();
         $labels = $event->getLabels();
 
@@ -49,26 +54,40 @@ final class Capital implements Singleton, FromContext {
         }
         yield from Await::all($promises);
 
-        return new TransactionRef($id);
+        $ref = new TransactionRef($id);
+        $event = new PostTransactionEvent($ref, $src, $dest, $amount, $labels, $involvedPlayers);
+        $event->call();
+
+        return $ref;
     }
 
     /**
      * @param array<string, string> $labels1
      * @param array<string, string> $labels2
+     * @param list<Player> $involvedPlayers
      * @return Generator<mixed, mixed, mixed, array{TransactionRef, TransactionRef}> the transaction IDs
      */
     public function transact2(
         AccountRef $src1, AccountRef $dest1, int $amount1, array $labels1,
         AccountRef $src2, AccountRef $dest2, int $amount2, array $labels2,
+        array $involvedPlayers,
         ?UuidInterface $uuid1 = null, ?UuidInterface $uuid2 = null,
     ) : Generator {
-        $event = new TransactionEvent($src1, $dest1, $amount1, $labels1);
+        $event = new TransactionEvent($src1, $dest1, $amount1, $labels1, $involvedPlayers);
         $event->call();
+        if ($event->isCancelled()) {
+            throw new CapitalException(CapitalException::EVENT_CANCELLED);
+        }
+
         $amount1 = $event->getAmount();
         $labels1 = $event->getLabels();
 
-        $event = new TransactionEvent($src2, $dest2, $amount2, $labels2);
+        $event = new TransactionEvent($src2, $dest2, $amount2, $labels2, $involvedPlayers);
         $event->call();
+        if ($event->isCancelled()) {
+            throw new CapitalException(CapitalException::EVENT_CANCELLED);
+        }
+
         $amount2 = $event->getAmount();
         $labels2 = $event->getLabels();
 
@@ -88,7 +107,15 @@ final class Capital implements Singleton, FromContext {
         }
         yield from Await::all($promises);
 
-        return [new TransactionRef($ids[0]), new TransactionRef($ids[1])];
+        $ref1 = new TransactionRef($ids[1]);
+        $event = new PostTransactionEvent($ref1, $src1, $dest1, $amount1, $labels1, $involvedPlayers);
+        $event->call();
+
+        $ref2 = new TransactionRef($ids[1]);
+        $event = new PostTransactionEvent($ref2, $src2, $dest2, $amount2, $labels2, $involvedPlayers);
+        $event->call();
+
+        return [$ref1, $ref2];
     }
 
     /**

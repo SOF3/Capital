@@ -13,6 +13,7 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
+use SOFe\Capital\PostTransactionEvent;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\PlayerInfo;
@@ -52,6 +53,19 @@ final class PlayerInfoUpdater {
                 $id = $event->getPlayer()->getId();
                 if (isset($this->cache[$id])) {
                     unset($this->cache[$id]);
+                }
+            },
+            priority: EventPriority::MONITOR,
+            plugin: $plugin,
+            handleCancelled: false,
+        );
+        $pm->registerEvent(
+            event: PostTransactionEvent::class,
+            handler: function(PostTransactionEvent $event) {
+                foreach ($event->getInvolvedPlayers() as $player) {
+                    if (isset($this->cache[$player->getId()])) {
+                        $this->cache[$player->getId()]->refreshNow();
+                    }
                 }
             },
             priority: EventPriority::MONITOR,
