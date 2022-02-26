@@ -52,28 +52,20 @@ final class DatabaseUtils implements Singleton, FromContext {
 
         $sql = "SELECT group_value, metric";
 
-        for ($i = 0; $i < count($query->displayLabels); $i++) {
-            $sql .= ", t{$i}.value AS display_{$i}";
+        $i = 0;
+        foreach ($query->displayLabels as $displayLabel) {
+            $sql .= ", (SELECT t{$i}.value FROM $labelTable AS t{$i}
+                WHERE grouping_label.id = t{$i}.id AND t{$i}.name = :display_{$i}
+                LIMIT 1) AS display_{$i}";
+            $vars["display_{$i}"] = new GenericVariable("display_{$i}", GenericVariable::TYPE_STRING, $displayLabel);
+            $args["display_{$i}"] = $displayLabel;
+            $i++;
         }
 
         $sql .= " FROM capital_analytics_top_cache";
         $sql .= " INNER JOIN $labelTable AS grouping_label ON capital_analytics_top_cache.group_value = grouping_label.value";
 
-        $i = 0;
-        foreach ($query->displayLabels as $displayLabel) {
-            $sql .= " LEFT JOIN $labelTable AS t{$i} ON grouping_label.id = t{$i}.id";
-            $i++;
-        }
-
         $sql .= " WHERE query = :queryHash AND grouping_label.name = :groupingLabel";
-
-        $i = 0;
-        foreach ($query->displayLabels as $displayLabel) {
-            $sql .= " AND t{$i}.name = :display_{$i}";
-            $vars["display_{$i}"] = new GenericVariable("display_{$i}", GenericVariable::TYPE_STRING, $displayLabel);
-            $args["display_{$i}"] = $displayLabel;
-            $i++;
-        }
 
         $sql .= " ORDER BY metric $ascDesc LIMIT :offset, :limit";
 

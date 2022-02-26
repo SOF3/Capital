@@ -284,6 +284,10 @@ which are reused on multiple servers.
 The computation takes place in batches, updating a subset of label values each time.
 Call `Analytics\Top\Mod::runRefreshLoop()` to start a refreshing loop.
 
+`Analytics\Top\DatabaseUtils::fetchTopAnalytics` fetches the cached data for display.
+For each `displayLabels` label, a random label value for matching rows
+with the name equal to the `displayLabels` label is returned in the output for display.
+
 ### Transfer
 
 <!-- TODO -->
