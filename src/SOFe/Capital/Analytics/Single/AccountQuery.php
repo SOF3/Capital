@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Single;
 
 use Closure;
 use Generator;
@@ -12,9 +12,9 @@ use SOFe\Capital\LabelSelector;
 
 /**
  * @template P
- * @implements SingleQuery<P>
+ * @implements Query<P>
  */
-final class AccountSingleQuery implements SingleQuery {
+final class AccountQuery implements Query {
     /**
      * @param Closure(P): LabelSelector $labelSelector
      */

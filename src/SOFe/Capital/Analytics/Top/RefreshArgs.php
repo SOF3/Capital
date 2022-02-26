@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use SOFe\Capital\Config\Parser;
 
-final class TopRefreshArgs {
+final class RefreshArgs {
     /**
      * @param int $batchSize Number of cache entries to recompute per batch.
      * @param int $batchFrequency Number of seconds between batches.
@@ -20,7 +20,7 @@ final class TopRefreshArgs {
     }
 
     public static function parse(Parser $config) : self {
-        return new TopRefreshArgs(
+        return new RefreshArgs(
             batchSize: $config->expectInt("batch-size", 200, <<<'EOT'
                 Number of players to recompute at once.
                 Data are only recomputed if they are older than recompute-frequency.

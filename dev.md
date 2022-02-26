@@ -242,7 +242,51 @@ it creates new accounts based on initial setup specified by the schema.
 
 ### Analytics
 
-<!-- TODO -->
+The Analytics module consists of two parts: Single and Top.
+
+### Single metrics
+
+`Analytics\Single` computes single-value metrics.
+
+The `Analytics\Single\Query` interface abstracts different metric types
+parameterized by a generic parameter `P`.
+Use `CachedValue::loop` to spawn a refresh loop that fetches the latest metric value.
+If `P` is `Player`, use `PlayerInfoUpdater::registerListener()`
+to automatically spawn refresh loops for online players.
+
+### Top metrics
+
+`Analytics\Top` reports server-wide top metrics.
+
+Due to the label-oriented mechanism,
+it is not possible to efficiently fetch the top accounts directly
+because the SQL database cannot be indexed by a specific label.
+To allow efficient top metric queries,
+the metric is first computed for each grouping label value
+(usually the player UUID) and cached in the `capital_analytics_top_cache` table.
+
+A top metric query is defined by the following:
+
+- The aggregator to use.
+  This also defines whether the query operates on accounts or transactions.
+  Currently all aggregators are accounts-only or transactions-only,
+  but there will be aggregators on transactions for each account in the future.
+- The label selector that filters rows.
+  For example, if the aggregator is about number of transactions of each player,
+  the label selector filters away non-player accounts
+  (it is not a transaction label selector).
+- The grouping label name, where its values will be used to group rows.
+  For queries on top players, this is `AccountLabels::PLAYER_UUID`.
+
+These three values uniquely identify a top query for computation cache.
+These values are md5-hashed into the `capital_analytics_top_cache.query` column,
+which are reused on multiple servers.
+The computation takes place in batches, updating a subset of label values each time.
+Call `Analytics\Top\Mod::runRefreshLoop()` to start a refreshing loop.
+
+`Analytics\Top\DatabaseUtils::fetchTopAnalytics` fetches the cached data for display.
+For each `displayLabels` label, a random label value for matching rows
+with the name equal to the `displayLabels` label is returned in the output for display.
 
 ### Transfer
 

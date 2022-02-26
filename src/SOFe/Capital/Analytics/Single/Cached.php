@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Single;
 
 use function min;
 
 /**
+ * The configuration for a SingleQuery whose result is cached locally and refreshd periodically.
  * @template P
  */
-final class CachedSingleQuery {
+final class Cached {
     /**
-     * @param SingleQuery<P> $query
+     * @param Query<P> $query
      */
     public function __construct(
-        public SingleQuery $query,
+        public Query $query,
         public int $updateFrequencyTicks,
     ) {
     }

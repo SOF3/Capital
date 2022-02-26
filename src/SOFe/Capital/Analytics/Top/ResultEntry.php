@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use SOFe\InfoAPI\NumberInfo;
 use SOFe\InfoAPI\StringInfo;
 use function array_map;
 
-final class TopResultEntry {
+final class ResultEntry {
     /**
      * @param array<string, string> $displays
      */
@@ -19,8 +19,8 @@ final class TopResultEntry {
     ) {
     }
 
-    public function asInfo(int $baseRank) : TopResultEntryInfo {
-        return new TopResultEntryInfo(
+    public function asInfo(int $baseRank) : ResultEntryInfo {
+        return new ResultEntryInfo(
             rank: new NumberInfo($baseRank + $this->rank),
             value: new NumberInfo($this->value),
             displays: array_map(fn(string $display) => new StringInfo($display), $this->displays),
