@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Config;
 
+use Closure;
+
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -309,6 +311,19 @@ final class Parser {
         $this->failSafe(null, "Invalid $key: $message");
         $this->data->set(array_merge($this->path, [$key]), $value);
         return $value;
+    }
+
+    /**
+     * @template T
+     * @template R
+     * @param T $value
+     * @param Closure(): R $return
+     * @return R
+     */
+    public function setValueAnd(string $key, $value, string $message, Closure $return) {
+        $this->failSafe(null, "Invalid $key: $message");
+        $this->data->set(array_merge($this->path, [$key]), $value);
+        return $return();
     }
 
     /**

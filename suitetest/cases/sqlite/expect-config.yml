@@ -299,4 +299,25 @@ transfer:
         overflow: '{red}An internal error occurred.'
         '#internal-error': Sent when an unexpected error occurs.
         internal-error: '{red}An internal error occurred. Please try again.'
+'#migration': |-
+  The "migration" module lets you import data from other economy plugins into Capital.
+  The import happens when you run the `/capital-migrate` command.
+migration:
+  '#enabled': Whether to enable the migration command.
+  enabled: true
+  '#source': |-
+    The plugin to import from.
+
+    Possible values:
+    - economyapi
+  source: economyapi
+  '#provider': |-
+    The provider type in EconomyAPI/config.yml
+
+    Possible values:
+    - "yaml": The (default) YAML data provider in EconomyAPI. The path to Money.yml should be specified below.
+    - "mysql": The MySQL data provider in EconomyAPI. The connection details should be specified below.
+  provider: yaml
+  '#path': The path to the YAML file in EconomyAPI.
+  path: /data/plugin_data/EconomyAPI/Money.yml
 ...

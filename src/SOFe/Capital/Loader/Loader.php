@@ -22,6 +22,7 @@ final class Loader implements Singleton, FromContext {
         C\Database\Mod $database,
         C\Transfer\Mod $transfer,
         C\Analytics\Mod $analytics,
+        C\Migration\Mod $migration,
     ) : self {
         return new self;
     }
