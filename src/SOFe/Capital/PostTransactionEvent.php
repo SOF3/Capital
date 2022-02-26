@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-use pocketmine\event\Cancellable;
-use pocketmine\event\CancellableTrait;
 use pocketmine\event\Event;
 use pocketmine\player\Player;
 
-final class TransactionEvent extends Event implements Cancellable {
-    use CancellableTrait;
-
+final class PostTransactionEvent extends Event {
     /**
      * @param array<string, string> $labels
      * @param list<Player> $involvedPlayers
      */
     public function __construct(
+        private TransactionRef $ref,
         private AccountRef $src,
         private AccountRef $dest,
         private int $amount,
         private array $labels,
         private array $involvedPlayers,
     ) {
+    }
+
+    public function getRef() : TransactionRef {
+        return $this->ref;
     }
 
     public function getSrc() : AccountRef {
@@ -37,22 +38,11 @@ final class TransactionEvent extends Event implements Cancellable {
         return $this->amount;
     }
 
-    public function setAmount(int $amount) : void {
-        $this->amount = $amount;
-    }
-
     /**
      * @return array<string, string>
      */
     public function getLabels() : array {
         return $this->labels;
-    }
-
-    /**
-     * @param array<string, string> $labels
-     */
-    public function setLabels(array $labels) : void {
-        $this->labels = $labels;
     }
 
     /**
