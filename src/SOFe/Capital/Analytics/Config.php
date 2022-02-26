@@ -28,9 +28,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     use SingletonArgs, SingletonTrait, ConfigTrait;
 
     /**
-     * @param array<string, PlayerInfosManager> $singleQueries
+     * @param array<string, Single\PlayerInfoUpdater> $singleQueries
      * @param array<string, PlayerInfoCommand> $infoCommands
-     * @param list<ConfigTop> $topQueries
+     * @param list<Top\Config> $topQueries
      */
     public function __construct(
         public array $singleQueries,
@@ -102,7 +102,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
         foreach ($topPlayersConfig->getKeys() as $key) {
             $queryConfig = $topPlayersConfig->enter($key, null);
-            $topQueries[] = self::parseTopPlayerQuery($queryConfig, $schema, $key);
+            $topQueries[] = Top\Config::parse($queryConfig, $schema, $key);
         }
 
         return new self(
@@ -112,7 +112,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
         );
     }
 
-    private static function parseSingleQuery(Parser $infoConfig, Schema\Schema $schema, string $infoName) : PlayerInfosManager {
+    private static function parseSingleQuery(Parser $infoConfig, Schema\Schema $schema, string $infoName) : Single\PlayerInfoUpdater {
         $type = $infoConfig->expectString("of", "account", <<<'EOT'
             The data source of this info.
             If set to "account", the info is calculated from statistics of some of the player's accounts.
@@ -128,7 +128,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
             $metric = AccountQueryMetric::parseConfig($infoConfig, "metric");
 
-            $query = new AccountSingleQuery($metric, fn(Player $player) => $infoSchema->getSelector($player));
+            $query = new Single\AccountQuery($metric, fn(Player $player) => $infoSchema->getSelector($player));
         } elseif ($type === "transaction") {
             $selectorConfig = $infoConfig->enter("selector", "Filter transactions by labels");
             $labels = [];
@@ -139,7 +139,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
 
             $metric = TransactionQueryMetric::parseConfig($infoConfig, "metric");
 
-            $query = new TransactionSingleQuery($metric, fn(Player $player) => $labels->transform(new PlayerInfo($player)));
+            $query = new Single\TransactionQuery($metric, fn(Player $player) => $labels->transform(new PlayerInfo($player)));
         } else {
             throw new AssertionError("unreachable code");
         }
@@ -149,7 +149,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             This will only affect displays and will not affect transactions.
             EOT) * 20.);
 
-        return new PlayerInfosManager($infoName, new CachedSingleQuery($query, $updateFrequencyTicks));
+        return new Single\PlayerInfoUpdater($infoName, new Single\Cached($query, $updateFrequencyTicks));
     }
 
     private static function parseInfoCommand(Parser $config, string $cmdName) : PlayerInfoCommand {
@@ -163,33 +163,5 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             EOT);
 
         return new PlayerInfoCommand($command, $template);
-    }
-
-    private static function parseTopPlayerQuery(Parser $infoConfig, Schema\Schema $schema, string $cmdName) : ConfigTop {
-        $cmdConfig = $infoConfig->enter("command", "The command that displays the information.");
-        $command = DynamicCommand::parse($cmdConfig, "analytics.top", $cmdName, "Displays the richest player", false);
-
-        $queryArgs = TopQueryArgs::parse($infoConfig, $schema);
-
-        $refreshConfig = $infoConfig->enter("refresh", <<<'EOT'
-            Refresh settings for the top query.
-            These settings depend on how many active accounts you have in the database
-            as well as how powerful the CPU of your database server is.
-            Try increasing the frequencies and reducing batch size if the database server is lagging.
-            EOT);
-        $refreshArgs = TopRefreshArgs::parse($refreshConfig);
-
-        $paginationConfig = $infoConfig->enter("pagination", <<<'EOT'
-            Pagination settings for the top query.
-            EOT);
-        $paginationArgs = TopPaginationArgs::parse($paginationConfig);
-
-        return new ConfigTop(
-            command: $command,
-            queryArgs: $queryArgs,
-            refreshArgs: $refreshArgs,
-            paginationArgs: $paginationArgs,
-            messages: TopMessages::parse($infoConfig->enter("messages", "Configures the displayed messages")),
-        );
     }
 }

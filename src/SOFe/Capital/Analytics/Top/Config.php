@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use Generator;
 use pocketmine\command\CommandSender;
@@ -10,28 +10,29 @@ use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\plugin\Plugin;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
+use SOFe\Capital\Analytics\PaginationInfo;
 use SOFe\Capital\Config\DynamicCommand;
+use SOFe\Capital\Config\Parser;
+use SOFe\Capital\Schema;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
-use function bin2hex;
 use function intdiv;
 use function is_numeric;
 use function min;
-use function random_bytes;
 
-final class ConfigTop {
+final class Config {
     public function __construct(
         public DynamicCommand $command,
-        public TopQueryArgs $queryArgs,
-        public TopRefreshArgs $refreshArgs,
-        public TopPaginationArgs $paginationArgs,
-        public TopMessages $messages,
+        public QueryArgs $queryArgs,
+        public RefreshArgs $refreshArgs,
+        public PaginationArgs $paginationArgs,
+        public Messages $messages,
     ) {
     }
 
     public function register(Plugin $plugin, AwaitStd $std, DatabaseUtils $database) : void {
         $this->registerCommand($plugin, $database);
-        Await::g2c($this->runRefreshLoop($std, $database));
+        Await::g2c(Mod::runRefreshLoop($this->queryArgs, $this->refreshArgs, $std, $database));
     }
 
     private function registerCommand(Plugin $plugin, DatabaseUtils $database) : void {
@@ -72,18 +73,31 @@ final class ConfigTop {
         });
     }
 
-    /**
-     * @return VoidPromise
-     */
-    private function runRefreshLoop(AwaitStd $std, DatabaseUtils $database) : Generator {
-        while (true) {
-            yield from $std->sleep(($this->refreshArgs->batchFrequency * 20));
+    public static function parse(Parser $infoConfig, Schema\Schema $schema, string $cmdName) : self {
+        $cmdConfig = $infoConfig->enter("command", "The command that displays the information.");
+        $command = DynamicCommand::parse($cmdConfig, "analytics.top", $cmdName, "Displays the richest player", false);
 
-            $runId = bin2hex(random_bytes(16));
+        $queryArgs = QueryArgs::parse($infoConfig, $schema);
 
-            yield from $database->collect($runId, $this->queryArgs, $this->refreshArgs->expiry, $this->refreshArgs->batchSize);
+        $refreshConfig = $infoConfig->enter("refresh", <<<'EOT'
+            Refresh settings for the top query.
+            These settings depend on how many active accounts you have in the database
+            as well as how powerful the CPU of your database server is.
+            Try increasing the frequencies and reducing batch size if the database server is lagging.
+            EOT);
+        $refreshArgs = RefreshArgs::parse($refreshConfig);
 
-            yield from $database->compute($runId, $this->queryArgs);
-        }
+        $paginationConfig = $infoConfig->enter("pagination", <<<'EOT'
+            Pagination settings for the top query.
+            EOT);
+        $paginationArgs = PaginationArgs::parse($paginationConfig);
+
+        return new Config(
+            command: $command,
+            queryArgs: $queryArgs,
+            refreshArgs: $refreshArgs,
+            paginationArgs: $paginationArgs,
+            messages: Messages::parse($infoConfig->enter("messages", "Configures the displayed messages")),
+        );
     }
 }

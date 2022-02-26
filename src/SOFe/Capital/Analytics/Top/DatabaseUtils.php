@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use AssertionError;
 use Generator;
@@ -31,9 +31,9 @@ final class DatabaseUtils implements Singleton, FromContext {
     }
 
     /**
-     * @return Generator<mixed, mixed, mixed, array<string, TopResultEntry>>
+     * @return Generator<mixed, mixed, mixed, array<string, ResultEntry>>
      */
-    public function fetchTopAnalytics(TopQueryArgs $query, int $limit, int $page) : Generator {
+    public function fetchTopAnalytics(QueryArgs $query, int $limit, int $page) : Generator {
         $vars = [
             "queryHash" => new GenericVariable("queryHash", GenericVariable::TYPE_STRING, null),
             "offset" => new GenericVariable("offset", GenericVariable::TYPE_INT, null),
@@ -47,7 +47,7 @@ final class DatabaseUtils implements Singleton, FromContext {
             "groupingLabel" => $query->groupingLabel,
         ];
 
-        $ascDesc = $query->ordering === TopQueryArgs::ORDERING_ASC ? "ASC" : "DESC";
+        $ascDesc = $query->ordering === QueryArgs::ORDERING_ASC ? "ASC" : "DESC";
         $labelTable = $query->metric->getLabelTable();
 
         $sql = "SELECT group_value, metric";
@@ -116,7 +116,7 @@ final class DatabaseUtils implements Singleton, FromContext {
                 $i++;
             }
 
-            $output[$key] = new TopResultEntry($rank, $metric, $displays);
+            $output[$key] = new ResultEntry($rank, $metric, $displays);
             $rank++;
         }
 
@@ -126,7 +126,7 @@ final class DatabaseUtils implements Singleton, FromContext {
     /**
      * @return Generator<mixed, mixed, mixed, int>
      */
-    public function fetchTopAnalyticsCount(TopQueryArgs $query) : Generator {
+    public function fetchTopAnalyticsCount(QueryArgs $query) : Generator {
         $rows = yield from $this->db->raw->analyticsCount($query->hash());
         return $rows[0]["cnt"];
     }
@@ -134,7 +134,7 @@ final class DatabaseUtils implements Singleton, FromContext {
     /**
      * @return VoidPromise
      */
-    public function collect(string $runId, TopQueryArgs $query, int $expiry, int $batchSize) : Generator {
+    public function collect(string $runId, QueryArgs $query, int $expiry, int $batchSize) : Generator {
         $newCount = yield from $this->collectNew($runId, $query, $batchSize);
         $remaining = $batchSize - $newCount;
         if ($remaining > 0) {
@@ -145,7 +145,7 @@ final class DatabaseUtils implements Singleton, FromContext {
     /**
      * @return Generator<mixed, mixed, mixed, int>
      */
-    private function collectNew(string $runId, TopQueryArgs $query, int $batchSize) : Generator {
+    private function collectNew(string $runId, QueryArgs $query, int $batchSize) : Generator {
         $vars = [
             "queryHash" => new GenericVariable("queryHash", GenericVariable::TYPE_STRING, null),
             "runId" => new GenericVariable("runId", GenericVariable::TYPE_STRING, null),
@@ -207,14 +207,14 @@ final class DatabaseUtils implements Singleton, FromContext {
     /**
      * @return Generator<mixed, mixed, mixed, int>
      */
-    private function collectOld(string $runId, TopQueryArgs $query, int $expiry, int $remainingBatchSize) : Generator {
+    private function collectOld(string $runId, QueryArgs $query, int $expiry, int $remainingBatchSize) : Generator {
         return yield from $this->db->raw->analyticsCollectUpdates($query->hash(), $runId, $expiry, $remainingBatchSize);
     }
 
     /**
      * @return VoidPromise
      */
-    public function compute(string $runId, TopQueryArgs $query) : Generator {
+    public function compute(string $runId, QueryArgs $query) : Generator {
         $vars = [
             "runId" => new GenericVariable("runId", GenericVariable::TYPE_STRING, null),
             "groupingLabel" => new GenericVariable("groupingLabel", GenericVariable::TYPE_STRING, null),

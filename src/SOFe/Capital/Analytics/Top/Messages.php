@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Top;
 
 use SOFe\Capital\Config\Parser;
 
-final class TopMessages {
+final class Messages {
     public function __construct(
         public string $header,
         public string $entry,

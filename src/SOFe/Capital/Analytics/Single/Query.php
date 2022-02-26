@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SOFe\Capital\Analytics;
+namespace SOFe\Capital\Analytics\Single;
 
 use Generator;
 use SOFe\Capital\Database\Database;
@@ -10,7 +10,7 @@ use SOFe\Capital\Database\Database;
 /**
  * @template P
  */
-interface SingleQuery {
+interface Query {
     /**
      * @param P $p
      * @return Generator<mixed, mixed, mixed, int|float>
