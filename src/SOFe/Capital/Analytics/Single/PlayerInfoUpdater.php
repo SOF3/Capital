@@ -64,7 +64,14 @@ final class PlayerInfoUpdater {
             handler: function(PostTransactionEvent $event) {
                 foreach ($event->getInvolvedPlayers() as $player) {
                     if (isset($this->cache[$player->getId()])) {
-                        $this->cache[$player->getId()]->refreshNow();
+                        $value = $this->cache[$player->getId()];
+                        $value->refreshNow();
+
+                        $event->addRefresh();
+                        Await::f2c(function() use ($event, $value) {
+                            yield from $value->waitForRefresh();
+                            $event->doneRefresh();
+                        });
                     }
                 }
             },

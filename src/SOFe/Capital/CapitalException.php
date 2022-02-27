@@ -30,7 +30,7 @@ final class CapitalException extends Exception {
             self::ACCOUNT_LABEL_DOES_NOT_EXIST => "The account does not have this label",
             self::TRANSACTION_LABEL_ALREADY_EXISTS => "The transaction already has this label",
             self::TRANSACTION_LABEL_DOES_NOT_EXIST => "The transaction does not have this label",
-            self::EVENT_CANCELLED => "The transaction event was cancelled",
+            self::EVENT_CANCELLED => "The transaction event was cancelled", // TODO allow customize message
         };
         parent::__construct($message, $code, $previous);
     }

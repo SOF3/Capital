@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Logger;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Database\Database;
@@ -32,11 +33,10 @@ final class Capital implements Singleton, FromContext {
     }
 
     /**
-     * @param array<string, string> $labels
      * @param list<Player> $involvedPlayers
      * @return Generator<mixed, mixed, mixed, TransactionRef> the transaction ID
      */
-    public function transact(AccountRef $src, AccountRef $dest, int $amount, array $labels, array $involvedPlayers) : Generator {
+    public function transact(AccountRef $src, AccountRef $dest, int $amount, LabelSet $labels, array $involvedPlayers, bool $awaitRefresh) : Generator {
         $event = new TransactionEvent($src, $dest, $amount, $labels, $involvedPlayers);
         $event->call();
         if ($event->isCancelled()) {
@@ -49,7 +49,7 @@ final class Capital implements Singleton, FromContext {
         $id = yield from $this->database->doTransaction($src->getId(), $dest->getId(), $amount);
 
         $promises = [];
-        foreach ($labels as $labelName => $labelValue) {
+        foreach ($labels->getEntries() as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($id, $labelName, $labelValue);
         }
         yield from Await::all($promises);
@@ -58,19 +58,21 @@ final class Capital implements Singleton, FromContext {
         $event = new PostTransactionEvent($ref, $src, $dest, $amount, $labels, $involvedPlayers);
         $event->call();
 
+        if ($awaitRefresh) {
+            yield from $event->waitRefreshComplete();
+        }
+
         return $ref;
     }
 
     /**
-     * @param array<string, string> $labels1
-     * @param array<string, string> $labels2
      * @param list<Player> $involvedPlayers
      * @return Generator<mixed, mixed, mixed, array{TransactionRef, TransactionRef}> the transaction IDs
      */
     public function transact2(
-        AccountRef $src1, AccountRef $dest1, int $amount1, array $labels1,
-        AccountRef $src2, AccountRef $dest2, int $amount2, array $labels2,
-        array $involvedPlayers,
+        AccountRef $src1, AccountRef $dest1, int $amount1, LabelSet $labels1,
+        AccountRef $src2, AccountRef $dest2, int $amount2, LabelSet $labels2,
+        array $involvedPlayers, bool $awaitRefresh,
         ?UuidInterface $uuid1 = null, ?UuidInterface $uuid2 = null,
     ) : Generator {
         $event = new TransactionEvent($src1, $dest1, $amount1, $labels1, $involvedPlayers);
@@ -99,21 +101,28 @@ final class Capital implements Singleton, FromContext {
         );
 
         $promises = [];
-        foreach ($labels1 as $labelName => $labelValue) {
+        foreach ($labels1->getEntries() as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($ids[0], $labelName, $labelValue);
         }
-        foreach ($labels2 as $labelName => $labelValue) {
+        foreach ($labels2->getEntries() as $labelName => $labelValue) {
             $promises[] = $this->database->setTransactionLabel($ids[1], $labelName, $labelValue);
         }
         yield from Await::all($promises);
 
         $ref1 = new TransactionRef($ids[1]);
-        $event = new PostTransactionEvent($ref1, $src1, $dest1, $amount1, $labels1, $involvedPlayers);
-        $event->call();
+        $event1 = new PostTransactionEvent($ref1, $src1, $dest1, $amount1, $labels1, $involvedPlayers);
+        $event1->call();
 
         $ref2 = new TransactionRef($ids[1]);
-        $event = new PostTransactionEvent($ref2, $src2, $dest2, $amount2, $labels2, $involvedPlayers);
-        $event->call();
+        $event2 = new PostTransactionEvent($ref2, $src2, $dest2, $amount2, $labels2, $involvedPlayers);
+        $event2->call();
+
+        if ($awaitRefresh) {
+            yield from Await::all([
+                $event1->waitRefreshComplete(),
+                $event2->waitRefreshComplete(),
+            ]);
+        }
 
         return [$ref1, $ref2];
     }
@@ -212,5 +221,114 @@ final class Capital implements Singleton, FromContext {
     public function findAccountsComplete(Player $player, Schema\Complete $complete) : Generator {
         $accounts = yield from Schema\Utils::lazyCreate($complete, $this->database, $player);
         return $accounts;
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    public function pay(
+        Player $src,
+        Player $dest,
+        Schema\Complete $schema,
+        int $amount,
+        LabelSet $transactionLabels,
+        bool $awaitRefresh,
+    ) : Generator {
+        $srcAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $src);
+        $destAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $dest);
+
+        $srcAccount = $srcAccounts[0]; // must have at least one because it was lazily created
+        $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
+
+        yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
+    }
+
+    /**
+     * Automatically appends `TransactionLabels::UNEQUAL_AUX` to $oracleTransactionLabels.
+     *
+     * @return VoidPromise
+     */
+    public function payUnequal(
+        string $oracleName,
+        Player $src,
+        Player $dest,
+        Schema\Complete $schema,
+        int $srcDeduction,
+        int $destAddition,
+        LabelSet $directTransactionLabels,
+        LabelSet $oracleTransactionLabels,
+        bool $awaitRefresh,
+    ) : Generator {
+        if ($srcDeduction === $destAddition) {
+            yield from $this->pay($src, $dest, $schema, $srcDeduction, $directTransactionLabels, $awaitRefresh);
+            return;
+        }
+
+        $srcAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $src);
+        $destAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $dest);
+
+        $src1 = $srcAccounts[0]; // must have at least one because it was lazily created
+        $dest1 = $destAccounts[0]; // must have at least one because it was lazily created
+
+        if ($srcDeduction > $destAddition) {
+            $amount1 = $destAddition;
+            $amount2 = $srcDeduction - $destAddition;
+
+            $src2 = $src1;
+            $dest2 = yield from $this->getOracle($oracleName);
+        } else { // $destAddition > $srcDeduction
+            $amount1 = $srcDeduction;
+            $amount2 = $destAddition - $srcDeduction;
+
+            $src2 = yield from $this->getOracle($oracleName);
+            $dest2 = $dest1;
+        }
+
+        $uuid1 = Uuid::uuid4();
+        $uuid2 = Uuid::uuid4();
+        $auxLabel = new LabelSet([TransactionLabels::UNEQUAL_AUX => $uuid1->toString()]);
+
+        yield from $this->transact2(
+            src1: $src1, dest1: $dest1, amount1: $amount1, labels1: $directTransactionLabels,
+            src2: $src2, dest2: $dest2, amount2: $amount2, labels2: $oracleTransactionLabels->and($auxLabel),
+            involvedPlayers: [$src, $dest], awaitRefresh: $awaitRefresh,
+            uuid1: $uuid1, uuid2: $uuid2,
+        );
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    public function addMoney(
+        string $oracleName,
+        Player $player,
+        Schema\Complete $schema,
+        int $amount,
+        LabelSet $transactionLabels,
+        bool $awaitRefresh,
+    ) : Generator {
+        $accounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $player);
+        $account = $accounts[0]; // must have at least one because it was lazily created
+
+        $oracle = yield from $this->getOracle($oracleName);
+        yield from $this->transact($oracle, $account, $amount, $transactionLabels, [$player], $awaitRefresh);
+    }
+
+    /**
+     * @return VoidPromise
+     */
+    public function takeMoney(
+        string $oracleName,
+        Player $player,
+        Schema\Complete $schema,
+        int $amount,
+        LabelSet $transactionLabels,
+        bool $awaitRefresh,
+    ) : Generator {
+        $accounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $player);
+        $account = $accounts[0]; // must have at least one because it was lazily created
+
+        $oracle = yield from $this->getOracle($oracleName);
+        yield from $this->transact($account, $oracle, $amount, $transactionLabels, [$player], $awaitRefresh);
     }
 }

@@ -13,14 +13,13 @@ final class TransactionEvent extends Event implements Cancellable {
     use CancellableTrait;
 
     /**
-     * @param array<string, string> $labels
      * @param list<Player> $involvedPlayers
      */
     public function __construct(
         private AccountRef $src,
         private AccountRef $dest,
         private int $amount,
-        private array $labels,
+        private LabelSet $labels,
         private array $involvedPlayers,
     ) {
     }
@@ -41,17 +40,11 @@ final class TransactionEvent extends Event implements Cancellable {
         $this->amount = $amount;
     }
 
-    /**
-     * @return array<string, string>
-     */
-    public function getLabels() : array {
+    public function getLabels() : LabelSet {
         return $this->labels;
     }
 
-    /**
-     * @param array<string, string> $labels
-     */
-    public function setLabels(array $labels) : void {
+    public function setLabels(LabelSet $labels) : void {
         $this->labels = $labels;
     }
 

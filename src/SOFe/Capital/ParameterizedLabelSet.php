@@ -25,15 +25,12 @@ final class ParameterizedLabelSet {
     ) {
     }
 
-    /**
-     * @return array<string, string>
-     */
-    public function transform(Info $info) : array {
+    public function transform(Info $info) : LabelSet {
         $labels = [];
         foreach ($this->entries as $name => $valueTemplate) {
             $labels[$name] = InfoAPI::resolve($valueTemplate, $info, $this->cache);
         }
-        return $labels;
+        return new LabelSet($labels);
     }
 
     /**
