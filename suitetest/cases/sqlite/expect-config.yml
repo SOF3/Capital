@@ -166,7 +166,7 @@ analytics:
         '#header': The top line of the page.
         header: Showing page {page} of {totalPages}
         '#entry': This line is repeated for each entry in the page.
-        entry: '#{rank} {name}: {value}'
+        entry: '#{rank} {name}: ${value}'
         '#footer': The bottom line of the page.
         footer: ""
 '#transfer': '"transfer" tells Capital what methods admins and players can send money
@@ -210,11 +210,11 @@ transfer:
           to be player and they are not.
         player-only-command: '{red}Only players may use this command.'
         '#notify-sender-success': Sent to command sender on success.
-        notify-sender-success: '{green}You have sent ${sentAmount} to ${target}. You
+        notify-sender-success: '{green}You have sent ${sentAmount} to {target}. You
           now have ${sender money} left.'
         '#notify-recipient-success': Sent to recipient on success.
         notify-recipient-success: '{green}You have received ${receivedAmount} from
-          ${sender}. You now have ${target money} left.'
+          {sender}. You now have ${target money} left.'
         '#underflow': Sent when too much money is withdrawn.
         underflow: '{red}You do not have ${sentAmount}.'
         '#overflow': Sent when too much money is given.

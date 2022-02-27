@@ -10,7 +10,6 @@ use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\utils\TextFormat;
 use SOFe\Capital\Di\StoreEvent;
 use SOFe\Capital\Loader\Loader;
 use SOFe\SuiteTester\Await;
@@ -62,7 +61,7 @@ return function() {
                 fn($event) => $event->player === $alice && str_contains($event->message, $aliceMessage), false, EventPriority::MONITOR, false);
 
             $bob = $server->getPlayerExact("bob");
-            $bobMessage = TextFormat::GREEN . 'You have received $10. You now have $110 left.';
+            $bobMessage = 'You have received $10. You now have $110 left.';
             $bobPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $bob && str_contains($event->message, $bobMessage), false, EventPriority::MONITOR, false);
 
@@ -72,19 +71,38 @@ return function() {
         "take money" => function() use($server) {
             false && yield;
             $alice = $server->getPlayerExact("alice");
-            $alice->chat("/takemoney alice 10");
+            $alice->chat("/takemoney alice 15");
         },
         "wait money deduct message" => function() use($server, $std) {
             $alice = $server->getPlayerExact("alice");
-            $ackMessage = 'You have taken $10 from Alice. They now have $90 left.';
+            $ackMessage = 'You have taken $15 from Alice. They now have $85 left.';
             $ackPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $ackMessage), false, EventPriority::MONITOR, false);
 
-            $deductMessage = TextFormat::GREEN . 'An admin took $10 from you. You now have $90 left.';
+            $deductMessage = 'An admin took $15 from you. You now have $85 left.';
             $deductPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $deductMessage), false, EventPriority::MONITOR, false);
 
             yield from Await::all([$ackPromise, $deductPromise]);
+        },
+
+        "pay money" => function() use($server) {
+            false && yield;
+            $alice = $server->getPlayerExact("alice");
+            $alice->chat("/pay bob 3");
+        },
+        "wait pay message" => function() use($server, $std) {
+            $alice = $server->getPlayerExact("alice");
+            $aliceMessage = 'You have sent $3 to Bob. You now have $82 left.';
+            $alicePromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $alice && str_contains($event->message, $aliceMessage), false, EventPriority::MONITOR, false);
+
+            $bob = $server->getPlayerExact("bob");
+            $bobMessage = 'You have received $3 from Alice. You now have $113 left.';
+            $bobPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
+                fn($event) => $event->player === $bob && str_contains($event->message, $bobMessage), false, EventPriority::MONITOR, false);
+
+            yield from Await::all([$alicePromise, $bobPromise]);
         },
 
         "bob check money" => function() use($server, $std, $plugin) {
@@ -93,7 +111,7 @@ return function() {
             $bob = $server->getPlayerExact("bob");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/checkmoney")));
 
-            $message = 'Bob has $110.';
+            $message = 'Bob has $113.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
@@ -102,7 +120,7 @@ return function() {
             $alice = $server->getPlayerExact("alice");
             $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $alice->chat("/checkmoney bob")));
 
-            $message = 'Bob has $110.';
+            $message = 'Bob has $113.';
             yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                 fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
         },
@@ -115,8 +133,8 @@ return function() {
 
             foreach([
                 'Showing page 1 of 1',
-                '#1 bob: 110',
-                '#2 alice: 90',
+                '#1 bob: $113',
+                '#2 alice: $82',
             ] as $message) {
                 yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
                     fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);

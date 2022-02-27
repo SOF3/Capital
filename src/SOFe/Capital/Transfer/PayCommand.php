@@ -167,8 +167,8 @@ final class PayCommand {
 
         $messages = Messages::parse($config->enter("messages", null), new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
-                    notifySenderSuccess: '{green}You have sent ${sentAmount} to ${target}. You now have ${sender money} left.',
-                    notifyRecipientSuccess: '{green}You have received ${receivedAmount} from ${sender}. You now have ${target money} left.',
+                    notifySenderSuccess: '{green}You have sent ${sentAmount} to {target}. You now have ${sender money} left.',
+                    notifyRecipientSuccess: '{green}You have received ${receivedAmount} from {sender}. You now have ${target money} left.',
                     underflow: '{red}You do not have ${sentAmount}.',
                     overflow: '{red}The accounts of {target} are full. They cannot fit in ${sentAmount} more.',
                     internalError: '{red}An internal error occurred. Please try again.',
