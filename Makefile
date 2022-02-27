@@ -5,6 +5,10 @@ REUSE_MYSQL = false
 
 SUITE_TESTS = $(shell echo suitetest/cases/*)
 
+DIFF = diff -y --suppress-common-lines --width=$(shell tput cols)
+
+SUITE_TESTS_CONFIG_REGEN = false
+
 CAPITAL_SOURCE_FILES = plugin.yml $(shell find src resources -type f)
 CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar dev/rwlock.phar
 
@@ -120,7 +124,9 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 		|| (cat $@/output/output.json && exit 1)
 
 	test ! -f $@/expect-config.yml || docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/config.yml $@/output/actual-config.yml
-	test ! -f $@/expect-config.yml || diff $@/expect-config.yml $@/output/actual-config.yml
+	test ! -f $@/expect-config.yml || \
+		$(DIFF) $@/expect-config.yml $@/output/actual-config.yml || \
+		($(SUITE_TESTS_CONFIG_REGEN) && cp $@/output/actual-config.yml $@/expect-config.yml)
 
 	docker cp $(CONTAINER_PREFIX)-pocketmine:/data/plugin_data/Capital/depgraph.dot $@/output/depgraph.dot
 	command -v dot && dot -T svg -o $@/output/depgraph.svg $@/output/depgraph.dot || true

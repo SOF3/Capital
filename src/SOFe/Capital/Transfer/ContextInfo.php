@@ -18,11 +18,11 @@ use SOFe\InfoAPI\PlayerInfo;
 final class ContextInfo extends Info {
     /**
      * @param ?PlayerInfo $sender The player who initiated the transfer.
-     * @param PlayerInfo $recipient The player set as the recipient in the command.
+     * @param PlayerInfo $target The player set as the recipient in the command.
      */
     public function __construct(
         private ?PlayerInfo $sender,
-        private PlayerInfo $recipient,
+        private PlayerInfo $target,
         private NumberInfo $sentAmount,
         private NumberInfo $receivedAmount,
     ) {
@@ -34,7 +34,8 @@ final class ContextInfo extends Info {
 
     public static function init() : void {
         InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.sender", fn($info) => $info->sender);
-        InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.recipient", fn($info) => $info->recipient);
+        InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.target", fn($info) => $info->target);
+        InfoAPI::provideInfo(self::class, PlayerInfo::class, "capital.transfer.recipient", fn($info) => $info->target);
 
         InfoAPI::provideInfo(self::class, NumberInfo::class, "capital.transfer.sentAmount", fn($info) => $info->sentAmount);
         InfoAPI::provideInfo(self::class, NumberInfo::class, "capital.transfer.sent", fn($info) => $info->sentAmount);

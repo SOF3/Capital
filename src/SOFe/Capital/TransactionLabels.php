@@ -9,8 +9,8 @@ namespace SOFe\Capital;
  */
 final class TransactionLabels {
     /**
-     * Labels oracle transactions for transfers with rate != 1.0.
+     * Labels auxiliary transactions for unequal payment.
      * The value is the UUID of the actual transfer transaction.
      */
-    public const TRANSFER_ORACLE = "capital/transferOracle";
+    public const UNEQUAL_AUX = "capital/unequalAux";
 }

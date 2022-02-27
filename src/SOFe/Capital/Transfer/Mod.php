@@ -25,9 +25,11 @@ final class Mod implements Singleton, FromContext {
         yield from $api->getOracle(OracleNames::TRANSFER);
 
         ContextInfo::init();
-        SuccessContextInfo::init();
 
-        foreach ($config->commands as $command) {
+        foreach ($config->payCommands as $command) {
+            $command->register($plugin, $api);
+        }
+        foreach ($config->alterCommands as $command) {
             $command->register($plugin, $api);
         }
 

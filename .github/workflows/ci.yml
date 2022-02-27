@@ -28,7 +28,7 @@ jobs:
           - config-regen-currency
     steps:
       - uses: actions/checkout@v2
-      - run: make suitetest/cases/${{matrix.suite-name}}
+      - run: make suitetest/cases/${{matrix.suite-name}} DIFF="diff -y"
   fmt:
     name: code style check
     runs-on: ubuntu-latest

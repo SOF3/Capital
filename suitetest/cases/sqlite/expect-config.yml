@@ -166,35 +166,24 @@ analytics:
         '#header': The top line of the page.
         header: Showing page {page} of {totalPages}
         '#entry': This line is repeated for each entry in the page.
-        entry: '#{rank} {name}: {value}'
+        entry: '#{rank} {name}: ${value}'
         '#footer': The bottom line of the page.
         footer: ""
 '#transfer': '"transfer" tells Capital what methods admins and players can send money
   through.'
 transfer:
-  '#commands': These commands initiate transfers.
-  commands:
+  '#payment-commands': These are payment commands from one player to another player.
+  payment-commands:
+    '#pay': An example command that pays money to another player
     pay:
       '#description': The description message of this command.
-      description: Pays another player.
+      description: Pays another player
       '#requires-op': |-
         If set to true, only ops can use this command
         (you can further configure this with permission plugins).
       requires-op: false
-      '#src': The source account to deduct money from.
-      src:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: sender
-      '#dest': The destination account to add money to.
-      dest:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: recipient
+      '#selector': Select which account to pay from and to
+      selector: []
       '#rate': |-
         The exchange rate, or how much of the original money is sent.
         When using "currency" schema, this allows transferring between
@@ -203,9 +192,11 @@ transfer:
       '#minimum-amount': The minimum amount of money that can be transferred each
         time.
       minimum-amount: 0
-      '#maximum-amount': The maximum amount of money that can be transferred each
-        time.
-      maximum-amount: 1000000
+      '#maximum-amount': |-
+        The maximum amount of money that can be transferred each time.
+        Write ~ if the transfer amount is unlimited.
+        The actual amount is still subject to the account limits set in the schema section.
+      maximum-amount: ~
       '#fee': This is taken directly out of the source account before money is transferred.
       fee: 0
       '#transaction-labels': |-
@@ -219,116 +210,34 @@ transfer:
           to be player and they are not.
         player-only-command: '{red}Only players may use this command.'
         '#notify-sender-success': Sent to command sender on success.
-        notify-sender-success: '{green}You have sent ${sentAmount} to ${recipient}.
-          You now have ${srcBalance} left.'
+        notify-sender-success: '{green}You have sent ${sentAmount} to {target}. You
+          now have ${sender money} left.'
         '#notify-recipient-success': Sent to recipient on success.
         notify-recipient-success: '{green}You have received ${receivedAmount} from
-          ${sender}. You now have ${destBalance} left.'
-        '#no-source-accounts': Sent when no source accounts are found.
-        no-source-accounts: '{red}There are no accounts to send money from.'
-        '#no-destination-accounts': Sent when no destination accounts are found.
-        no-destination-accounts: '{red}There are no accounts to send money to.'
+          {sender}. You now have ${target money} left.'
         '#underflow': Sent when too much money is withdrawn.
         underflow: '{red}You do not have ${sentAmount}.'
         '#overflow': Sent when too much money is given.
-        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount}
+        overflow: '{red}The accounts of {target} are full. They cannot fit in ${sentAmount}
           more.'
         '#internal-error': Sent when an unexpected error occurs.
         internal-error: '{red}An internal error occurred. Please try again.'
-    takemoney:
-      '#description': The description message of this command.
-      description: Reduce a player's money.
-      '#requires-op': |-
-        If set to true, only ops can use this command
-        (you can further configure this with permission plugins).
-      requires-op: true
-      '#src': The source account to deduct money from.
-      src:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: recipient
-      '#dest': The destination account to add money to.
-      dest:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: system
-      '#rate': |-
-        The exchange rate, or how much of the original money is sent.
-        When using "currency" schema, this allows transferring between
-        accounts of different currencies.
-      rate: 1
-      '#minimum-amount': The minimum amount of money that can be transferred each
-        time.
-      minimum-amount: 0
-      '#maximum-amount': The maximum amount of money that can be transferred each
-        time.
-      maximum-amount: ~
-      '#fee': This is taken directly out of the source account before money is transferred.
-      fee: 0
-      '#transaction-labels': |-
-        These are labels to add to the transaction.
-        You can match by these labels to identify how players earn and lose money.
-        Labels are formatted using InfoAPI syntax.
-      transaction-labels:
-        operator: ""
-      messages:
-        '#player-only-command': Sent to command sender if this command requires them
-          to be player and they are not.
-        player-only-command: '{red}Only players may use this command.'
-        '#notify-sender-success': Sent to command sender on success.
-        notify-sender-success: '{green}You have taken ${receivedAmount} from {recipient}.
-          They now have ${srcBalance} left.'
-        '#notify-recipient-success': Sent to recipient on success.
-        notify-recipient-success: '{green}An admin took ${sentAmount} from you. You
-          now have ${srcBalance} left.'
-        '#no-source-accounts': Sent when no source accounts are found.
-        no-source-accounts: '{red}There are no accounts to send money from.'
-        '#no-destination-accounts': Sent when no destination accounts are found.
-        no-destination-accounts: '{red}An internal error occurred.'
-        '#underflow': Sent when too much money is withdrawn.
-        underflow: '{red}{recipient} does not have ${sentAmount} to be taken.'
-        '#overflow': Sent when too much money is given.
-        overflow: '{red}An internal error occurred.'
-        '#internal-error': Sent when an unexpected error occurs.
-        internal-error: '{red}An internal error occurred. Please try again.'
+  '#add-money-commands': These are commands that allow admins to add money to a player.
+  add-money-commands:
+    '#addmoney': Adds money to a player
     addmoney:
       '#description': The description message of this command.
-      description: Adds a player's money.
+      description: Add money to a player
       '#requires-op': |-
         If set to true, only ops can use this command
         (you can further configure this with permission plugins).
       requires-op: true
-      '#src': The source account to deduct money from.
-      src:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: system
-      '#dest': The destination account to add money to.
-      dest:
-        '#of': |-
-          Can be "system", "sender", or "recipient".
-          If "sender" is used, this command will only be usable by players.
-          (i.e. cannot be used from console).
-        of: recipient
-      '#rate': |-
-        The exchange rate, or how much of the original money is sent.
-        When using "currency" schema, this allows transferring between
-        accounts of different currencies.
-      rate: 1
       '#minimum-amount': The minimum amount of money that can be transferred each
         time.
       minimum-amount: 0
       '#maximum-amount': The maximum amount of money that can be transferred each
         time.
       maximum-amount: ~
-      '#fee': This is taken directly out of the source account before money is transferred.
-      fee: 0
       '#transaction-labels': |-
         These are labels to add to the transaction.
         You can match by these labels to identify how players earn and lose money.
@@ -340,20 +249,54 @@ transfer:
           to be player and they are not.
         player-only-command: '{red}Only players may use this command.'
         '#notify-sender-success': Sent to command sender on success.
-        notify-sender-success: '{green}{recipient} has received ${receivedAmount}.
-          They now have ${destBalance} left.'
+        notify-sender-success: '{green}{target} has received ${receivedAmount}. They
+          now have ${target money} left.'
         '#notify-recipient-success': Sent to recipient on success.
         notify-recipient-success: '{green}You have received ${receivedAmount}. You
-          now have ${destBalance} left.'
-        '#no-source-accounts': Sent when no source accounts are found.
-        no-source-accounts: '{red}An internal error occurred.'
-        '#no-destination-accounts': Sent when no destination accounts are found.
-        no-destination-accounts: '{red}There are no accounts to send money to.'
+          now have ${target money} left.'
         '#underflow': Sent when too much money is withdrawn.
         underflow: '{red}An internal error occurred.'
         '#overflow': Sent when too much money is given.
-        overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount}
-          more.'
+        overflow: '{red}{target} cannot fit ${receivedAmount} more money.'
+        '#internal-error': Sent when an unexpected error occurs.
+        internal-error: '{red}An internal error occurred. Please try again.'
+  '#take-money-commands': These are commands that allow admins to take money from
+    a player.
+  take-money-commands:
+    '#takemoney': Takes money to a player
+    takemoney:
+      '#description': The description message of this command.
+      description: Remove money from a player
+      '#requires-op': |-
+        If set to true, only ops can use this command
+        (you can further configure this with permission plugins).
+      requires-op: true
+      '#minimum-amount': The minimum amount of money that can be transferred each
+        time.
+      minimum-amount: 0
+      '#maximum-amount': The maximum amount of money that can be transferred each
+        time.
+      maximum-amount: ~
+      '#transaction-labels': |-
+        These are labels to add to the transaction.
+        You can match by these labels to identify how players earn and lose money.
+        Labels are formatted using InfoAPI syntax.
+      transaction-labels:
+        operator: ""
+      messages:
+        '#player-only-command': Sent to command sender if this command requires them
+          to be player and they are not.
+        player-only-command: '{red}Only players may use this command.'
+        '#notify-sender-success': Sent to command sender on success.
+        notify-sender-success: '{green}You have taken ${receivedAmount} from {target}.
+          They now have ${target money} left.'
+        '#notify-recipient-success': Sent to recipient on success.
+        notify-recipient-success: '{green}An admin took ${sentAmount} from you. You
+          now have ${target money} left.'
+        '#underflow': Sent when too much money is withdrawn.
+        underflow: '{red}{target} does not have ${sentAmount}.'
+        '#overflow': Sent when too much money is given.
+        overflow: '{red}An internal error occurred.'
         '#internal-error': Sent when an unexpected error occurs.
         internal-error: '{red}An internal error occurred. Please try again.'
 ...
