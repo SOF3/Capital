@@ -2,7 +2,183 @@
 
 This document is for developers who want to contribute to this project.
 
-## Project structure and patterns
+## API
+
+### Summary
+
+Capital supports different account classifications (known as [schemas](#schema)).
+All operations involving player accounts require
+a config entry to select which account,
+e.g. if the user selects the Currency schema,
+you need a config that selects which currency to use.
+The good news is, you don't have to consider each schema,
+because Capital will figure it out.
+For each use case, just create an empty config entry to select the account:
+
+```yaml
+selector:
+```
+
+Users can fill this selector with options like `allowed-currencies` etc.,
+depending on the schema they chose.
+
+In `onEnable`, store this in a class property:
+
+```php
+use SOFe\Capital\{Capital, CapitalException, LabelSet};
+
+class Main extends PluginBase {
+  private $selector;
+
+  protected function onEnable() : void {
+    Capital::api("0.1.0", function(Capital $api) {
+      $this->selector = $api->completeConfig($this->getConfig()->get("selector"));
+    });
+  }
+}
+```
+
+Then you can use the stored selector in the code
+where you want to manipulate player money.
+
+#### Take money from a player
+
+Let's make a plugin called "ChatFee"
+which charges the player $5 for every chat message:
+
+```php
+public function onChat(PlayerChatEvent $event) : void {
+  $player = $event->getPlayer();
+
+  Capital::api("0.1.0", function(Capital $api) use($player) {
+      try {
+        yield from $api->takeMoney(
+          "ChatFee",
+          $player,
+          $this->selector,
+          5, 
+          new LabelSet(["reason" => "chatting"]),
+        );
+      } catch(CapitalException $e) {
+        $player->kick("You don't have money to chat");
+      }
+  });
+}
+```
+
+The first "ChatFee" is your plugin name
+so that server admins can track which plugin gave the money.
+Capital will create a system account for your plugin,
+and the money will actually go into the ChatFee system account.
+
+The second parameter `$player` tells Capital which player to take money from.
+
+The third parameter `$this->selector` tells Capital which account to take money from,
+as we have explained in the previous section.
+Note: if you have multiple different scenarios of giving/taking money,
+consider using different selectors.
+
+The fourth parameter `5` is the amount of money to take.
+This value must be an integer.
+
+The last parameter `new LabelSet(["reason" => "chatting"])`
+provides the labels for the transaction.
+Server admins can use these labels to perform analytics.
+You may want to let users configure these labels in the config too.
+
+The try-catch block lets you handle the scenario where
+player does not have enough money to be taken.
+However, remember that **you cannot cancel `$event` after the first `yield`**,
+because transactions are asynchronous, which means that
+the event already happened by that time and it is too late to cancel.
+
+#### Giving money to a player
+
+Giving money is similar to taking money,
+except `takeMoney` becomes `addMoney`.
+Let's make a plugin called "HitReward" that
+gives the player money when they attack someone:
+
+```php
+public function onDamage(EntityDamageByEntityEvent $event) : void {
+  $player = $event->getDamager();
+  if(!$player instanceof Player) {
+    return;
+  }
+
+  Capital::api("0.1.0", function(Capital $api) use($player) {
+    try {
+      yield from $api->addMoney(
+        "HitReward",
+        $player,
+        $this->selector,
+        5, 
+        new LabelSet(["reason" => "attacking"]),
+      );
+    } catch(CapitalException $e) {
+      $player->sendMessage("You have too much money!");
+    }
+  });
+}
+```
+
+#### Paying money from a player to another
+
+Paying money is like taking money from one player and giving to another,
+but it only happens when *both* players have enough money and don't exceed limits.
+Neither player will lose or receive money if any limits are violated.
+
+```php
+public function pay(Player $player1, Player $player2) : void {
+  Capital::api("0.1.0", function(Capital $api) use($player1, $player2) {
+    try {
+      yield from $api->pay(
+        $player1,
+        $player2,
+        $this->selector,
+        5, 
+        new LabelSet(["reason" => "payment"]),
+      );
+    } catch(CapitalException $e) {
+      $player1->sendMessage("Failed!");
+    }
+  });
+}
+```
+
+All arguments are same as before,
+except you don't need to pass your plugin name
+because the money came from a player and you don't need a plugin account.
+
+If the payer and receiver sides have different amounts (e.g. service fee),
+you have to use `payUnequal` instead.
+The following code makes `$player1` pay `$player2` $5,
+plus giving $3 service fee to the "ServiceFee" system account:
+
+```php
+public function pay(Player $player1, Player $player2) : void {
+  Capital::api("0.1.0", function(Capital $api) use($player1, $player2) {
+    try {
+      yield from $api->payUnequal(
+        "ServiceFee",
+        $player1,
+        $player2,
+        $this->selector,
+        5 + 3, // this is the total amount that $player1 has to lose
+        5, // this is the total amount that $player2 gets
+        new LabelSet(["reason" => "payment"]),
+        new LabelSet(["reason" => "service-fee"]), // these labels are applied on the transaction from $player1 to the system account
+      );
+    } catch(CapitalException $e) {
+      $player1->sendMessage("Failed!");
+    }
+  });
+}
+```
+
+It is also possible for player1 to pay less and player2 to pay more.
+In that case, player1 only pays the amount to player2,
+then the system account will pay the rest to player2.
 
 ### Async functions
 
