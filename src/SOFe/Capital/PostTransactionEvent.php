@@ -75,6 +75,7 @@ final class PostTransactionEvent extends Event {
     public function doneRefresh() : void {
         $this->refreshCount -= 1;
         if ($this->refreshCount === 0 && $this->onRefreshZero !== null) {
+            ($this->onRefreshZero)();
             $this->onRefreshZero = null;
         }
     }

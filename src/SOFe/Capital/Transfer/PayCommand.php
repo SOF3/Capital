@@ -94,7 +94,7 @@ final class PayCommand {
 
                 $info = new ContextInfo(
                     sender: new PlayerInfo($sender),
-                    recipient: new PlayerInfo($recipient),
+                    target: new PlayerInfo($recipient),
                     sentAmount: new NumberInfo((float) $srcDeduction),
                     receivedAmount: new NumberInfo((float) $destAddition),
                 );
@@ -167,10 +167,10 @@ final class PayCommand {
 
         $messages = Messages::parse($config->enter("messages", null), new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
-                    notifySenderSuccess: '{green}You have sent ${sentAmount} to ${recipient}. You now have ${srcBalance} left.',
-                    notifyRecipientSuccess: '{green}You have received ${receivedAmount} from ${sender}. You now have ${destBalance} left.',
+                    notifySenderSuccess: '{green}You have sent ${sentAmount} to ${target}. You now have ${sender money} left.',
+                    notifyRecipientSuccess: '{green}You have received ${receivedAmount} from ${sender}. You now have ${target money} left.',
                     underflow: '{red}You do not have ${sentAmount}.',
-                    overflow: '{red}The accounts of {recipient} are full. They cannot fit in ${sentAmount} more.',
+                    overflow: '{red}The accounts of {target} are full. They cannot fit in ${sentAmount} more.',
                     internalError: '{red}An internal error occurred. Please try again.',
                 ));
 

@@ -86,7 +86,7 @@ final class AlterCommand {
             Await::f2c(function() use ($sender, $recipient, $amount, $api, $args) : Generator {
                 $info = new ContextInfo(
                     sender: $sender instanceof Player ? new PlayerInfo($sender) : null,
-                    recipient: new PlayerInfo($recipient),
+                    target: new PlayerInfo($recipient),
                     sentAmount: new NumberInfo((float) $amount),
                     receivedAmount: new NumberInfo((float) $amount),
                 );
@@ -152,10 +152,10 @@ final class AlterCommand {
 
         $messages = Messages::parse($config->enter("messages", null), new Messages(
                     playerOnlyCommand: '{red}Only players may use this command.',
-                    notifySenderSuccess: $addMoney ? '{green}{recipient} has received ${receivedAmount}. They now have ${destBalance} left.' : '{green}You have taken ${receivedAmount} from {recipient}. They now have ${srcBalance} left.',
-                    notifyRecipientSuccess: $addMoney ? '{green}You have received ${receivedAmount}. You now have ${destBalance} left.' : '{green}An admin took ${sentAmount} from you. You now have ${srcBalance} left.',
-                    underflow: $addMoney ? '{red}An internal error occurred.' : '{red}{recipient} does not have ${sentAmount}.',
-                    overflow: $addMoney ? '{red}{recipient} cannot fit ${receivedAmount} more money.' : '{red}An internal error occurred.',
+                    notifySenderSuccess: $addMoney ? '{green}{target} has received ${receivedAmount}. They now have ${target money} left.' : '{green}You have taken ${receivedAmount} from {target}. They now have ${target money} left.',
+                    notifyRecipientSuccess: $addMoney ? '{green}You have received ${receivedAmount}. You now have ${target money} left.' : '{green}An admin took ${sentAmount} from you. You now have ${target money} left.',
+                    underflow: $addMoney ? '{red}An internal error occurred.' : '{red}{target} does not have ${sentAmount}.',
+                    overflow: $addMoney ? '{red}{target} cannot fit ${receivedAmount} more money.' : '{red}An internal error occurred.',
                     internalError: '{red}An internal error occurred. Please try again.',
         ));
 
