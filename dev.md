@@ -59,6 +59,8 @@ public function onChat(PlayerChatEvent $event) : void {
           5, 
           new LabelSet(["reason" => "chatting"]),
         );
+
+        $player->sendMessage("You lost $5 for chatting");
       } catch(CapitalException $e) {
         $player->kick("You don't have money to chat");
       }
@@ -115,6 +117,8 @@ public function onDamage(EntityDamageByEntityEvent $event) : void {
         5, 
         new LabelSet(["reason" => "attacking"]),
       );
+
+      $player->sendMessage("You got $5");
     } catch(CapitalException $e) {
       $player->sendMessage("You have too much money!");
     }
@@ -139,6 +143,8 @@ public function pay(Player $player1, Player $player2) : void {
         5, 
         new LabelSet(["reason" => "payment"]),
       );
+
+      $player1->sendMessage("You paid $5 to " . $player2->getName());
     } catch(CapitalException $e) {
       $player1->sendMessage("Failed!");
     }
@@ -167,8 +173,10 @@ public function pay(Player $player1, Player $player2) : void {
         5 + 3, // this is the total amount that $player1 has to lose
         5, // this is the total amount that $player2 gets
         new LabelSet(["reason" => "payment"]),
-        new LabelSet(["reason" => "service-fee"]), // these labels are applied on the transaction from $player1 to the system account
+        new LabelSet(["reason" => "service-fee"]), // this label set is applied on the transaction from $player1 to the system account
       );
+
+      $player1->sendMessage("You paid $5 to " . $player2->getName() . " and paid $3 service fee");
     } catch(CapitalException $e) {
       $player1->sendMessage("Failed!");
     }
@@ -179,6 +187,18 @@ public function pay(Player $player1, Player $player2) : void {
 It is also possible for player1 to pay less and player2 to pay more.
 In that case, player1 only pays the amount to player2,
 then the system account will pay the rest to player2.
+
+#### Getting money for a player
+
+If you want to check whether the player has enough money for something,
+use `takeMoney` as explained above and handle the error case.
+
+If you just want to display player money, use InfoAPI.
+The default config registered the `{money}` info on players,
+but users can change this based on their config setup.
+Consider using InfoAPI to compute the messages
+and let the user set their own messages.
+See [InfoAPI readme](https://github.com/SOF3/InfoAPI) for usage guide.
 
 ### Async functions
 
