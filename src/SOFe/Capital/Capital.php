@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use Closure;
 use Generator;
 use InvalidArgumentException;
 use Logger;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\plugin\PluginException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
@@ -17,19 +19,69 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
+use SOFe\Capital\Plugin\MainClass;
 
 use function array_map;
 use function count;
+use function version_compare;
 
 final class Capital implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
     public const VERSION = "0.1.0";
 
+    /**
+     * @param Closure(self): (Generator<mixed, mixed, mixed, void>|null) $then
+     */
+    public static function api(string $minimumApi, Closure $then) : void {
+        if (version_compare($minimumApi, self::VERSION, ">")) {
+            throw new PluginException("Plugin requires Capital $minimumApi but current version is " . self::VERSION);
+        }
+
+        Await::f2c(function() use ($then) {
+            $self = yield from self::get(MainClass::$context);
+            $ret = $then($self);
+            if ($ret instanceof Generator) {
+                yield from $ret;
+            }
+        });
+    }
+
+    private Schema\Schema $globalSchema;
+
     public function __construct(
         private Logger $logger,
         private Database $database,
+        Schema\Config $schemaConfig,
     ) {
+        $this->globalSchema = $schemaConfig->schema;
+    }
+
+    /**
+     * @param array<string, mixed>|null $config
+     */
+    public function incompleteConfig(?array $config) : Schema\Schema {
+        $arrayRef = new Config\ArrayRef($config ?? []);
+        $parser = new Config\Parser($arrayRef, [], false);
+        return $this->globalSchema->cloneWithConfig($parser);
+    }
+
+    /**
+     * @param array<string, mixed>|null $config
+     */
+    public function completeConfig(?array $config) : Schema\Complete {
+        $arrayRef = new Config\ArrayRef($config ?? []);
+        $parser = new Config\Parser($arrayRef, [], false);
+        return $this->globalSchema->cloneWithCompleteConfig($parser);
+    }
+
+    /**
+     * @param array<string, mixed>|null $config
+     */
+    public function invariantConfig(?array $config) : Schema\Invariant {
+        $arrayRef = new Config\ArrayRef($config ?? []);
+        $parser = new Config\Parser($arrayRef, [], false);
+        return $this->globalSchema->cloneWithInvariantConfig($parser);
     }
 
     /**
@@ -232,7 +284,7 @@ final class Capital implements Singleton, FromContext {
         Schema\Complete $schema,
         int $amount,
         LabelSet $transactionLabels,
-        bool $awaitRefresh,
+        bool $awaitRefresh = false,
     ) : Generator {
         $srcAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $src);
         $destAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $dest);
@@ -257,7 +309,7 @@ final class Capital implements Singleton, FromContext {
         int $destAddition,
         LabelSet $directTransactionLabels,
         LabelSet $oracleTransactionLabels,
-        bool $awaitRefresh,
+        bool $awaitRefresh = false,
     ) : Generator {
         if ($srcDeduction === $destAddition) {
             yield from $this->pay($src, $dest, $schema, $srcDeduction, $directTransactionLabels, $awaitRefresh);
@@ -305,7 +357,7 @@ final class Capital implements Singleton, FromContext {
         Schema\Complete $schema,
         int $amount,
         LabelSet $transactionLabels,
-        bool $awaitRefresh,
+        bool $awaitRefresh = false,
     ) : Generator {
         $accounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $player);
         $account = $accounts[0]; // must have at least one because it was lazily created
@@ -323,7 +375,7 @@ final class Capital implements Singleton, FromContext {
         Schema\Complete $schema,
         int $amount,
         LabelSet $transactionLabels,
-        bool $awaitRefresh,
+        bool $awaitRefresh = false,
     ) : Generator {
         $accounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $player);
         $account = $accounts[0]; // must have at least one because it was lazily created
