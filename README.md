@@ -21,6 +21,10 @@ As a core API for economy, Capital supports different styles of account manageme
   but it is the *only* economy API where both
   simple accounts and item payment can be used from other plugins
   without writing code twice)
+- Or maybe sometimes the money goes to the faction bank account
+  instead of player account?
+- Capital is extensible for other plugins to include new account management styles,
+  And it will work automatically with all plugins!
 
 Other cool features include:
 
@@ -41,6 +45,62 @@ Other cool features include:
 - Safe for multiple servers. Transactions are strictly atomic.
   Players cannot duplicate money by joining multiple servers.
 
-## Contributing
+## Setting up
 
-See [dev.md](dev.md) if if you want to get started with developing Capital.
+After running the server with Capital the first time,
+Capital generates config.yml and db.yml,
+which you can edit to configure Capital.
+
+db.yml is used for configuring the database used by Capital.
+You can use sqlite or mysql here.
+The configuration is same as most other plugins.
+
+config.yml is a large config that allows you to change almost everything in Capital.
+Read the comments in config.yml for more information.
+Text after `'# xxx:` are comments.
+If you edit config.yml incorrectly,
+Capital will try to fix the config.yml and save the old one as config.yml.old
+so that you can refer to it if Capital fixed it incorrectly.
+
+## Default commands
+
+All commands in Capital can be configured in config.yml.
+Try searching them in the config file to find out the correct place.
+The following commands come from the default config:
+
+Player commands:
+
+- `/pay <player> <amount> [account...]`:
+  Pay money to another player with your own account.
+- `/checkmoney`:
+  Check your own wealth.
+- `/richest`:
+  View the richest players on the server.
+
+Admin commands:
+
+- `addmoney <player> <amount> [account...]`:
+  Add money to a player's account.
+- `takemoney <player> <amount> [account...]`:
+  Remove money from a player's account.
+- `/checkmoney <player>`:
+  Check the wealth of another player.
+
+`[account...]` can be used to select the account (e.g. currency)
+if you change the schema in config.yml.
+(You can still disable these arguments by setting up `selector` in config.yml)
+
+You can create many other useful commands by editing config.yml,
+e.g. check how much money was paid by `/pay` command!
+Check out the comments in config.yml for more information.
+
+## Community, Contact &amp; Contributing
+
+If you want to get help, share your awesome config setup
+or show off your cool plugin that uses Capital,
+create a discussion [on GitHub](https://github.com/SOF3/Capital/discussions).
+
+To report bugs, create an isuse [on GitHub](https://github.com/SOF3/Capital/issues).
+
+If you want to help with developing Capital,
+see [dev.md](dev.md) for a comprehensive walkthrough of the internals.
