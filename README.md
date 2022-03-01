@@ -1,4 +1,5 @@
 # Capital
+<img src="https://img.shields.io/badge/Capital-PM-black?labelColor=green&color=red" width=500></img>
 
 [![CI](https://github.com/SOF3/Capital/actions/workflows/ci.yml/badge.svg)](https://github.com/SOF3/Capital/actions/workflows/ci.yml)
 
