@@ -17,7 +17,7 @@ jobs:
           php-version: ${{matrix.php-version}}
           install-path: "./dev/bin"
       - name: phpstan analyze
-        run: make phpstan
+        run: make phpstan PHP="php -dphar.readonly=0 -dmemory_limit=256M"
   suites:
     name: suite tests
     runs-on: ubuntu-latest
