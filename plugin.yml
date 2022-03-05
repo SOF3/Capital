@@ -1,5 +1,5 @@
 name: Capital
-version: 0.1.1-beta1
+version: 0.1.2
 api: 4.0.0
 main: SOFe\Capital\Plugin\MainClass
 author: SOFe
