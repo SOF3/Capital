@@ -41,8 +41,7 @@ final class Main extends PluginBase {
             throw new RuntimeException("$output is not writable");
         }
 
-        $steps = require $config;
-        $steps = $steps();
+        $steps = iterator_to_array((require $config)());
 
         $timeout = (int) ($GLOBALS["timeout"] ?? 1200);
 

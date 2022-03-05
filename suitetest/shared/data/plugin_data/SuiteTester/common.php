@@ -9,7 +9,9 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\player\Player;
+use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\ClosureTask;
+use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Di\StoreEvent;
 use SOFe\Capital\Loader\Loader;
 use SOFe\SuiteTester\Await;
@@ -23,122 +25,148 @@ class PlayerReceiveMessageEvent extends Event {
     ) {}
 }
 
-return function() {
-    $std = Main::$std;
-    $plugin = Main::getInstance();
-    $server = Server::getInstance();
+class Context {
+    /** @var AwaitStd $std do not type hint directly, because included files are not shaded */
+    public $std;
+    public Plugin $plugin;
+    public Server $server;
 
-    return [
-        "wait for Capital to initialize" => function() use($std) {
-            yield from $std->awaitEvent(StoreEvent::class, fn($event) => $event->getObject() instanceof Loader, false, EventPriority::MONITOR, false);
-        },
-        "wait for two players to join" => function() use($server, $std) {
-            yield from $std->awaitEvent(PlayerJoinEvent::class, fn($_) => count($server->getOnlinePlayers()) === 2, false, EventPriority::MONITOR, false);
-        },
-        "setup chat listeners" => function() use($server) {
-            false && yield;
-            foreach($server->getOnlinePlayers() as $player) {
-                $player->getNetworkSession()->registerPacketListener(new ClosureFakePlayerPacketListener(
-                    function(ClientboundPacket $packet, NetworkSession $session) use($player, $server) : void {
-                        if($packet instanceof TextPacket) {
-                            $event = new PlayerReceiveMessageEvent($player, $packet->message, $packet->type);
-                            $event->call();
-                            $server->getLogger()->debug("{$player->getName()} received message: $packet->message");
-                        }
+    public function __construct() {
+        $this->std = Main::$std;
+        $this->plugin = Main::getInstance();
+        $this->server = Server::getInstance();
+    }
+
+    public function awaitMessage(Player $who, string $messageSubstring, ...$args) : Generator {
+        $expect = strtolower(sprintf($messageSubstring, ...$args));
+        $this->server->getLogger()->debug("Waiting for message to {$who->getName()} " . json_encode($expect));
+        return yield from $this->std->awaitEvent(
+            event: PlayerReceiveMessageEvent::class,
+            eventFilter: fn($event) => $event->player === $who && str_contains(strtolower($event->message), $expect),
+            consume: false,
+            priority: EventPriority::MONITOR,
+            handleCancelled: false,
+        );
+    }
+}
+
+function init_steps(Context $context) : Generator {
+    yield "wait for Capital to initialize" => function() use($context) {
+        yield from $context->std->awaitEvent(StoreEvent::class, fn($event) => $event->getObject() instanceof Loader, false, EventPriority::MONITOR, false);
+    };
+
+    yield "wait for two players to join" => function() use($context) {
+        $onlineCount = 0;
+        foreach($context->server->getOnlinePlayers() as $player) {
+            if($player->isOnline()) {
+                $onlineCount += 1;
+            }
+        }
+        if($onlineCount < 2) {
+            yield from $context->std->awaitEvent(PlayerJoinEvent::class, fn($_) => count($context->server->getOnlinePlayers()) === 2, false, EventPriority::MONITOR, false);
+        }
+
+        yield from $context->std->sleep(10);
+    };
+
+    yield "setup chat listeners" => function() use($context) {
+        false && yield;
+        foreach($context->server->getOnlinePlayers() as $player) {
+            $player->getNetworkSession()->registerPacketListener(new ClosureFakePlayerPacketListener(
+                function(ClientboundPacket $packet, NetworkSession $session) use($player, $context) : void {
+                    if($packet instanceof TextPacket) {
+                        $context->server->getLogger()->debug("{$player->getName()} received message: $packet->message");
+
+                        $event = new PlayerReceiveMessageEvent($player, $packet->message, $packet->type);
+                        $event->call();
                     }
-                ));
-            }
-        },
-        "send money" => function() use($server) {
-            false && yield;
-            $alice = $server->getPlayerExact("alice");
-            $alice->chat("/addmoney bob 10");
-        },
-        "wait money receive message" => function() use($server, $std) {
-            $alice = $server->getPlayerExact("alice");
-            $aliceMessage = 'Bob has received $10. They now have $110 left.';
-            $alicePromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $alice && str_contains($event->message, $aliceMessage), false, EventPriority::MONITOR, false);
+                }
+            ));
+        }
+    };
+}
 
-            $bob = $server->getPlayerExact("bob");
-            $bobMessage = 'You have received $10. You now have $110 left.';
-            $bobPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $bobMessage), false, EventPriority::MONITOR, false);
+function add_money_test(Context $context, string $adminName, string $targetName, int $amount, int $remain) : Generator {
+    yield "send money" => function() use($context, $adminName, $targetName, $amount) {
+        false && yield;
+        $admin = $context->server->getPlayerExact($adminName);
+        $admin->chat("/addmoney $targetName $amount");
+    };
+    yield "wait money receive message" => function() use($context, $adminName, $targetName, $amount, $remain) {
+        $admin = $context->server->getPlayerExact($adminName);
+        $target = $context->server->getPlayerExact($targetName);
 
-            yield from Await::all([$alicePromise, $bobPromise]);
-        },
+        yield from Await::all([
+            $context->awaitMessage($admin, '%s has received $%d. They now have $%d left.', $target->getName(), $amount, $remain),
+            $context->awaitMessage($target, 'You have received $%d. You now have $%d left.', $amount, $remain),
+        ]);
+    };
+}
 
-        "take money" => function() use($server) {
-            false && yield;
-            $alice = $server->getPlayerExact("alice");
-            $alice->chat("/takemoney alice 15");
-        },
-        "wait money deduct message" => function() use($server, $std) {
-            $alice = $server->getPlayerExact("alice");
-            $ackMessage = 'You have taken $15 from Alice. They now have $85 left.';
-            $ackPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $alice && str_contains($event->message, $ackMessage), false, EventPriority::MONITOR, false);
+function take_money_test(Context $context, string $adminName, string $targetName, int $amount, int $remain) : Generator {
+    yield "take money" => function() use($context, $adminName, $targetName, $amount) {
+        false && yield;
+        $admin = $context->server->getPlayerExact($adminName);
+        $admin->chat("/takemoney $targetName $amount");
+    };
+    yield "wait money deduct message" => function() use($context, $adminName, $targetName, $amount, $remain) {
+        $admin = $context->server->getPlayerExact($adminName);
+        $target = $context->server->getPlayerExact($targetName);
 
-            $deductMessage = 'An admin took $15 from you. You now have $85 left.';
-            $deductPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $alice && str_contains($event->message, $deductMessage), false, EventPriority::MONITOR, false);
+        yield from Await::all([
+            $context->awaitMessage($admin, 'You have taken $%d from %s. They now have $%d left.', $amount, $target->getName(), $remain),
+            $context->awaitMessage($target, 'An admin took $%d from you. You now have $%d left.', $amount, $remain),
+        ]);
+    };
+}
 
-            yield from Await::all([$ackPromise, $deductPromise]);
-        },
+function pay_money_test(Context $context, string $fromName, string $toName, int $amount, int $fromRemain, int $toRemain) : Generator {
+    yield "pay money" => function() use($context, $fromName, $toName, $amount) {
+        false && yield;
+        $from = $context->server->getPlayerExact($fromName);
+        $from->chat("/pay $toName $amount");
+    };
+    yield "wait pay message" => function() use($context, $fromName, $toName, $amount, $fromRemain, $toRemain) {
+        $from = $context->server->getPlayerExact($fromName);
+        $to = $context->server->getPlayerExact($toName);
 
-        "pay money" => function() use($server) {
-            false && yield;
-            $alice = $server->getPlayerExact("alice");
-            $alice->chat("/pay bob 3");
-        },
-        "wait pay message" => function() use($server, $std) {
-            $alice = $server->getPlayerExact("alice");
-            $aliceMessage = 'You have sent $3 to Bob. You now have $82 left.';
-            $alicePromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $alice && str_contains($event->message, $aliceMessage), false, EventPriority::MONITOR, false);
+        yield from Await::all([
+            $context->awaitMessage($from, 'You have sent $%d to %s. You now have $%d left.', $amount, $to->getName(), $fromRemain),
+            $context->awaitMessage($to, 'You have received $%d from %s. You now have $%d left.', $amount, $from->getName(), $toRemain),
+        ]);
+    };
+}
 
-            $bob = $server->getPlayerExact("bob");
-            $bobMessage = 'You have received $3 from Alice. You now have $113 left.';
-            $bobPromise = $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $bobMessage), false, EventPriority::MONITOR, false);
+function check_self_money(Context $context, string $playerName, int $expect) : Generator {
+    yield "$playerName check money" => function() use($context, $playerName, $expect) {
+        yield from $context->std->sleep(10); // to wait for refresh
 
-            yield from Await::all([$alicePromise, $bobPromise]);
-        },
+        $player = $context->server->getPlayerExact($playerName);
+        $context->plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $player->chat("/checkmoney")));
 
-        "bob check money" => function() use($server, $std, $plugin) {
-            yield from $std->sleep(10); // to wait for refresh
+        yield from $context->awaitMessage($player, '%s has $%d.', $player->getName(), $expect);
+    };
+}
 
-            $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/checkmoney")));
+function check_other_money(Context $context, string $checkerName, string $checkedName, int $expect) : Generator {
+    yield "$checkerName check $checkedName money" => function() use($context, $checkerName, $checkedName, $expect) {
+        $checker = $context->server->getPlayerExact($checkerName);
+        $checked = $context->server->getPlayerExact($checkedName);
+        $context->plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $checker->chat("/checkmoney $checkedName")));
 
-            $message = 'Bob has $113.';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-        },
+        yield from $context->awaitMessage($checker, '%s has $%d.', $checked->getName(), $expect);
+    };
+}
 
-        "alice check bob money" => function() use($server, $std, $plugin) {
-            $alice = $server->getPlayerExact("alice");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $alice->chat("/checkmoney bob")));
+function check_top_money(Context $context, string $checkerName, array $messages) : Generator {
+    yield "check top money" => function() use($context, $checkerName, $messages) {
+        yield from $context->std->sleep(200); // to wait for batch
 
-            $message = 'Bob has $113.';
-            yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                fn($event) => $event->player === $alice && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-        },
+        $checker = $context->server->getPlayerExact($checkerName);
+        $context->plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $checker->chat("/richest")));
 
-        "bob check top money" => function() use($server, $std, $plugin) {
-            yield from $std->sleep(200); // to wait for batch
-
-            $bob = $server->getPlayerExact("bob");
-            $plugin->getScheduler()->scheduleTask(new ClosureTask(fn() => $bob->chat("/richest")));
-
-            foreach([
-                'Showing page 1 of 1',
-                '#1 bob: $113',
-                '#2 alice: $82',
-            ] as $message) {
-                yield from $std->awaitEvent(PlayerReceiveMessageEvent::class,
-                    fn($event) => $event->player === $bob && str_contains($event->message, $message), false, EventPriority::MONITOR, false);
-            }
-        },
-    ];
-};
+        foreach($messages as $message) {
+            yield from $context->awaitMessage($checker, '%s', $message);
+        }
+    };
+}

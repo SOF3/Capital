@@ -1,0 +1,8 @@
+---
+migration:
+  source:
+    plugin: economyapi
+    provider: yaml
+    path: /data/Money.yml
+    multiplier: 10
+...

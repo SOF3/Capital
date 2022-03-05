@@ -13,6 +13,7 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 use SOFe\AwaitStd\AwaitStd;
 use SOFe\Capital\Database\Database;
+use SOFe\Capital\Migration;
 use SOFe\Capital\PostTransactionEvent;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\NumberInfo;
@@ -67,12 +68,32 @@ final class PlayerInfoUpdater {
                         $value = $this->cache[$player->getId()];
                         $value->refreshNow();
 
-                        $event->addRefresh();
-                        Await::f2c(function() use ($event, $value) {
+                        $wg = $event->getRefreshWaitGroup();
+                        $wg->add();
+                        Await::f2c(function() use ($wg, $value) {
                             yield from $value->waitForRefresh();
-                            $event->doneRefresh();
+                            $wg->done();
                         });
                     }
+                }
+            },
+            priority: EventPriority::MONITOR,
+            plugin: $plugin,
+            handleCancelled: false,
+        );
+        $pm->registerEvent(
+            event: Migration\CompleteEvent::class,
+            handler: function(Migration\CompleteEvent $event) {
+                $wg = $event->getRefreshWaitGroup();
+
+                foreach ($this->cache as $value) {
+                    $value->refreshNow();
+                    $wg->add();
+
+                    Await::f2c(function() use ($wg, $value) {
+                        yield from $value->waitForRefresh();
+                        $wg->done();
+                    });
                 }
             },
             priority: EventPriority::MONITOR,

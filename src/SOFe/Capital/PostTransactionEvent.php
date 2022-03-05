@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-use Closure;
-use Generator;
 use pocketmine\event\Event;
 use pocketmine\player\Player;
-use SOFe\AwaitGenerator\Await;
+use SOFe\Capital\Utils\WaitGroup;
 
 final class PostTransactionEvent extends Event {
-    private int $refreshCount = 0;
-    /** @var Closure(): void */
-    private ?Closure $onRefreshZero = null;
+    private WaitGroup $refreshWg;
 
     /**
      * @param list<Player> $involvedPlayers
@@ -26,6 +22,7 @@ final class PostTransactionEvent extends Event {
         private LabelSet $labels,
         private array $involvedPlayers,
     ) {
+        $this->refreshWg = new WaitGroup;
     }
 
     public function getRef() : TransactionRef {
@@ -59,37 +56,10 @@ final class PostTransactionEvent extends Event {
     }
 
     /**
-     * Notifies the event caller that a refresh operation is scheduled.
-     * Call `doneRefresh` when the refresh is complete.
-     * Must be called during event dispatch synchronously.
+     * Add to this wait group if you want to refresh the accounts involved in this transaction.
+     * Wait on this wait group to ensure all accounts involved in this transaction are refreshed.
      */
-    public function addRefresh() : void {
-        $this->refreshCount += 1;
-    }
-
-    /**
-     * Notifies the event caller that a refresh operation is complete.
-     * This method should be called exactly once after `addRefresh`.
-     * May be called synchronously during event dispatch, or asynchronously.
-     */
-    public function doneRefresh() : void {
-        $this->refreshCount -= 1;
-        if ($this->refreshCount === 0 && $this->onRefreshZero !== null) {
-            ($this->onRefreshZero)();
-            $this->onRefreshZero = null;
-        }
-    }
-
-    /**
-     * Called by the event caller after event dispatch.
-     * Resolves when all registered refresh operations are done.
-     * @return VoidPromise
-     */
-    public function waitRefreshComplete() : Generator {
-        if ($this->refreshCount > 0) {
-            $this->onRefreshZero = yield Await::RESOLVE;
-            yield Await::ONCE;
-            $this->onRefreshZero = null;
-        }
+    public function getRefreshWaitGroup() : WaitGroup {
+        return $this->refreshWg;
     }
 }

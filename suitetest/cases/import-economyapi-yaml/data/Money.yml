@@ -1,0 +1,6 @@
+---
+version: 2
+money:
+  alice: 12.3
+  bob: 45.6
+...

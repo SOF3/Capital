@@ -38,6 +38,7 @@ final class Raw implements Singleton, FromContext {
         C\Schema\Config::class => true,
         C\Analytics\Config::class => true,
         C\Transfer\Config::class => true,
+        C\Migration\Config::class => true,
     ];
 
     /** @var null|list<Closure(): void> resolve functions called when all configs are loaded, or null if the configs have not started loading yet */

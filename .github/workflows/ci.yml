@@ -9,14 +9,15 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.0.11"
     steps:
       - uses: actions/checkout@v2
-      - uses: shivammathur/setup-php@v2
+      - uses: pmmp/setup-php-action@e232f72a4330a07aae8418e8aa56b64efcdda636
         with:
           php-version: ${{matrix.php-version}}
+          install-path: "./dev/bin"
       - name: phpstan analyze
-        run: make phpstan
+        run: make phpstan PHP="php -dphar.readonly=0 -dmemory_limit=256M"
   suites:
     name: suite tests
     runs-on: ubuntu-latest
@@ -26,6 +27,7 @@ jobs:
           - sqlite
           - mysql
           - config-regen-currency
+          - import-economyapi-yaml
         pocketmine-version:
           - "4"
           - "4.0.0"
@@ -38,10 +40,11 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.0.11"
     steps:
       - uses: actions/checkout@v2
-      - uses: shivammathur/setup-php@v2
+      - uses: pmmp/setup-php-action@e232f72a4330a07aae8418e8aa56b64efcdda636
         with:
           php-version: ${{matrix.php-version}}
+          install-path: "./dev/bin"
       - run: make fmt EXTRA_FLAGS="--dry-run --diff"

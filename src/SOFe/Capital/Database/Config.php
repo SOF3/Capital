@@ -32,7 +32,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
     }
 
     public static function parse(Parser $parser, Context $context, Raw $raw) : Generator {
-        $raw = yield from Raw::get($context);
+        false && yield;
 
         return new self(
             libasynql: $raw->dbConfig,
