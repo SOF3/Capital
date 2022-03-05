@@ -5,6 +5,8 @@ REUSE_MYSQL = false
 
 SUITE_TESTS = $(shell echo suitetest/cases/*)
 
+POCKETMINE_VERSION = 4
+
 DIFF = diff -y --suppress-common-lines --width=$(shell tput cols)
 
 SUITE_TESTS_CONFIG_REGEN = false
@@ -100,7 +102,7 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 		-e SUITE_TESTER_OUTPUT=/data/output.json \
 		-e CAPITAL_DEBUG=1 \
 		-u root \
-		pmmp/pocketmine-mp:4 \
+		pmmp/pocketmine-mp:$(POCKETMINE_VERSION) \
 		start-pocketmine --debug.level=2
 		# bash -c 'chown -R 1000:1000 /data /plugins && su - pocketmine bash -c "start-pocketmine --debug.level=2"'
 		#

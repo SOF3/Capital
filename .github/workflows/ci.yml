@@ -26,9 +26,12 @@ jobs:
           - sqlite
           - mysql
           - config-regen-currency
+        pocketmine-version:
+          - "4"
+          - "4.0.0"
     steps:
       - uses: actions/checkout@v2
-      - run: make suitetest/cases/${{matrix.suite-name}} DIFF="diff -y"
+      - run: make suitetest/cases/${{matrix.suite-name}} DIFF="diff -y" POCKETMINE_VERSION=${{matrix.pocketmine-version}}
   fmt:
     name: code style check
     runs-on: ubuntu-latest
