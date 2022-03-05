@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Di;
 
+use Closure;
 use Generator;
+use pocketmine\plugin\PluginException;
+use ReflectionClass;
 use RuntimeException;
+use SOFe\AwaitGenerator\Await;
+use SOFe\Capital\Plugin\MainClass;
+
 use function is_subclass_of;
 
 trait SingletonTrait {
@@ -33,6 +39,27 @@ trait SingletonTrait {
         }
 
         return $context->fetchClass(static::class);
+    }
+
+    /**
+     * @param Closure(self): (Generator<mixed, mixed, mixed, void>|null) $then
+     */
+    public static function api(string $minimumApi, Closure $then) : void {
+        $class = static::class;
+        $modClass = (new ReflectionClass($class))->getNamespaceName() . "\\Mod";
+        $version = $modClass::VERSION;
+
+        if (version_compare($minimumApi, $version, ">")) {
+            throw new PluginException("Plugin requires Capital $minimumApi but current version is $version");
+        }
+
+        Await::f2c(function() use ($then) {
+            $self = yield from self::get(MainClass::$context);
+            $ret = $then($self);
+            if ($ret instanceof Generator) {
+                yield from $ret;
+            }
+        });
     }
 
     public function close() : void {

@@ -28,24 +28,7 @@ use function version_compare;
 final class Capital implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
-    public const VERSION = "0.1.0";
-
-    /**
-     * @param Closure(self): (Generator<mixed, mixed, mixed, void>|null) $then
-     */
-    public static function api(string $minimumApi, Closure $then) : void {
-        if (version_compare($minimumApi, self::VERSION, ">")) {
-            throw new PluginException("Plugin requires Capital $minimumApi but current version is " . self::VERSION);
-        }
-
-        Await::f2c(function() use ($then) {
-            $self = yield from self::get(MainClass::$context);
-            $ret = $then($self);
-            if ($ret instanceof Generator) {
-                yield from $ret;
-            }
-        });
-    }
+    public const VERSION = Mod::API_VERSION;
 
     private Schema\Schema $globalSchema;
 
