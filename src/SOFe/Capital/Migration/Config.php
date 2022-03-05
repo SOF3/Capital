@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SOFe\Capital\Migration;
 
 use Generator;
-use pocketmine\Server;
 use SOFe\Capital\Config\ConfigInterface;
 use SOFe\Capital\Config\ConfigTrait;
 use SOFe\Capital\Config\Parser;
@@ -41,15 +40,21 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             return new self(null);
         }
 
-        return new self( match ($migration->expectString("source", "economyapi", <<<'EOT'
+        $sourceConfig = $migration->enter("source", <<<'EOT'
+            The data source where the data to migrate are located.
+            The data are not loaded until you run the `/capital-migrate` command.
+            EOT);
+        $source = match ($sourceConfig->expectString("plugin", "economyapi", <<<'EOT'
             The plugin to import from.
 
             Possible values:
             - economyapi
             EOT)) {
-            "economyapi" => self::parseEconomyApiSource($migration),
-            default => $migration->setValueAnd("source", "economyapi", "Invalid source plugin", fn() => self::parseEconomyApiSource($migration)),
-        });
+            "economyapi" => self::parseEconomyApiSource($sourceConfig),
+            default => $migration->setValueAnd("source", "economyapi", "Invalid source plugin", fn() => self::parseEconomyApiSource($sourceConfig)),
+        };
+
+        return new self($source);
     }
 
     private static function parseEconomyApiSource(Parser $config) : Source {
@@ -60,27 +65,9 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             - "yaml": The (default) YAML data provider in EconomyAPI. The path to Money.yml should be specified below.
             - "mysql": The MySQL data provider in EconomyAPI. The connection details should be specified below.
             EOT)) {
-            "yaml" => self::parseEconomyApiYamlSource($config),
-            "mysql" => self::parseEconomyApiMysqlSource($config),
-            default => $config->setValueAnd("provider", "yaml", "Invalid provider type", fn() => self::parseEconomyApiYamlSource($config)),
+            "yaml" => EconomyApiYamlSource::parse($config),
+            "mysql" => EconomyApiMysqlSource::parse($config),
+            default => $config->setValueAnd("provider", "yaml", "Invalid provider type", fn() => EconomyApiYamlSource::parse($config)),
         };
-    }
-
-    private static function parseEconomyApiYamlSource(Parser $config) : Source {
-        return new EconomyApiYamlSource(
-            path: $config->expectString("path", Server::getInstance()->getDataPath() . "plugin_data/EconomyAPI/Money.yml", <<<'EOT'
-                The path to the YAML file in EconomyAPI.
-                EOT),
-        );
-    }
-
-    private static function parseEconomyApiMysqlSource(Parser $config) : Source {
-        return new EconomyApiMysqlSource(
-            host: $config->expectString("host", "127.0.0.1", "Host of the MySQL database storing EconomyAPI data"),
-            port: $config->expectInt("port", 3306, "Port of the MySQL database storing EconomyAPI data"),
-            user: $config->expectString("user", "onebone", "User to access the MySQL database storing EconomyAPI data"),
-            password: $config->expectString("password", "hello_world", "Password to access the MySQL database storing EconomyAPI data"),
-            db: $config->expectString("db", "economyapi", "Schema name of the MySQL database storing EconomyAPI data"),
-        );
     }
 }

@@ -322,18 +322,28 @@ migration:
   '#enabled': Whether to enable the migration command.
   enabled: true
   '#source': |-
-    The plugin to import from.
+    The data source where the data to migrate are located.
+    The data are not loaded until you run the `/capital-migrate` command.
+  source:
+    '#plugin': |-
+      The plugin to import from.
 
-    Possible values:
-    - economyapi
-  source: economyapi
-  '#provider': |-
-    The provider type in EconomyAPI/config.yml
+      Possible values:
+      - economyapi
+    plugin: economyapi
+    '#provider': |-
+      The provider type in EconomyAPI/config.yml
 
-    Possible values:
-    - "yaml": The (default) YAML data provider in EconomyAPI. The path to Money.yml should be specified below.
-    - "mysql": The MySQL data provider in EconomyAPI. The connection details should be specified below.
-  provider: yaml
-  '#path': The path to the YAML file in EconomyAPI.
-  path: /data/plugin_data/EconomyAPI/Money.yml
+      Possible values:
+      - "yaml": The (default) YAML data provider in EconomyAPI. The path to Money.yml should be specified below.
+      - "mysql": The MySQL data provider in EconomyAPI. The connection details should be specified below.
+    provider: yaml
+    '#path': The path to the YAML file in EconomyAPI.
+    path: /data/plugin_data/EconomyAPI/Money.yml
+    '#multiplier': |-
+      The ratio to multiply each balance value by.
+      Capital only supports integer balances,
+      so if you want to preserve the decimal portions,
+      you have to multiply them by 10 etc.
+    multiplier: 1
 ...

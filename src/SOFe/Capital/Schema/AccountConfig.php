@@ -50,12 +50,16 @@ final class AccountConfig {
 
         $migration = null;
         if ($importFrom !== null) {
-            $migration = function(Player $player) use ($importFrom) : MigrationSetup {
+            $migration = function(Player $player) use ($importFrom, $min, $max) : MigrationSetup {
                 $migrationSelector = new LabelSelector([
                     AccountLabels::PLAYER_NAME => mb_strtolower($player->getName()),
                     AccountLabels::MIGRATION_SOURCE => $importFrom,
                 ]);
-                $postMigrateLabels = new LabelSet([]);
+                $postMigrateLabels = new LabelSet([
+                    AccountLabels::PLAYER_UUID => $player->getUniqueId()->toString(),
+                    AccountLabels::VALUE_MIN => (string) $min,
+                    AccountLabels::VALUE_MAX => (string) $max,
+                ]);
                 $migrationLimit = 1;
 
                 return new MigrationSetup($migrationSelector, $postMigrateLabels, $migrationLimit);

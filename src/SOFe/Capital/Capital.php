@@ -111,7 +111,9 @@ final class Capital implements Singleton, FromContext {
         $event->call();
 
         if ($awaitRefresh) {
-            yield from $event->waitRefreshComplete();
+            $wg = $event->getRefreshWaitGroup();
+            $wg->closeIfZero();
+            yield from $wg->wait();
         }
 
         return $ref;
@@ -170,9 +172,11 @@ final class Capital implements Singleton, FromContext {
         $event2->call();
 
         if ($awaitRefresh) {
+            $event1->getRefreshWaitGroup()->closeIfZero();
+            $event2->getRefreshWaitGroup()->closeIfZero();
             yield from Await::all([
-                $event1->waitRefreshComplete(),
-                $event2->waitRefreshComplete(),
+                $event1->getRefreshWaitGroup()->wait(),
+                $event2->getRefreshWaitGroup()->wait(),
             ]);
         }
 
