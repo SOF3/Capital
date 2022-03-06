@@ -116,6 +116,10 @@ analytics:
         Whether to sort results ascendingly or descendingly.
         Use "asc" for ascending sort and "desc" for descending sort.
       ordering: desc
+      '#interval': |-
+        Number of hours of data to consider.
+        Only accounts used in this interval or transactions that took place in this interval are considered.
+      interval: 24
       '#metric': |-
         The statistic used to combine multiple values.
 
