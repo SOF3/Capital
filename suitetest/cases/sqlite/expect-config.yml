@@ -15,6 +15,7 @@ schema:
 
     basic: Each player only has one account.
     currency: Each player has one account for each currency.
+    world: Each player has a new account in each world.
   type: basic
   '#account': The initial account setup.
   account:
