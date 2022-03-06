@@ -30,8 +30,8 @@ final class Currency implements Schema {
             $currenciesParser->failSafe(null, "There must be at least one currency");
             $currencyNames[] = "money";
             $currenciesParser->enter("money", <<<'EOT'
-                This is an example currency called \"money\".
-                You can rename this by changing the word \"money\".
+                This is an example currency called "money".
+                You can rename this by changing the word "money".
                 You can also add new currencies by duplicating the whole block below.
                 EOT);
         }

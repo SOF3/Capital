@@ -4,8 +4,8 @@ schema:
   '#currencies': All currencies used on your server.
   currencies:
     '#money': |-
-      This is an example currency called \"money\".
-      You can rename this by changing the word \"money\".
+      This is an example currency called "money".
+      You can rename this by changing the word "money".
       You can also add new currencies by duplicating the whole block below.
     money:
       '#default': Default amount of money when the account is created
