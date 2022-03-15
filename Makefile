@@ -16,13 +16,13 @@ CAPITAL_VIRIONS = dev/await-generator.phar dev/await-std.phar dev/libasynql.phar
 
 .PHONY: all phpstan fmt debug/suite-mysql suitetest $(SUITE_TESTS)
 
-default: phpstan dev/Capital.phar
+default: phpstan dev/Capital.phar dev/CapiTrade.phar
 
-phpstan: src/SOFe/Capital/Database/RawQueries.php vendor
+phpstan: src/SOFe/Capital/Database/RawQueries.php CapiTrade/src/SOFe/CapiTrade/Database/RawQueries.php vendor
 	$(PHP) vendor/bin/phpstan analyze
 phpstan-baseline.neon/clear:
 	echo > phpstan-baseline.neon
-phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php vendor
+phpstan-baseline.neon/regenerate: src/SOFe/Capital/Database/RawQueries.php CapiTrade/src/SOFe/CapiTrade/Database/RawQueries.php vendor
 	$(PHP) vendor/bin/phpstan analyze --generate-baseline
 
 fmt: $(shell find src -type f) .php-cs-fixer.php vendor
@@ -33,8 +33,16 @@ dev/Capital.phar: $(CAPITAL_SOURCE_FILES) dev/ConsoleScript.php $(CAPITAL_VIRION
 
 	for file in $(CAPITAL_VIRIONS); do $(PHP) $$file $@ SOFe\\Capital\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 8)\\ ; done
 
+dev/CapiTrade.phar: $(CAPITRADE_SOURCE_FILES) dev/ConsoleScript.php $(CAPITRADE_VIRIONS)
+	$(PHP) dev/ConsoleScript.php --relative CapiTrade --make plugin.yml,src,resources --out $@
+
+	for file in $(CAPITRADE_VIRIONS); do $(PHP) $$file $@ SOFe\\CapiTrade\\Virions\\$$(tr -dc A-Za-z </dev/urandom | head -c 8)\\ ; done
+
 src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* resources/sqlite/*
 	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capital
+
+CapiTrade/src/SOFe/CapiTrade/Database/RawQueries.php: dev/libasynql.phar CapiTrade/resources/mysql/* CapiTrade/resources/sqlite/*
+	$(PHP) dev/libasynql.phar fx CapiTrade/src/ SOFe\\CapiTrade\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capitrade
 
 dev/composer.phar: Makefile
 	cd dev && wget -O - https://getcomposer.org/installer | $(PHP)
@@ -81,7 +89,7 @@ dev/FakePlayer.phar: Makefile
 
 suitetest: $(SUITE_TESTS)
 
-$(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteTester.phar
+$(SUITE_TESTS): dev/Capital.phar dev/CapiTrade.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteTester.phar
 	$(eval CONTAINER_PREFIX := capital-suite-$(shell basename $@))
 	docker network create $(CONTAINER_PREFIX)-network || true
 	$(eval SKIP_MYSQL := $(REUSE_MYSQL) || test -f $@/options/skip-mysql)
@@ -110,6 +118,7 @@ $(SUITE_TESTS): dev/Capital.phar dev/FakePlayer.phar dev/InfoAPI.phar dev/SuiteT
 	docker cp dev/InfoAPI.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/InfoAPI.phar
 	docker cp dev/SuiteTester.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/SuiteTester.phar
 	docker cp dev/Capital.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/Capital.phar
+	test ! -f $@/options/capitrade || docker cp dev/CapiTrade.phar $(CONTAINER_PREFIX)-pocketmine:/plugins/CapiTrade.phar
 	docker cp $@/data $(CONTAINER_PREFIX)-pocketmine:/
 	docker cp suitetest/shared/data $(CONTAINER_PREFIX)-pocketmine:/
 

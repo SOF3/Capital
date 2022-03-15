@@ -16,7 +16,8 @@
     },
     "autoload": {
         "psr-0": {
-            "SOFe\\Capital\\": "src/"
+            "SOFe\\Capital\\": "src/",
+            "SOFe\\CapiTrade\\": "CapiTrade/src/"
         }
     },
     "license": "Apache-2.0",

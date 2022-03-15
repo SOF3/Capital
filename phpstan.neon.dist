@@ -2,6 +2,7 @@ parameters:
 	level: 8
 	paths:
 		- src
+		- CapiTrade/src
 	typeAliases:
 		VoidPromise: "Generator<mixed, 'all'|'once'|'race'|'reject'|'resolve'|array{'resolve'}|Generator<mixed, mixed, mixed, mixed>|null, mixed, void>"
 	ignoreErrors:
