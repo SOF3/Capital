@@ -9,6 +9,7 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericVariable;
 use poggit\libasynql\result\SqlChangeResult;
 use poggit\libasynql\result\SqlSelectResult;
+use poggit\libasynql\SqlDialect;
 use poggit\libasynql\SqlError;
 use poggit\libasynql\SqlThread;
 use Ramsey\Uuid\UuidInterface;
@@ -17,6 +18,7 @@ use function count;
 
 final class LabelManager {
     private DataConnector $conn;
+    /** @var SqlDialect::* */
     private string $dialect;
 
     /**
@@ -75,8 +77,12 @@ final class LabelManager {
      * @return VoidPromise
      */
     public function set(UuidInterface $id, string $name, string $value) : Generator {
+        $queryString = match ($this->dialect) {
+            SqlDialect::SQLITE => "INSERT OR REPLACE INTO {$this->labelTable} (id, name, value) VALUES (:id, :name, :value);",
+            SqlDialect::MYSQL => "INSERT INTO {$this->labelTable} (id, name, value) VALUES (:id, :name, :value) ON DUPLICATE KEY UPDATE value = :value;",
+        };
         yield from QueryBuilder::new()
-            ->addQuery("INSERT OR REPLACE INTO {$this->labelTable} (id, name, value) VALUES (:id, :name, :value);", SqlThread::MODE_CHANGE)
+            ->addQuery($queryString, SqlThread::MODE_CHANGE)
             ->addParam("id", GenericVariable::TYPE_STRING, $id->toString())
             ->addParam("name", GenericVariable::TYPE_STRING, $name)
             ->addParam("value", GenericVariable::TYPE_STRING, $value)
