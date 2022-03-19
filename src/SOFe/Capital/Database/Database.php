@@ -163,7 +163,7 @@ final class Database implements Singleton, FromContext {
 
         $promises = [];
         foreach ($labels as $name => $value) {
-            $promises[] = $this->addAccountLabel($uuid, $name, $value);
+            $promises[] = $this->accountLabels()->add($uuid, $name, $value);
         }
         if (count($promises) > 0) {
             yield from Await::all($promises);
@@ -220,110 +220,9 @@ final class Database implements Singleton, FromContext {
         return $output;
     }
 
-
-    // Account labels
-
-    /**
-     * @return VoidPromise
-     * @throws CapitalException if the account already has this label
-     */
-    public function addAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
-        try {
-            yield from $this->raw->accountLabelAdd($id->toString(), $name, $value);
-        } catch (SqlError $error) {
-            throw new CapitalException(CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS, $error);
-        }
+    public function accountLabels() : LabelManager {
+        return new LabelManager($this, "capital_acc_label", CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS, CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
     }
-
-    /**
-     * Updates an account label.
-     *
-     * @return VoidPromise
-     * @throws CapitalException if the account does not have this label
-     */
-    public function updateAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
-        $changes = yield from $this->raw->accountLabelUpdate($id->toString(), $name, $value);
-        if ($changes === 0) {
-            throw new CapitalException(CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
-        }
-    }
-
-    /**
-     * Adds or updates an account label.
-     *
-     * @return VoidPromise
-     */
-    public function setAccountLabel(UuidInterface $id, string $name, string $value) : Generator {
-        yield from $this->raw->accountLabelAddOrUpdate($id->toString(), $name, $value);
-    }
-
-    /**
-     * @return Generator<mixed, mixed, mixed, string>
-     * @throws CapitalException if the account does not have this label
-     */
-    public function getAccountLabel(UuidInterface $id, string $name) : Generator {
-        $rows = yield from $this->raw->accountLabelFetch($id->toString(), $name);
-        if (count($rows) > 0) {
-            return $rows[0]["value"];
-        }
-        throw new CapitalException(CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
-    }
-
-    /**
-     * @return Generator<mixed, mixed, mixed, array<string, string>>
-     */
-    public function getAccountAllLabels(UuidInterface $id) : Generator {
-        $rows = yield from $this->raw->accountLabelFetchAll($id->toString());
-        $result = [];
-        foreach ($rows as $row) {
-            /** @var string $name */
-            $name = $row["name"];
-
-            /** @var string $value */
-            $value = $row["value"];
-
-            $result[$name] = $value;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param UuidInterface[] $ids
-     * @return Generator<mixed, mixed, mixed, array<string, string>[]>
-     */
-    public function getAccountListAllLabels(array $ids) : Generator {
-        if (count($ids) === 0) {
-            return [];
-        }
-
-        $flip = [];
-        foreach ($ids as $k => $id) {
-            $flip[$id->toString()] = $k;
-        }
-
-        $rows = yield from $this->raw->accountLabelFetchAllMulti(array_keys($flip));
-
-        $output = [];
-        foreach ($rows as $row) {
-            /** @var string $id */
-            $id = $row["id"];
-            /** @var string $name */
-            $name = $row["name"];
-            /** @var string $value */
-            $value = $row["value"];
-
-            $key = $flip[$id];
-            if (!isset($output[$key])) {
-                $output[$key] = [];
-            }
-
-            $output[$key][$name] = $value;
-        }
-
-        return $output;
-    }
-
 
     // Dynamic account label queries
 
@@ -565,7 +464,7 @@ final class Database implements Singleton, FromContext {
         $srcMin = PHP_INT_MIN;
         if ($srcMinLabel !== null) {
             try {
-                $srcMinString = yield from $this->getAccountLabel($src, $srcMinLabel);
+                $srcMinString = yield from $this->accountLabels()->get($src, $srcMinLabel);
                 $srcMin = (int) $srcMinString;
             } catch (CapitalException $ex) {
                 if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
@@ -578,7 +477,7 @@ final class Database implements Singleton, FromContext {
         $destMax = PHP_INT_MAX;
         if ($destMaxLabel !== null) {
             try {
-                $destMaxString = yield from $this->getAccountLabel($dest, $destMaxLabel);
+                $destMaxString = yield from $this->accountLabels()->get($dest, $destMaxLabel);
                 $destMax = (int) $destMaxString;
             } catch (CapitalException $ex) {
                 if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
@@ -674,7 +573,7 @@ final class Database implements Singleton, FromContext {
         for ($i = 0; $i < 2; $i++) {
             if ($srcMinLabel !== null) {
                 try {
-                    $srcMinString = yield from $this->getAccountLabel($src[$i], $srcMinLabel);
+                    $srcMinString = yield from $this->accountLabels()->get($src[$i], $srcMinLabel);
                     $srcMin[$i] = (int) $srcMinString;
                 } catch (CapitalException $ex) {
                     if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
@@ -686,7 +585,7 @@ final class Database implements Singleton, FromContext {
 
             if ($destMaxLabel !== null) {
                 try {
-                    $destMaxString = yield from $this->getAccountLabel($dest[$i], $destMaxLabel);
+                    $destMaxString = yield from $this->accountLabels()->get($dest[$i], $destMaxLabel);
                     $destMax[$i] = (int) $destMaxString;
                 } catch (CapitalException $ex) {
                     if ($ex->getCode() !== CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST) {
@@ -794,105 +693,9 @@ final class Database implements Singleton, FromContext {
     }
 
 
-    // Transaction labels
-
-    /**
-     * @return VoidPromise
-     * @throws CapitalException if the transaction already has this label
-     */
-    public function addTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
-        try {
-            yield from $this->raw->transactionLabelAdd($id->toString(), $name, $value);
-        } catch (SqlError $error) {
-            throw new CapitalException(CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS, $error);
-        }
+    public function transactionLabels() : LabelManager {
+        return new LabelManager($this, "capital_tran_label", CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS, CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
     }
-
-    /**
-     * @return VoidPromise
-     * @throws CapitalException if the transaction does not have this label
-     */
-    public function updateTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
-        $changes = yield from $this->raw->transactionLabelUpdate($id->toString(), $name, $value);
-        if ($changes === 0) {
-            throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
-        }
-    }
-
-    /**
-     * @return VoidPromise
-     */
-    public function setTransactionLabel(UuidInterface $id, string $name, string $value) : Generator {
-        yield from $this->raw->transactionLabelAddOrUpdate($id->toString(), $name, $value);
-    }
-
-    /**
-     * @return Generator<mixed, mixed, mixed, string>
-     * @throws CapitalException if the transaction does not have this label
-     */
-    public function getTransactionLabel(UuidInterface $id, string $name) : Generator {
-        $rows = yield from $this->raw->transactionLabelFetch($id->toString(), $name);
-        if (count($rows) > 0) {
-            return $rows[0]["value"];
-        }
-        throw new CapitalException(CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
-    }
-
-    /**
-     * @return Generator<mixed, mixed, mixed, array<string, string>>
-     */
-    public function getTransactionAllLabels(UuidInterface $id) : Generator {
-        $rows = yield from $this->raw->transactionLabelFetchAll($id->toString());
-        $result = [];
-        foreach ($rows as $row) {
-            /** @var string $name */
-            $name = $row["name"];
-
-            /** @var string $value */
-            $value = $row["value"];
-
-            $result[$name] = $value;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param UuidInterface[] $ids
-     * @return Generator<mixed, mixed, mixed, array<string, string>[]>
-     */
-    public function getTransactionListAllLabels(array $ids) : Generator {
-        if (count($ids) === 0) {
-            return [];
-        }
-
-        $flip = [];
-        foreach ($ids as $k => $id) {
-            $flip[$id->toString()] = $k;
-        }
-
-        $rows = yield from $this->raw->transactionLabelFetchAllMulti(array_keys($flip));
-
-        $output = [];
-        foreach ($rows as $row) {
-            /** @var string $id */
-            $id = $row["id"];
-            /** @var string $name */
-            $name = $row["name"];
-            /** @var string $value */
-            $value = $row["value"];
-
-            $key = $flip[$id];
-            if (!isset($output[$key])) {
-                $output[$key] = [];
-            }
-
-            $output[$key][$name] = $value;
-        }
-
-        return $output;
-    }
-
 
     // Dynamic transaction label queries
 

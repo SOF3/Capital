@@ -159,7 +159,6 @@ final class Context implements Singleton {
      * Calls a function where parameters are resolved as singletons from the context.
      * Returns the result of the function.
      */
-    //@phpstan-ignore-next-line
     public function call(callable $fn) : Generator {
         $reflect = new ReflectionFunction(Closure::fromCallable($fn));
         $args = yield from $this->resolveArgs($reflect, null);

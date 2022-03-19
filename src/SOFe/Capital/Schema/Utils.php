@@ -102,7 +102,7 @@ final class Utils {
 
                     foreach (array_slice($accounts, 0, min($migration->migrationLimit, count($accounts))) as $account) {
                         foreach ($migration->postMigrateLabels->getEntries() as $labelName => $labelValue) {
-                            $updates[] = $db->setAccountLabel($account, $labelName, $labelValue);
+                            $updates[] = $db->accountLabels()->set($account, $labelName, $labelValue);
                         }
                     }
 
@@ -123,7 +123,7 @@ final class Utils {
         foreach ($accounts as $account) {
             $touches[] = $db->touchAccount($account);
             foreach ($schema->getOverwriteLabels($player)->getEntries() as $labelName => $labelValue) {
-                $touches[] = $db->setAccountLabel($account, $labelName, $labelValue);
+                $touches[] = $db->accountLabels()->set($account, $labelName, $labelValue);
             }
         }
 
