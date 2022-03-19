@@ -102,7 +102,7 @@ final class Capital implements Singleton, FromContext {
 
         $promises = [];
         foreach ($labels->getEntries() as $labelName => $labelValue) {
-            $promises[] = $this->database->setTransactionLabel($id, $labelName, $labelValue);
+            $promises[] = $this->database->transactionLabels()->set($id, $labelName, $labelValue);
         }
         yield from Await::all($promises);
 
@@ -156,10 +156,10 @@ final class Capital implements Singleton, FromContext {
 
         $promises = [];
         foreach ($labels1->getEntries() as $labelName => $labelValue) {
-            $promises[] = $this->database->setTransactionLabel($ids[0], $labelName, $labelValue);
+            $promises[] = $this->database->transactionLabels()->set($ids[0], $labelName, $labelValue);
         }
         foreach ($labels2->getEntries() as $labelName => $labelValue) {
-            $promises[] = $this->database->setTransactionLabel($ids[1], $labelName, $labelValue);
+            $promises[] = $this->database->transactionLabels()->set($ids[1], $labelName, $labelValue);
         }
         yield from Await::all($promises);
 
