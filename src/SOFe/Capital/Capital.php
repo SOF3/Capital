@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
-use Closure;
 use Generator;
 use InvalidArgumentException;
 use Logger;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use SOFe\AwaitGenerator\Await;
@@ -19,33 +17,14 @@ use SOFe\Capital\Di\FromContext;
 use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 use SOFe\Capital\Di\SingletonTrait;
-use SOFe\Capital\Plugin\MainClass;
 
 use function array_map;
 use function count;
-use function version_compare;
 
 final class Capital implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
 
-    public const VERSION = "0.1.0";
-
-    /**
-     * @param Closure(self): (Generator<mixed, mixed, mixed, void>|null) $then
-     */
-    public static function api(string $minimumApi, Closure $then) : void {
-        if (version_compare($minimumApi, self::VERSION, ">")) {
-            throw new PluginException("Plugin requires Capital $minimumApi but current version is " . self::VERSION);
-        }
-
-        Await::f2c(function() use ($then) {
-            $self = yield from self::get(MainClass::$context);
-            $ret = $then($self);
-            if ($ret instanceof Generator) {
-                yield from $ret;
-            }
-        });
-    }
+    public const VERSION = Mod::API_VERSION;
 
     private Schema\Schema $globalSchema;
 
