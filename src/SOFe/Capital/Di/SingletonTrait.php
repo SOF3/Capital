@@ -13,6 +13,7 @@ use SOFe\AwaitGenerator\Await;
 use SOFe\Capital\Plugin\MainClass;
 
 use function is_subclass_of;
+use function version_compare;
 
 trait SingletonTrait {
     public static function get(Context $context) : Generator {
