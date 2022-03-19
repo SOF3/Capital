@@ -496,6 +496,76 @@ with the name equal to the `displayLabels` label is returned in the output for d
 
 <!-- TODO -->
 
+### CapiTrade
+
+CapiTrade is the shops implementation for Capital.
+It exposes a generic event-based API,
+so in a sense, using a CapiTrade shop is like "buying an event".
+
+#### Shop labels
+
+Shop data can be stored in labels, similar to account/transaction labels.
+In the case of shops, labels are mostly intended for technical use
+and it is not recommended to expose shop labels to the user interface.
+
+If there are special requirements,
+shop data can still be stored on external tables or storages, e.g. entity/items,
+but in general, shop labels are better for storage
+because they allow synchronous shop admission in shop event handlers.
+
+#### Shop accessors
+
+The same shop can be accessed with multiple methods.
+Each method is called a "shop accessor".
+A shop is considered inaccessible when the last accessor is deleted,
+in which case the shop itself (along with its labels) also get deleted.
+
+Examples of shop accessors include:
+
+- Using certain commands
+- Clicking blocks at specific positions
+- Using certain items
+- Clicking on certain entities
+- Using an NPC trading dialog
+
+#### Shop price
+
+The shop price is a first-class data value stored in the shop table directly.
+Shop prices can be adjusted by control loops in servers
+that may depend on e.g. metrics computed from accounts/transactions.
+
+Shop prices may be positive or negative.
+The peer of the shop transaction is stored as
+an account label selector in the shop label `capitrade/peer-account-selector`.
+
+#### Shop executors
+
+Shop executors are the components that implement the outcome of a shop.
+Examples of shop executors include:
+
+- Adding/removing inventory items (a.k.a. buying/selling items)
+- Adding/removing player effects
+- Updating a player's kits
+
+When a player accesses a shop, CapiTrade dispatches a `ShopAccessEvent`.
+Shop executors should check the shop labels in the event
+to determine the desired effects of this shop.
+
+Shop executors can admit or deny an access event.
+Denial takes place when the prerequisites of the executor are not satisfied.
+For example, an item-selling executor denies an access event
+if the player does not have the required items in their inventory.
+
+When a shop executor admits an access event,
+they should not execute the outcome directly.
+Instead, they should try to *hold* the prerequisites,
+i.e. ensure that the checked prerequisites will remain satisfied for a short period
+(e.g. deny the player from removing the items from their inventory).
+After Capital executes the transaction,
+it will notify the executors that the transaction succeeded or failed,
+in which case the executors should actually execute the outcome
+or release the held prerequisites (e.g. stop denying item removal).
+
 ## Tooling
 
 Capital is developed on Linux.

@@ -12,6 +12,7 @@ use SOFe\Capital\Di\Singleton;
 use SOFe\Capital\Di\SingletonArgs;
 
 use SOFe\Capital\Di\SingletonTrait;
+use function is_subclass_of;
 
 final class Loader implements Singleton, FromContext {
     use SingletonArgs, SingletonTrait;
@@ -21,7 +22,7 @@ final class Loader implements Singleton, FromContext {
     private static array $extraEntryPoints = [];
 
     public static function addEntryPoint(string $class) : void {
-        if(!is_subclass_of($class, Singleton::class)) {
+        if (!is_subclass_of($class, Singleton::class)) {
             throw new InvalidArgumentException("Entry point must be a subclass of " . Singleton::class);
         }
     }
@@ -35,7 +36,7 @@ final class Loader implements Singleton, FromContext {
         C\Migration\Mod $migration,
         C\Di\Context $context,
     ) : Generator {
-        foreach(self::$extraEntryPoints as $entryPoint) {
+        foreach (self::$extraEntryPoints as $entryPoint) {
             yield from $context->fetchClass($entryPoint);
         }
 
