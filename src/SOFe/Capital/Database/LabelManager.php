@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Database;
 
+use Closure;
+use Exception;
 use Generator;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\generic\GenericVariable;
@@ -13,23 +15,28 @@ use poggit\libasynql\SqlDialect;
 use poggit\libasynql\SqlError;
 use poggit\libasynql\SqlThread;
 use Ramsey\Uuid\UuidInterface;
-use SOFe\Capital\CapitalException;
 use function count;
 
+/**
+ * @template C Exception code for `E`
+ * @template E of Exception Exception type to throw
+ */
 final class LabelManager {
     private DataConnector $conn;
     /** @var SqlDialect::* */
     private string $dialect;
 
     /**
-     * @param CapitalException::* $labelAlreadyExistsErrorCode
-     * @param CapitalException::* $labelDoesNotExistErrorCode
+     * @param C $labelAlreadyExistsErrorCode
+     * @param C $labelDoesNotExistErrorCode
+     * @param Closure(C, Exception|null): E $throw returns an exception to throw.
      */
     public function __construct(
         Database $database,
         private string $labelTable,
-        private int $labelAlreadyExistsErrorCode,
-        private int $labelDoesNotExistErrorCode
+        private $labelAlreadyExistsErrorCode,
+        private $labelDoesNotExistErrorCode,
+        private Closure $throw,
     ) {
         $this->conn = $database->getDataConnector();
         $this->dialect = $database->dialect;
@@ -37,7 +44,7 @@ final class LabelManager {
 
     /**
      * @return VoidPromise
-     * @throws CapitalException if the object already has this label
+     * @throws E if the object already has this label
      */
     public function add(UuidInterface $id, string $name, string $value) : Generator {
         try {
@@ -48,7 +55,7 @@ final class LabelManager {
                 ->addParam("value", GenericVariable::TYPE_STRING, $value)
                 ->execute($this->conn, $this->dialect);
         } catch (SqlError $error) {
-            throw new CapitalException($this->labelAlreadyExistsErrorCode, $error);
+            throw ($this->throw)($this->labelAlreadyExistsErrorCode, $error);
         }
     }
 
@@ -56,7 +63,7 @@ final class LabelManager {
      * Updates a label.
      *
      * @return VoidPromise
-     * @throws CapitalException if the object does not have this label
+     * @throws E if the object does not have this label
      */
     public function update(UuidInterface $id, string $name, string $value) : Generator {
         /** @var SqlChangeResult $result */
@@ -67,7 +74,7 @@ final class LabelManager {
             ->addParam("value", GenericVariable::TYPE_STRING, $value)
             ->execute($this->conn, $this->dialect);
         if ($result->getAffectedRows() === 0) {
-            throw new CapitalException($this->labelDoesNotExistErrorCode);
+            throw ($this->throw)($this->labelDoesNotExistErrorCode, null);
         }
     }
 
@@ -91,7 +98,7 @@ final class LabelManager {
 
     /**
      * @return Generator<mixed, mixed, mixed, string>
-     * @throws CapitalException if the object does not have this label
+     * @throws E if the object does not have this label
      */
     public function get(UuidInterface $id, string $name) : Generator {
         /** @var SqlSelectResult $result */
@@ -104,7 +111,7 @@ final class LabelManager {
         if (count($rows) > 0) {
             return $rows[0]["value"];
         }
-        throw new CapitalException($this->labelDoesNotExistErrorCode);
+        throw ($this->throw)($this->labelDoesNotExistErrorCode, null);
     }
 
     /**

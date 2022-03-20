@@ -42,7 +42,7 @@ src/SOFe/Capital/Database/RawQueries.php: dev/libasynql.phar resources/mysql/* r
 	$(PHP) dev/libasynql.phar fx src/ SOFe\\Capital\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capital
 
 CapiTrade/src/SOFe/CapiTrade/Database/RawQueries.php: dev/libasynql.phar CapiTrade/resources/mysql/* CapiTrade/resources/sqlite/*
-	$(PHP) dev/libasynql.phar fx CapiTrade/src/ SOFe\\CapiTrade\\Database\\RawQueries --struct 'final class' --spaces 4 --sql resources --prefix capitrade
+	$(PHP) dev/libasynql.phar fx CapiTrade/src/ SOFe\\CapiTrade\\Database\\RawQueries --struct 'final class' --spaces 4 --sql CapiTrade/resources --prefix capitrade
 
 dev/composer.phar: Makefile
 	cd dev && wget -O - https://getcomposer.org/installer | $(PHP)
@@ -64,7 +64,7 @@ dev/rwlock.phar: Makefile
 	touch $@
 
 dev/await-generator.phar: Makefile
-	wget -O $@ https://poggit.pmmp.io/v.dl/SOF3/await-generator/await-generator/^3.1.0
+	wget -O $@ https://poggit.pmmp.io/v.dl/SOF3/await-generator/await-generator/^3.4.1
 	touch $@
 
 dev/await-std.phar: Makefile

@@ -11,6 +11,7 @@ final class MainClass extends PluginBase implements Di\Singleton {
     use Di\SingletonTrait;
 
     protected function onEnable() : void {
+        \SOFe\Capital\Plugin\MainClass::$context->store($this);
         \SOFe\Capital\Loader\Loader::addEntryPoint(\SOFe\CapiTrade\Loader\Loader::class);
     }
 }

@@ -547,7 +547,7 @@ Examples of shop executors include:
 - Adding/removing player effects
 - Updating a player's kits
 
-When a player accesses a shop, CapiTrade dispatches a `ShopAccessEvent`.
+When a player accesses a shop, CapiTrade dispatches a `ShopExecuteEvent`.
 Shop executors should check the shop labels in the event
 to determine the desired effects of this shop.
 
