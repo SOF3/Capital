@@ -56,7 +56,7 @@ dev/rwlock.phar: Makefile
 	touch $@
 
 dev/await-generator.phar: Makefile
-	wget -O $@ https://poggit.pmmp.io/v.dl/SOF3/await-generator/await-generator/^3.1.0
+	wget -O $@ https://poggit.pmmp.io/v.dl/SOF3/await-generator/await-generator/^3.4.1
 	touch $@
 
 dev/await-std.phar: Makefile

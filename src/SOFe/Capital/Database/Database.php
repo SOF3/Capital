@@ -439,9 +439,9 @@ final class Database implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
-        /** @var SqlSelectResult $result */
-        [$result] = yield Await::ONCE;
+        [$result] = yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], $resolve, $reject);
+        });
         return $result;
     }
 
@@ -911,9 +911,9 @@ final class Database implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
-        /** @var SqlSelectResult $result */
-        [$result] = yield Await::ONCE;
+        [$result] = yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->conn->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], $resolve, $reject);
+        });
         return $result;
     }
 }
