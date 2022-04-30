@@ -279,6 +279,45 @@ final class Capital implements Singleton, FromContext {
     }
 
     /**
+     * Allows plugin developers to pay the destination player an amount depending on the source player balance
+     * 
+     * @param (Closure (int) : int)|Generator<mixed, mixed, mixed, int> $promise
+     * @return VoidPromise
+     */
+    public function payWithBalance(
+        Player $src,
+        Player $dest,
+        Schema\Complete $schema,
+        Closure $promise,
+        LabelSet $transactionLabels,
+        bool $awaitRefresh = false,
+    ) : Generator {
+        $srcAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $src);
+        $destAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $dest);
+
+        $srcAccount = $srcAccounts[0]; // must have at least one because it was lazily created
+        $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
+        do{
+        	try{
+                $balance = yield from $this->getBalance($srcAccount);
+                $amount = $promise($balance);
+                if ($amount instanceof Generator) {
+                    $amount = yield from $amount;
+                }
+                yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
+                $retry = false;
+            } catch(CapitalException $e) {
+                if ($e->getCode() === CapitalException::SOURCE_UNDERFLOW) {
+                    $retry = true;
+                } else {
+                    throw $e;
+                }
+            }
+        } while($retry);
+        
+    }
+
+    /**
      * Automatically appends `TransactionLabels::UNEQUAL_AUX` to $oracleTransactionLabels.
      *
      * @return VoidPromise
