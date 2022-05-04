@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use Closure;
 use Generator;
 use InvalidArgumentException;
 use Logger;
@@ -281,14 +282,14 @@ final class Capital implements Singleton, FromContext {
     /**
      * Allows plugin developers to pay the destination player an amount depending on the source player balance
      * 
-     * @param (Closure (int) : int)|Generator<mixed, mixed, mixed, int> $promise
+     * @param Closure (int) : int $convert
      * @return VoidPromise
      */
     public function payWithBalance(
         Player $src,
         Player $dest,
         Schema\Complete $schema,
-        Closure $promise,
+        Closure $convert,
         LabelSet $transactionLabels,
         bool $awaitRefresh = false,
     ) : Generator {
@@ -300,10 +301,7 @@ final class Capital implements Singleton, FromContext {
         do{
         	try{
                 $balance = yield from $this->getBalance($srcAccount);
-                $amount = $promise($balance);
-                if ($amount instanceof Generator) {
-                    $amount = yield from $amount;
-                }
+                $amount = $convert($balance);
                 yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
                 $retry = false;
             } catch(CapitalException $e) {
