@@ -281,7 +281,7 @@ final class Capital implements Singleton, FromContext {
 
     /**
      * Allows plugin developers to pay the destination player an amount depending on the source player balance
-     * 
+     *
      * @param Closure (int) : int $convert
      * @return VoidPromise
      */
@@ -298,20 +298,20 @@ final class Capital implements Singleton, FromContext {
 
         $srcAccount = $srcAccounts[0]; // must have at least one because it was lazily created
         $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
-        do{
-        	try{
+        do {
+            try {
                 $balance = yield from $this->getBalance($srcAccount);
                 $amount = $convert($balance);
                 yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
                 $retry = false;
-            } catch(CapitalException $e) {
+            } catch (CapitalException $e) {
                 if ($e->getCode() === CapitalException::SOURCE_UNDERFLOW) {
                     $retry = true;
                 } else {
                     throw $e;
                 }
             }
-        } while($retry);
+        } while ($retry);
         
     }
 
