@@ -285,7 +285,7 @@ final class Capital implements Singleton, FromContext {
      * @param Closure (int) : int $convert
      * @return VoidPromise
      */
-    public function payWithBalance(
+    public function payAdaptive(
         Player $src,
         Player $dest,
         Schema\Complete $schema,
