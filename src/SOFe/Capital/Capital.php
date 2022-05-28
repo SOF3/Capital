@@ -298,20 +298,20 @@ final class Capital implements Singleton, FromContext {
 
         $srcAccount = $srcAccounts[0]; // must have at least one because it was lazily created
         $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
-        do {
+        while (true) {
             try {
                 $balance = yield from $this->getBalance($srcAccount);
                 $amount = $convert($balance);
                 yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
-                $retry = false;
+                break;
             } catch (CapitalException $e) {
                 if ($e->getCode() === CapitalException::SOURCE_UNDERFLOW) {
-                    $retry = true;
+                    // retry
                 } else {
                     throw $e;
                 }
             }
-        } while ($retry);
+        }
     }
 
     /**
