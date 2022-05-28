@@ -20,6 +20,7 @@ jobs:
         run: make phpstan PHP="php -dphar.readonly=0 -dmemory_limit=256M"
   suites:
     name: suite tests
+    needs: [phpstan]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,6 +37,7 @@ jobs:
       - run: make suitetest/cases/${{matrix.suite-name}} DIFF="diff -y" POCKETMINE_VERSION=${{matrix.pocketmine-version}}
   fmt:
     name: code style check
+    needs: [phpstan]
     runs-on: ubuntu-latest
     strategy:
       matrix:
