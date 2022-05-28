@@ -312,7 +312,6 @@ final class Capital implements Singleton, FromContext {
                 }
             }
         } while ($retry);
-        
     }
 
     /**
