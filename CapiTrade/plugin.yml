@@ -1,0 +1,10 @@
+name: CapiTrade
+version: 0.1.2
+api: 4.0.0
+main: SOFe\CapiTrade\Plugin\MainClass
+author: SOFe
+load: STARTUP
+depend:
+  - Capital
+loadbefore:
+  - SuiteTester

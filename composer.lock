@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "100ea7462fd97d53bed545e2494f54a3",
+    "content-hash": "1909a71de667f46fadd30ad010bed708",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -727,16 +727,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "4.2.3",
+            "version": "4.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "6c1c0c867e178f8da8b266e962ca13f4b4280ab4"
+                "reference": "fe435388e75aee88c485a60da087158e4a0e7dbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/6c1c0c867e178f8da8b266e962ca13f4b4280ab4",
-                "reference": "6c1c0c867e178f8da8b266e962ca13f4b4280ab4",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/fe435388e75aee88c485a60da087158e4a0e7dbf",
+                "reference": "fe435388e75aee88c485a60da087158e4a0e7dbf",
                 "shasum": ""
             },
             "require": {
@@ -788,7 +788,7 @@
                 "webmozart/path-util": "^2.3"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.4.8",
+                "phpstan/phpstan": "1.4.10",
                 "phpstan/phpstan-phpunit": "^1.0.0",
                 "phpstan/phpstan-strict-rules": "^1.0.0",
                 "phpunit/phpunit": "^9.2"
@@ -810,7 +810,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.2.3"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.2.5"
             },
             "funding": [
                 {
@@ -822,7 +822,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-03-09T22:52:38+00:00"
+            "time": "2022-03-19T00:28:50+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -1127,20 +1127,20 @@
         },
         {
             "name": "sof3/await-generator",
-            "version": "3.3.0",
+            "version": "3.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/SOF3/await-generator.git",
-                "reference": "6cfe07c2b50dd069854ccb7719397f42ead9e946"
+                "reference": "9e290d34fd627584d00f0b3105b7335c67ff5494"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SOF3/await-generator/zipball/6cfe07c2b50dd069854ccb7719397f42ead9e946",
-                "reference": "6cfe07c2b50dd069854ccb7719397f42ead9e946",
+                "url": "https://api.github.com/repos/SOF3/await-generator/zipball/9e290d34fd627584d00f0b3105b7335c67ff5494",
+                "reference": "9e290d34fd627584d00f0b3105b7335c67ff5494",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.3 || ^8.0"
+                "php": "^8.0"
             },
             "require-dev": {
                 "composer/package-versions-deprecated": "1.11.99.1",
@@ -1167,9 +1167,9 @@
             "description": "Use async/await in PHP using generators",
             "support": {
                 "issues": "https://github.com/SOF3/await-generator/issues",
-                "source": "https://github.com/SOF3/await-generator/tree/3.3.0"
+                "source": "https://github.com/SOF3/await-generator/tree/3.4.1"
             },
-            "time": "2022-03-13T02:52:08+00:00"
+            "time": "2022-03-19T09:38:28+00:00"
         },
         {
             "name": "sof3/await-std",
@@ -1761,16 +1761,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.3.0",
+            "version": "3.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "f79c90ad4e9b41ac4dfc5d77bf398cf61fbd718b"
+                "reference": "5d8e574bb0e69188786b8ef77d43341222a41a71"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/f79c90ad4e9b41ac4dfc5d77bf398cf61fbd718b",
-                "reference": "f79c90ad4e9b41ac4dfc5d77bf398cf61fbd718b",
+                "url": "https://api.github.com/repos/composer/semver/zipball/5d8e574bb0e69188786b8ef77d43341222a41a71",
+                "reference": "5d8e574bb0e69188786b8ef77d43341222a41a71",
                 "shasum": ""
             },
             "require": {
@@ -1822,7 +1822,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.3.0"
+                "source": "https://github.com/composer/semver/tree/3.3.1"
             },
             "funding": [
                 {
@@ -1838,7 +1838,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-15T08:35:57+00:00"
+            "time": "2022-03-16T11:22:07+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -2126,16 +2126,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.7.0",
+            "version": "v3.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FriendsOfPHP/PHP-CS-Fixer.git",
-                "reference": "7705d5a985132a40282d18a176eb9a4a0497747c"
+                "reference": "cbad1115aac4b5c3c5540e7210d3c9fba2f81fa3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/7705d5a985132a40282d18a176eb9a4a0497747c",
-                "reference": "7705d5a985132a40282d18a176eb9a4a0497747c",
+                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/cbad1115aac4b5c3c5540e7210d3c9fba2f81fa3",
+                "reference": "cbad1115aac4b5c3c5540e7210d3c9fba2f81fa3",
                 "shasum": ""
             },
             "require": {
@@ -2203,7 +2203,7 @@
             "description": "A tool to automatically fix PHP code style",
             "support": {
                 "issues": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/issues",
-                "source": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/tree/v3.7.0"
+                "source": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/tree/v3.8.0"
             },
             "funding": [
                 {
@@ -2211,7 +2211,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-03-07T16:59:59+00:00"
+            "time": "2022-03-18T17:20:59+00:00"
         },
         {
             "name": "myclabs/deep-copy",
