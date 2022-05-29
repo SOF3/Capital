@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital;
 
+use Closure;
 use Generator;
 use InvalidArgumentException;
 use Logger;
@@ -276,6 +277,41 @@ final class Capital implements Singleton, FromContext {
         $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
 
         yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
+    }
+
+    /**
+     * Allows plugin developers to pay the destination player an amount depending on the source player balance
+     *
+     * @param Closure (int) : int $convert
+     * @return VoidPromise
+     */
+    public function payAdaptive(
+        Player $src,
+        Player $dest,
+        Schema\Complete $schema,
+        Closure $convert,
+        LabelSet $transactionLabels,
+        bool $awaitRefresh = false,
+    ) : Generator {
+        $srcAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $src);
+        $destAccounts = yield from Schema\Utils::lazyCreate($schema, $this->database, $dest);
+
+        $srcAccount = $srcAccounts[0]; // must have at least one because it was lazily created
+        $destAccount = $destAccounts[0]; // must have at least one because it was lazily created
+        while (true) {
+            try {
+                $balance = yield from $this->getBalance($srcAccount);
+                $amount = $convert($balance);
+                yield from $this->transact($srcAccount, $destAccount, $amount, $transactionLabels, [$src, $dest], $awaitRefresh);
+                break;
+            } catch (CapitalException $e) {
+                if ($e->getCode() === CapitalException::SOURCE_UNDERFLOW) {
+                    // retry
+                } else {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /**
