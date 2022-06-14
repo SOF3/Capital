@@ -29,8 +29,9 @@ final class CachedValue {
      * @return VoidPromise
      */
     public function waitForRefresh() : Generator {
-        $this->waits[] = yield Await::RESOLVE;
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve) {
+            $this->waits[] = fn() => $resolve(null);
+        });
     }
 
     /**
@@ -70,8 +71,9 @@ final class CachedValue {
      * @return VoidPromise
      */
     private function waitWakeup() : Generator {
-        $this->refreshNow = yield Await::RESOLVE;
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve) {
+            $this->refreshNow = fn() => $resolve(null);
+        });
         $this->refreshNow = null; // This line is never run if refreshNow is not called, but it is fine.
     }
 }

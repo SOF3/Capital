@@ -7,7 +7,7 @@ projects:
         version: ^4.0.1
         epitope: .random
       - src: sof3/await-generator/await-generator
-        version: ^3.3.0
+        version: ^3.4.1
         epitope: .random
       - src: sof3/await-std/await-std
         version: ^0.2.0
