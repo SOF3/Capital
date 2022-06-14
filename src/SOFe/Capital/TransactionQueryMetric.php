@@ -51,6 +51,10 @@ final class TransactionQueryMetric implements QueryMetric {
         return "capital_tran_label";
     }
 
+    public function getTimestampColumn() : string {
+        return "capital_acc.touch";
+    }
+
     public function getExpr() : string {
         return $this->expr;
     }

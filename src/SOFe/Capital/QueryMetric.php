@@ -9,6 +9,8 @@ interface QueryMetric {
 
     public function getLabelTable() : string;
 
+    public function getTimestampColumn() : string;
+
     public function getExpr() : string;
 
     public function usesIdOnly() : bool;
