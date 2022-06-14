@@ -21,6 +21,7 @@ final class TypeRegistry implements Singleton, FromContext {
 
         $self->register("basic", Basic::class);
         $self->register("currency", Currency::class);
+        $self->register("world", World::class);
 
         return $self;
     }

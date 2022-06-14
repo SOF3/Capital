@@ -40,3 +40,8 @@ parameters:
 			count: 1
 			path: src/SOFe/Capital/Schema/Currency.php
 
+		-
+			message: "#^Parameter \\$populate of class SOFe\\\\Capital\\\\Schema\\\\Variable constructor expects Closure\\(SOFe\\\\Capital\\\\Schema\\\\World, null\\)\\: void, Closure\\(SOFe\\\\Capital\\\\Schema\\\\World, string\\)\\: string given\\.$#"
+			count: 1
+			path: src/SOFe/Capital/Schema/World.php
+
