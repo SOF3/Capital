@@ -1,22 +1,21 @@
 # Developer notes
 
-This document is for developers who want to contribute to this project.
+## High-level API
 
-## API
+This section describes the simple API for developers of other plugins
+without learning the concepts of Capital in depth.
 
-### Summary
-
-Capital supports different account classifications (known as [schemas](#schema)).
-All operations involving player accounts require
-a config entry to select which account,
-e.g. if the user selects the Currency schema,
-you need a config that selects which currency to use.
+Capital supports different ways of classifying accounts (known as [schemas](#schema)),
+e.g. multi-currency and multi-world.
 The good news is, you don't have to consider each schema,
 because Capital will figure it out.
-For each use case, just create an empty config entry to select the account:
+You just need to leave a place in your config.yml
+so that users who want to use other schemas can configure it:
 
 ```yaml
-selector:
+# Selects the Capital account to use.
+# See https://github.com/SOF3/Capital/wiki/Schemas for more details.
+selector: {}
 ```
 
 Users can fill this selector with options like `allowed-currencies` etc.,
@@ -41,7 +40,7 @@ class Main extends PluginBase {
 Then you can use the stored selector in the code
 where you want to manipulate player money.
 
-#### Take money from a player
+### Take money from a player
 
 Let's make a plugin called "ChatFee"
 which charges the player $5 for every chat message:
@@ -57,7 +56,7 @@ public function onChat(PlayerChatEvent $event) : void {
           $player,
           $this->selector,
           5, 
-          new LabelSet(["reason" => "chatting"]),
+          new LabelSet(["reason" => "chatting"]), 
         );
 
         $player->sendMessage("You lost $5 for chatting");
@@ -94,7 +93,7 @@ However, remember that **you cannot cancel `$event` after the first `yield`**,
 because transactions are asynchronous, which means that
 the event already happened by that time and it is too late to cancel.
 
-#### Giving money to a player
+### Giving money to a player
 
 Giving money is similar to taking money,
 except `takeMoney` becomes `addMoney`.
@@ -126,7 +125,7 @@ public function onDamage(EntityDamageByEntityEvent $event) : void {
 }
 ```
 
-#### Paying money from a player to another
+### Paying money from a player to another
 
 Paying money is like taking money from one player and giving to another,
 but it only happens when *both* players have enough money and don't exceed limits.
@@ -188,7 +187,7 @@ It is also possible for player1 to pay less and player2 to pay more.
 In that case, player1 only pays the amount to player2,
 then the system account will pay the rest to player2.
 
-#### Getting money for a player
+### Getting money for a player
 
 If you want to check whether the player has enough money for something,
 use `takeMoney` as explained above and handle the error case.
@@ -199,6 +198,8 @@ but users can change this based on their config setup.
 Consider using InfoAPI to compute the messages
 and let the user set their own messages.
 See [InfoAPI readme](https://github.com/SOF3/InfoAPI) for usage guide.
+
+## API
 
 ### Async functions
 
