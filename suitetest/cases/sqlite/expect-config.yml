@@ -69,10 +69,10 @@ analytics:
         - "balance-min": The minimum balance of the accounts selected.
         - "balance-max": The maximum balance of the accounts selected.
       metric: balance-sum
-      '#update-freuqency': |-
+      '#update-frequency': |-
         The frequency in seconds at which the info is refreshed from the server.
         This will only affect displays and will not affect transactions.
-      update-freuqency: 5
+      update-frequency: 5
   '#info-commands': |-
     Commands that display information about a player.
     You can use the infos defined in the player-infos section above,

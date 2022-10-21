@@ -144,7 +144,7 @@ final class Config implements Singleton, FromContext, ConfigInterface {
             throw new AssertionError("unreachable code");
         }
 
-        $updateFrequencyTicks = (int) ($infoConfig->expectNumber("update-freuqency", 5.0, <<<'EOT'
+        $updateFrequencyTicks = (int) ($infoConfig->expectNumber("update-frequency", 5.0, <<<'EOT'
             The frequency in seconds at which the info is refreshed from the server.
             This will only affect displays and will not affect transactions.
             EOT) * 20.);
