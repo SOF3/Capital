@@ -48,7 +48,7 @@ trait SingletonTrait {
     public static function api(string $minimumApi, Closure $then) : void {
         $class = static::class;
         $modClass = (new ReflectionClass($class))->getNamespaceName() . "\\Mod";
-        $version = $modClass::VERSION;
+        $version = $modClass::API_VERSION;
 
         if (version_compare($minimumApi, $version, ">")) {
             throw new PluginException("Plugin requires Capital $minimumApi but current version is $version");
