@@ -76,8 +76,9 @@ final class DatabaseUtils implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], yield Await::RESOLVE, yield Await::REJECT);
-        [$result] = yield Await::ONCE;
+        [$result] = yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_SELECT], $resolve, $reject);
+        });
         if (!($result instanceof SqlSelectResult)) {
             throw new AssertionError("libasynql returned incorrect result type");
         }
@@ -188,8 +189,9 @@ final class DatabaseUtils implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], yield Await::RESOLVE, yield Await::REJECT);
-        [$result] = yield Await::ONCE;
+        [$result] = yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], $resolve, $reject);
+        });
         if (!($result instanceof SqlChangeResult)) {
             throw new AssertionError("libasynql returned incorrect result type");
         }
@@ -255,7 +257,8 @@ final class DatabaseUtils implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], yield Await::RESOLVE, yield Await::REJECT);
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], $resolve, $reject);
+        });
     }
 }

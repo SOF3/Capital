@@ -60,8 +60,9 @@ final class DatabaseUtils implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], yield Await::RESOLVE, yield Await::REJECT);
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], $resolve, $reject);
+        });
 
 
         $sql = "INSERT INTO capital_acc_label (id, name, value) VALUES ";
@@ -108,7 +109,8 @@ final class DatabaseUtils implements Singleton, FromContext {
             SqlDialect::MYSQL => "?",
         }, $rawArgs);
 
-        $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], yield Await::RESOLVE, yield Await::REJECT);
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve, $reject) use ($rawQuery, $rawArgs) {
+            $this->db->getDataConnector()->executeImplRaw($rawQuery, $rawArgs, [SqlThread::MODE_CHANGE], $resolve, $reject);
+        });
     }
 }

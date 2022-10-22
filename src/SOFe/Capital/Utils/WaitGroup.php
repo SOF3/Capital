@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Utils;
 
+use AssertionError;
 use Closure;
 use Generator;
 use RuntimeException;
@@ -39,8 +40,12 @@ final class WaitGroup {
             return;
         }
 
-        $this->onDone[] = yield Await::RESOLVE;
-        yield Await::ONCE;
+        yield from Await::promise(function($resolve) {
+            if ($this->onDone === null) {
+                throw new AssertionError("promise function should be executed immediately");
+            }
+            $this->onDone[] = $resolve;
+        });
     }
 
     public function closeIfZero() : void {

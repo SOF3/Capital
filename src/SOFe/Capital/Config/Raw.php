@@ -98,8 +98,9 @@ final class Raw implements Singleton, FromContext {
 
             $this->onConfigLoaded = null;
         } else {
-            $this->onConfigLoaded[] = yield Await::RESOLVE;
-            yield Await::ONCE;
+            yield from Await::promise(function($resolve) {
+                $this->onConfigLoaded[] = fn() => $resolve(null);
+            });
         }
 
         $config = $this->loadedConfigs[$class];
@@ -151,9 +152,12 @@ final class Raw implements Singleton, FromContext {
         }
 
         $this->logger->debug("Internal await for config $class");
-        $this->configInternalAwaits[$class][] = yield Await::RESOLVE;
-
-        $instance = yield Await::ONCE;
+        $instance = yield from Await::promise(function($resolve) use ($class) {
+            if (!is_array($this->configInternalAwaits[$class])) {
+                throw new AssertionError("configInternalAwaits[$class] is initialized twice");
+            }
+            $this->configInternalAwaits[$class][] = $resolve;
+        });
         $this->logger->debug("Internal await for config $class complete");
         return $instance;
     }
