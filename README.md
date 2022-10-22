@@ -24,7 +24,7 @@ As a core API for economy, Capital supports different styles of account manageme
 - Or maybe sometimes the money goes to the faction bank account
   instead of player account?
 - Capital is extensible for other plugins to include new account management styles,
-  And it will work automatically with all plugins!
+  and it will work automatically with all plugins!
 
 Other cool features include:
 
@@ -79,9 +79,9 @@ Player commands:
 
 Admin commands:
 
-- `addmoney <player> <amount> [account...]`:
+- `/addmoney <player> <amount> [account...]`:
   Add money to a player's account.
-- `takemoney <player> <amount> [account...]`:
+- `/takemoney <player> <amount> [account...]`:
   Remove money from a player's account.
 - `/checkmoney <player>`:
   Check the wealth of another player.
@@ -100,7 +100,7 @@ If you want to get help, share your awesome config setup
 or show off your cool plugin that uses Capital,
 create a discussion [on GitHub](https://github.com/SOF3/Capital/discussions).
 
-To report bugs, create an isuse [on GitHub](https://github.com/SOF3/Capital/issues).
+To report bugs, create an issue [on GitHub](https://github.com/SOF3/Capital/issues).
 
 If you want to help with developing Capital,
 see [dev.md](dev.md) for a comprehensive walkthrough of the internals.
