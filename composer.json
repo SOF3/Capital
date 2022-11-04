@@ -3,7 +3,7 @@
     "type": "project",
     "require": {
         "pocketmine/pocketmine-mp": "^4.0.0",
-        "sof3/await-generator": "^3.3",
+        "sof3/await-generator": "^3.4.1",
         "sof3/await-std": "dev-master",
         "sof3/libasynql": "^4.0.1",
         "sof3/infoapi": "^1.2.1",
@@ -16,7 +16,8 @@
     },
     "autoload": {
         "psr-0": {
-            "SOFe\\Capital\\": "src/"
+            "SOFe\\Capital\\": "src/",
+            "SOFe\\CapiTrade\\": "CapiTrade/src/"
         }
     },
     "license": "Apache-2.0",

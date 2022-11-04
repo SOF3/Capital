@@ -220,8 +220,17 @@ final class Database implements Singleton, FromContext {
         return $output;
     }
 
+    /**
+     * @return LabelManager<CapitalException::*, CapitalException>
+     */
     public function accountLabels() : LabelManager {
-        return new LabelManager($this, "capital_acc_label", CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS, CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST);
+        return new LabelManager(
+            database: $this,
+            labelTable: "capital_acc_label",
+            labelAlreadyExistsErrorCode: CapitalException::ACCOUNT_LABEL_ALREADY_EXISTS,
+            labelDoesNotExistErrorCode: CapitalException::ACCOUNT_LABEL_DOES_NOT_EXIST,
+            throw: fn($code, $prev) => new CapitalException($code, $prev),
+        );
     }
 
     // Dynamic account label queries
@@ -692,9 +701,17 @@ final class Database implements Singleton, FromContext {
         };
     }
 
-
+    /**
+     * @return LabelManager<CapitalException::*, CapitalException>
+     */
     public function transactionLabels() : LabelManager {
-        return new LabelManager($this, "capital_tran_label", CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS, CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST);
+        return new LabelManager(
+            database: $this,
+            labelTable: "capital_tran_label",
+            labelAlreadyExistsErrorCode: CapitalException::TRANSACTION_LABEL_ALREADY_EXISTS,
+            labelDoesNotExistErrorCode: CapitalException::TRANSACTION_LABEL_DOES_NOT_EXIST,
+            throw: fn($code, $prev) => new CapitalException($code, $prev),
+        );
     }
 
     // Dynamic transaction label queries

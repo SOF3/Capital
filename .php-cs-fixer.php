@@ -5,9 +5,15 @@ use PhpCsFixer\Finder;
 
 return (function() {
     $finder = Finder::create();
-    foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . "/src")) as $file) {
+
+    $files = [];
+    $iter = new AppendIterator();
+    $iter->append(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . "/src")));
+    $iter->append(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . "/CapiTrade/src")));
+
+    foreach($iter as $file) {
         $file = realpath($file);
-        if($file === __DIR__ . "/src/SOFe/Capital/Database/RawQueries.php") {
+        if(substr($file, strrpos($file, "/")) === "/RawQueries.php") {
             continue;
         }
 

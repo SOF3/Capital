@@ -5,7 +5,7 @@
   "require": {
     "pocketmine/pocketmine-mp": "4.0.0",
     "sof3/await-generator": "^3.1.0",
-    "sof3/await-std": "dev-event-rewrite"
+    "sof3/await-std": "dev-master"
   },
   "license": "Apache-2.0",
   "autoload": {
@@ -19,6 +19,6 @@
     }
   },
   "require-dev": {
-    "phpstan/phpstan": "1.2.x-dev"
+    "phpstan/phpstan": "^1.2"
   }
 }
