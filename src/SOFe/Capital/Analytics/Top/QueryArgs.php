@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SOFe\Capital\Analytics\Top;
 
+use pocketmine\utils\Binary;
 use SOFe\Capital\AccountLabels;
 use SOFe\Capital\AccountQueryMetric;
 use SOFe\Capital\Config\Parser;
@@ -31,7 +32,7 @@ final class QueryArgs {
     private ?string $hash = null;
 
     /**
-     * @param LabelSelector $labelSelector The labels that filter the cacounts/transactions.
+     * @param LabelSelector $labelSelector The labels that filter the accounts/transactions.
      * @param string $groupingLabel The label to group by.
      * @param array<string, string> $displayLabels The labels to display in the top list. Keys are InfoAPI info names and values are the labels to display.
      * @param self::ORDERING_* $ordering Whether to sort ascendingly or descendingly.
@@ -43,6 +44,7 @@ final class QueryArgs {
         public string $groupingLabel,
         public array $displayLabels,
         public string $ordering,
+        public ?int $interval,
         public QueryMetric $metric,
     ) {
     }
@@ -63,6 +65,12 @@ final class QueryArgs {
 
         $bytes .= $this->groupingLabel;
         $bytes .= "\0";
+
+        if ($this->interval !== null) {
+            $bytes .= "\1" . Binary::writeLong($this->interval);
+        } else {
+            $bytes .= "\0";
+        }
 
         $bytes .= get_class($this->metric);
         $bytes .= "\0";
@@ -89,6 +97,11 @@ final class QueryArgs {
             self::ORDERING_DESC => self::ORDERING_DESC,
             default => $config->setValue("ordering", self::ORDERING_DESC, "Invalid ordering"),
         };
+        $interval = $config->expectNullableNumber("interval", 24, <<<'EOT'
+            Number of hours of data to consider.
+            Only accounts used in this interval or transactions that took place in this interval are considered.
+            EOT);
+        $interval = $interval !== null ? (int) ($interval * 3600) : null;
         $metric = AccountQueryMetric::parseConfig($config, "metric");
 
         return new self(
@@ -96,6 +109,7 @@ final class QueryArgs {
             groupingLabel: $groupingLabel,
             displayLabels: $displayLabels,
             ordering: $ordering,
+            interval: $interval,
             metric: $metric,
         );
     }

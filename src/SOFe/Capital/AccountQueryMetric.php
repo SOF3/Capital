@@ -43,6 +43,10 @@ final class AccountQueryMetric implements QueryMetric {
         return "capital_acc_label";
     }
 
+    public function getTimestampColumn() : string {
+        return "capital_acc.touch";
+    }
+
     public function getExpr() : string {
         return $this->expr;
     }

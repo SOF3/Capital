@@ -226,11 +226,20 @@ final class DatabaseUtils implements Singleton, FromContext {
             $metricExpr .= " INNER JOIN $labelTable AS t{$i} USING (id)";
         }
 
-        if (!$query->metric->usesIdOnly()) {
-            $metricExpr .= " INNER JOIN $mainTable USING (id)";
-        }
+        $metricExpr .= " INNER JOIN $mainTable USING (id)";
 
         $metricExpr .= " WHERE grouping_label.name = :groupingLabel AND grouping_label.value = capital_analytics_top_cache.group_value";
+
+        if ($query->interval !== null) {
+            $tsColumn = $query->metric->getTimestampColumn();
+            $timeDiffExpr = match ($this->db->dialect) {
+                SqlDialect::SQLITE => "JULIANDAY(CURRENT_TIMESTAMP) - JULIANDAY($tsColumn)",
+                SqlDialect::MYSQL => "TIMESTAMPDIFF(SECOND, $tsColumn, CURRENT_TIMESTAMP)",
+            };
+            $metricExpr .= " AND $timeDiffExpr < :interval";
+            $vars["interval"] = new GenericVariable("interval", GenericVariable::TYPE_INT, null);
+            $args["interval"] = $query->interval;
+        }
 
         $i = 0;
         foreach ($query->labelSelector->getEntries() as $name => $value) {
